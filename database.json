@@ -1,10 +1,14 @@
 {
-  "dev": {
+  "defaultEnv": "local",
+  "local": {
     "driver": "postgres",
     "host": "localhost",
     "port": "32769",
     "user": "enso-street",
     "password": "password",
     "database": "enso-street"
+  },
+  "dev": {
+    "ENV": "DATABASE_URL"
   }
 }
