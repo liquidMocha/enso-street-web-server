@@ -1,5 +1,3 @@
-const graphqlHTTP = require('express-graphql');
-const {buildSchema} = require('graphql');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -8,19 +6,6 @@ const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
-
-
-const schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`);
-
-const root = {
-    hello: () => {
-        return 'hello world!!!!';
-    }
-};
 
 const app = express();
 
@@ -36,16 +21,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-
-const graphqlPort = 4000;
-app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
-}));
-app.listen(graphqlPort);
-console.log('Running a GraphQL API server at localhost:', graphqlPort, '/graphql');
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,6 +1,4 @@
 const express = require('express');
-const graphqlHTTP = require('express-graphql');
-let {buildSchema} = require('graphql');
 const router = express.Router();
 
 /* GET users listing. */
