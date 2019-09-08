@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const usersRouter = require('./routes/users');
 
-const port = 3000;
+const port = 3001;
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 app.use('/users', usersRouter);
