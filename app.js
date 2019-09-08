@@ -1,6 +1,6 @@
 import express from "express";
 
-import usersRouter from "./routes/users";
+import usersRouter from "./routes/UsersController";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";

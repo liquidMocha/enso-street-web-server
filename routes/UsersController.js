@@ -7,6 +7,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/createUser', (req, res, next) => {
+
   res.status(201);
   res.send();
 });

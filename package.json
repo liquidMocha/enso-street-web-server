@@ -16,7 +16,8 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "pg-promise": "^9.1.4",
-    "pug": "^2.0.4"
+    "pug": "^2.0.4",
+    "sinon": "^7.4.2"
   },
   "devDependencies": {
     "mocha": "^6.2.0",
