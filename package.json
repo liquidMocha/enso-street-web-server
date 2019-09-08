@@ -3,13 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "node -r esm app.js",
+    "test": "./node_modules/mocha/bin/mocha -r esm"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "db-migrate": "^0.11.6",
     "db-migrate-pg": "^1.0.0",
     "debug": "~2.6.9",
+    "esm": "^3.2.25",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",

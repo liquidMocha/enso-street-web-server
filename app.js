@@ -1,7 +1,9 @@
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+import express from "express";
+
+import usersRouter from "./routes/users";
+import logger from "morgan";
+import cookieParser from "cookie-parser";
+import path from "path";
 
 const app = express();
 
@@ -10,9 +12,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-const usersRouter = require('./routes/users');
-
 const port = 3001;
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
