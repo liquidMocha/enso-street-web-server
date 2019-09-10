@@ -4,8 +4,13 @@ import usersRouter from "./routes/UsersController";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
+import bodyParser from "body-parser";
 
 const app = express();
+
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -34,5 +39,4 @@ app.use('/users', usersRouter);
 //     res.status(err.status || 500);
 //     // res.render('error');
 // });
-
-module.exports = app;
+export default app;

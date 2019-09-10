@@ -1,17 +1,14 @@
 import request from "supertest";
 import UserService from "../user/UserService";
 import sinon from "sinon";
+import app from "../app";
 
 const should = require('should');
 const assert = require('assert');
-const app = require('../app');
 
 describe('users', () => {
 
-    let userService;
     beforeEach(() => {
-        userService = new UserService();
-        sinon.spy(userService, "createUser");
     });
 
     it('should create a user', (done) => {
@@ -25,7 +22,5 @@ describe('users', () => {
             .post('/users/createUser')
             .send(user)
             .expect(201, done);
-
-        assert(userService.createUser.calledOnce)
     })
 });

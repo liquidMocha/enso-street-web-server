@@ -10,4 +10,5 @@ connect to Postgres:
 ```psql -h localhost -U enso-street -p 32771```
 
 list all databases: \l
+list all tables: \dt
 switch database: \c ${database-name}
