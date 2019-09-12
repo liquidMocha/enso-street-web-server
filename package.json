@@ -1,6 +1,9 @@
 {
   "name": "enso-street-web-server",
   "version": "0.0.0",
+  "engines": {
+    "node": "12.8.1"
+  },
   "private": true,
   "scripts": {
     "start": "node -r esm app.js",
@@ -9,6 +12,7 @@
   "dependencies": {
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
+    "cfenv": "^1.2.2",
     "cookie-parser": "~1.4.4",
     "db-migrate": "^0.11.6",
     "db-migrate-pg": "^1.0.0",
