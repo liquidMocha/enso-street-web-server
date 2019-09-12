@@ -3,7 +3,7 @@
   "local": {
     "driver": "postgres",
     "host": "localhost",
-    "port": "32771",
+    "port": "5432",
     "user": "enso-street",
     "password": "password",
     "database": "enso-street"
