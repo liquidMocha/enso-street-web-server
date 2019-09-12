@@ -5,8 +5,11 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
 import bodyParser from "body-parser";
+import helmet from "helmet";
 
 const app = express();
+
+app.use(helmet());
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
