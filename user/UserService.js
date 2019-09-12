@@ -8,5 +8,16 @@ export default class UserService {
             .catch(function(error) {
                 console.log('Errored when trying to save user. ', error);
             });
+    };
+
+    static getPasswordForUser = async (email) => {
+        return await database.db.any("select password from public.user where email = $1", [email])
+            .then(function(data) {
+                return data[0].password;
+            })
+            .catch(function(error) {
+                console.log('Errored when checking password for user: ', email);
+                console.log('Error is: ', error);
+            })
     }
 }
