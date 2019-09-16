@@ -1,17 +1,16 @@
 import request from "supertest";
 import UserService from "../user/UserService";
-import sinon from "sinon";
 import app from "../app";
-
-const should = require('should');
-const assert = require('assert');
+import sinon from 'sinon';
 
 describe('users', () => {
+    let createUserStub = sinon.stub(UserService, 'createUser');
 
     beforeEach(() => {
+        createUserStub.resetHistory();
     });
 
-    it('should create a user', (done) => {
+    it('should return a 201', (done) => {
         let user = {
             'email': 'user@email.com',
             'name': 'Robert Dunder',
@@ -21,6 +20,11 @@ describe('users', () => {
         request(app)
             .post('/users/createUser')
             .send(user)
-            .expect(201, done);
-    })
+            .expect(201, (error, result) => {
+                sinon.assert.calledOnce(createUserStub);
+                if(error) { return done(error);}
+
+                done();
+            });
+    });
 });
