@@ -2,11 +2,11 @@ import database from '../database';
 
 export default class UserService {
     static createUser = (name, password, email) => {
-        database.db.none("insert into public.user(name, password, email) values ($1, $2, $3)", [name, password, email])
+        database.db.none("insert into public.user(name, password, email, created_on) values ($1, $2, $3, $4)", [name, password, email, new Date().toISOString().slice(0, 19).replace('T', ' ')])
             .then(function () {
             })
             .catch(function(error) {
-                console.log('Errored when trying to save user. ', error);
+                console.log('Errored when trying to save user. \n', error);
             });
     };
 
