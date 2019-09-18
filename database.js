@@ -1,16 +1,10 @@
-const cfenv = require('cfenv');
+import dotenv from 'dotenv';
+import pgp from 'pg-promise';
+dotenv.config();
 
-const appEnv = cfenv.getAppEnv();
-const dbConnectionString = appEnv.services.elephantsql ?
-    appEnv.services.elephantsql[0].credentials.uri : 'postgres://enso-street:password@localhost:5432/enso-street';
-const initOptions = {
-    // initialization options;
-};
+const dbConnectionString = process.env.databaseUri;
+const initOptions = {};
 
-const pgp = require('pg-promise')(initOptions);
+const db = pgp(initOptions)(dbConnectionString);
 
-const db = pgp(dbConnectionString);
-
-module.exports = {
-    pgp, db
-};
+export default db;
