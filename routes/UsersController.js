@@ -18,12 +18,12 @@ router.post('/createUser', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
     const email = req.body.email;
-    req.session.email = email;
     const password = req.body.password;
 
     UsersService.getPasswordForUser(email).then((hashedPassword) => {
         bcrypt.compare(password, hashedPassword, function (err, match) {
             if (match) {
+                req.session.email = email;
                 res.status(200).send('authentication successful');
             } else {
                 res.status(401).send('authentication failed');

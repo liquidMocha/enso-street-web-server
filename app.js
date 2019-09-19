@@ -2,6 +2,7 @@ import express from "express";
 
 import dotenv from 'dotenv';
 import usersRouter from "./routes/UsersController";
+import itemRouter from "./routes/ItemController";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
@@ -67,7 +68,7 @@ if (process.env.isLocal) {
     app.listen(port, () => console.log(`Enso street web server is listening on port ${port}!`));
 }
 
-
+app.use('/items', itemRouter);
 app.use('/users', usersRouter);
 
 export default app;
