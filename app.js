@@ -33,7 +33,7 @@ app.use(session({
     cookie: {
         secure: true,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24
+        maxAge: 1000 * 60 * 30
     },
     secret: process.env.sessionSecret,
     store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),
