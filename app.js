@@ -16,9 +16,10 @@ import redis from "redis";
 
 dotenv.config();
 let uiDomain = process.env.uiBaseUrl;
-const redisHost = process.env.redisHost;
-const redisPassword = process.env.redisPassword;
-const redisPort = process.env.redisPort;
+let redisHost = process.env.redisHost;
+let redisPassword = process.env.redisPassword;
+let redisPort = process.env.redisPort;
+console.log('redis host is: ', redisHost);
 const redisStore = require('connect-redis')(session);
 const redisClient = redis.createClient();
 
