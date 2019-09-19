@@ -12,3 +12,6 @@ connect to Postgres:
 list all databases: \l
 list all tables: \dt
 switch database: \c ${database-name}
+
+Start docker Redis:
+```sudo docker run --name enso-redis -p 6379:6379 -d redis```

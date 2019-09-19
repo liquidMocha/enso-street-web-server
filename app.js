@@ -10,19 +10,35 @@ import helmet from "helmet";
 import cors from "cors";
 import https from "https";
 import fs from "fs";
+import session from "express-session";
+import redis from "redis";
+// import redisConnection from "connect-redis";
 
 dotenv.config();
 let uiDomain = process.env.uiBaseUrl;
-console.log("ui base url is: ", uiDomain);
+const redisHost = process.env.redisHost;
+const redisPassword = process.env.redisPassword;
+const redisPort = process.env.redisPort;
+const redisStore = require('connect-redis')(session);
+const redisClient = redis.createClient();
 
 const app = express();
-app.use(cors({
-    origin: uiDomain
+app.use(session({
+    cookie: {
+        secure: true,
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24
+    },
+    secret: process.env.sessionSecret,
+    store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),
+    saveUninitialized: false,
+    resave: false
 }));
+app.use(cors({origin: uiDomain}));
 
 app.use(helmet());
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use(logger('dev'));
@@ -31,7 +47,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const port = 8080;
-if(process.env.isLocal) {
+if (process.env.isLocal) {
     let cert = fs.readFileSync(__dirname + '/certs/certificate.pem');
     let key = fs.readFileSync(__dirname + '/certs/private.key');
     let options = {

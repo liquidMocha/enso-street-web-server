@@ -18,6 +18,7 @@ router.post('/createUser', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
     const email = req.body.email;
+    req.session.email = email;
     const password = req.body.password;
 
     UsersService.getPasswordForUser(email).then((hashedPassword) => {
