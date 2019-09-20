@@ -15,3 +15,6 @@ switch database: \c ${database-name}
 
 Start docker Redis:
 ```sudo docker run --name enso-redis -p 6379:6379 -d redis```
+
+set custom git hook location
+```git config core.hooksPath <path>```
