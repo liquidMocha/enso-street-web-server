@@ -10,21 +10,47 @@ describe('users', () => {
         createUserStub.resetHistory();
     });
 
-    it('should return a 201 if successfully created user', (done) => {
-        let user = {
-            'email': 'user@email.com',
-            'name': 'Robert Dunder',
-            'password': 'ituhg240#'
-        };
+    describe('create user', () => {
+        let user;
 
-        request(app)
-            .post('/users/createUser')
-            .send(user)
-            .expect(201, (error, result) => {
-                sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
-                if(error) { return done(error);}
+        beforeEach(() => {
+            user = {
+                'email': 'user@email.com',
+                'name': 'Robert Dunder',
+                'password': 'ituhg240#'
+            };
+        });
 
-                done();
-            });
+        it('should return a 201 if successfully created user', (done) => {
+            createUserStub.resolves();
+
+            request(app)
+                .post('/users/createUser')
+                .send(user)
+                .expect(201, (error, result) => {
+                    sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
+                    if (error) {
+                        return done(error);
+                    }
+
+                    done();
+                });
+        });
+
+        it('should return 500 if failed to create user', (done) => {
+            createUserStub.rejects();
+
+            request(app)
+                .post('/users/createUser')
+                .send(user)
+                .expect(500, (error, result) => {
+                    sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
+                    if (error) {
+                        return done(error);
+                    }
+
+                    done();
+                });
+        })
     });
 });

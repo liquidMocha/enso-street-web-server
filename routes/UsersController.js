@@ -8,9 +8,14 @@ router.post('/createUser', async (req, res, next) => {
     const name = req.body.name;
     const password = req.body.password;
     const email = req.body.email;
-    await UsersService.createUser(name, password, email);
-    res.status(201);
-    res.send();
+    UsersService.createUser(name, password, email)
+        .then(() => {
+            res.status(201).send();
+        })
+        .catch(() => {
+            res.status(500).send();
+        })
+    ;
 });
 
 router.post('/login', async (req, res, next) => {
