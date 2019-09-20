@@ -2,17 +2,15 @@ import request from "supertest";
 import UserService from "../user/UserService";
 import app from "../app";
 import sinon from 'sinon';
-import bcrypt from "bcrypt";
 
 describe('users', () => {
     let createUserStub = sinon.stub(UserService, 'createUser');
-    let bcryptStub = sinon.stub(bcrypt, 'hash');
 
     beforeEach(() => {
         createUserStub.resetHistory();
     });
 
-    it('should return a 201', (done) => {
+    it('should return a 201 if successfully created user', (done) => {
         let user = {
             'email': 'user@email.com',
             'name': 'Robert Dunder',
@@ -23,8 +21,7 @@ describe('users', () => {
             .post('/users/createUser')
             .send(user)
             .expect(201, (error, result) => {
-                sinon.assert.calledOnce(createUserStub);
-                sinon.assert.calledOnce(bcryptStub);
+                sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
                 if(error) { return done(error);}
 
                 done();

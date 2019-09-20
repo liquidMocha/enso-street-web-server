@@ -5,15 +5,12 @@ import * as bcrypt from "bcrypt";
 const router = express.Router();
 
 router.post('/createUser', async (req, res, next) => {
-    const saltRounds = 14;
     const name = req.body.name;
     const password = req.body.password;
     const email = req.body.email;
-    await bcrypt.hash(password, saltRounds, (error, hash) => {
-        UsersService.createUser(name, hash, email);
-        res.status(201);
-        res.send();
-    });
+    await UsersService.createUser(name, password, email);
+    res.status(201);
+    res.send();
 });
 
 router.post('/login', async (req, res, next) => {
