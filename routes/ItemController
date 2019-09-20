@@ -7,6 +7,7 @@ router.post('/createItem', async (req, res, next) => {
     if(req.session.email) {
         //create item
         console.log('req.session.email: ', req.session.email);
+        res.status(201).send();
     } else {
         res.status(401).send();
     }

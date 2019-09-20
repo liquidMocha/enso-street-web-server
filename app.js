@@ -30,11 +30,12 @@ const redisClient = redis.createClient({
 );
 
 const app = express();
+let cookieExpirationInMils = 1000 * 60 * 30;
 app.use(session({
     cookie: {
         secure: true,
         httpOnly: true,
-        maxAge: 1000 * 60 * 30
+        maxAge: cookieExpirationInMils
     },
     secret: process.env.sessionSecret,
     store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),
