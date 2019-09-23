@@ -5,8 +5,6 @@ import authenticationMiddleware from "./authenticationMiddleware";
 
 const LocalStrategy = require('passport-local').Strategy;
 
-
-
 const setupPassport = () => {
     passport.use('local', new LocalStrategy({usernameField: 'email'},
         (email, password, done) => {

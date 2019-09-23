@@ -32,6 +32,13 @@ const redisClient = redis.createClient({
 );
 
 passport.serializeUser((user, done) => {
+    redisClient.keys('*', function (err, keys) {
+        if (err) return console.log(err);
+
+        for (let i = 0, len = keys.length; i < len; i++) {
+            console.log(keys[i]);
+        }
+    });
     console.log("in passport serializer: ", user);
     done(null, user.email);
 });
