@@ -2,6 +2,11 @@ import database from '../database';
 import * as bcrypt from "bcrypt";
 
 export default class UserService {
+    static findOne = ({username: username}) => {
+        return database.oneOrNone(
+            "select * from public.user where email = $1", [username]);
+    };
+
     static createUser = async (name, password, email) => {
         const saltRounds = 14;
 
@@ -12,15 +17,4 @@ export default class UserService {
             "values ($1, $2, $3, $4)",
             [name, hash, email, new Date().toISOString().slice(0, 19).replace('T', ' ')]);
     };
-
-    static getPasswordForUser = async (email) => {
-        return await database.any("select password from public.user where email = $1", [email])
-            .then(function (data) {
-                return data[0].password;
-            })
-            .catch(function (error) {
-                console.log('Errored when checking password for user: ', email);
-                console.log('Error is: ', error);
-            })
-    }
 }

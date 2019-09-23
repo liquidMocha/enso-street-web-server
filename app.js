@@ -13,7 +13,8 @@ import https from "https";
 import fs from "fs";
 import session from "express-session";
 import redis from "redis";
-// import redisConnection from "connect-redis";
+import passport from "passport";
+import setupPassport from "./setupPassport";
 
 dotenv.config();
 const uiDomain = process.env.uiBaseUrl;
@@ -30,6 +31,8 @@ const redisClient = redis.createClient({
 );
 
 const app = express();
+app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
+
 let cookieExpirationInMils = 1000 * 60 * 30;
 app.use(session({
     cookie: {
@@ -42,7 +45,10 @@ app.use(session({
     saveUninitialized: false,
     resave: false
 }));
-app.use(cors({origin: uiDomain}));
+
+setupPassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(helmet());
 
