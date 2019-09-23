@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "start": "node -r esm app.js",
-    "test": "./node_modules/mocha/bin/mocha --exit -r esm"
+    "test": "./node_modules/mocha/bin/mocha --exit -r esm",
+    "dev:server": "nodemon -r esm app.js"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",

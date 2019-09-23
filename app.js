@@ -30,6 +30,8 @@ const redisClient = redis.createClient({
     }
 );
 
+setupPassport();
+
 const app = express();
 app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
@@ -46,7 +48,6 @@ app.use(session({
     resave: false
 }));
 
-setupPassport();
 app.use(passport.initialize());
 app.use(passport.session());
 

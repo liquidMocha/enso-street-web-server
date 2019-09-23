@@ -23,8 +23,8 @@ passport.deserializeUser((username, done) => {
 
 const setupPassport = () => {
     passport.use('local', new LocalStrategy({usernameField: 'email'},
-        (username, password, done) => {
-            UserService.findOne({username: username})
+        (email, password, done) => {
+            UserService.findOne({username: email})
                 .then((user) => {
                     if (!user) {
                         return done(null, false, {message: 'Email doesn\'t exist.'});
@@ -38,9 +38,7 @@ const setupPassport = () => {
                         }
                     });
                 })
-                .catch((error) => {
-                    return done(error);
-                });
+                .catch(done);
         }));
 
     passport.authenticationMiddleware = authenticationMiddleware;
