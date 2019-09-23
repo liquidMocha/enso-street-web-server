@@ -8,6 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const setupPassport = () => {
     passport.serializeUser((user, done) => {
         console.log("in passport serializer: ", user);
+        console.log("in passport serializer, user.email: ", user.email);
         done(null, user.email);
     });
 
