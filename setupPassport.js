@@ -27,6 +27,7 @@ const setupPassport = () => {
         }));
 
     passport.serializeUser(function (user, done) {
+        console.log("in passport serializer: ", user);
         done(null, user.email);
     });
 
