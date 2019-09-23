@@ -22,7 +22,7 @@ const setupPassport = () => {
             });
     });
 
-    passport.use('local', new LocalStrategy({usernameField: 'email'},
+    passport.use('local', new LocalStrategy({usernameField: 'email', passwordField: 'password'},
         (email, password, done) => {
             UserService.findOne({username: email})
                 .then((user) => {
