@@ -15,16 +15,13 @@ import session from "express-session";
 import redis from "redis";
 import passport from "passport";
 import setupPassport from "./setupPassport";
+import UserService from "./user/UserService";
 
 dotenv.config();
 const uiDomain = process.env.uiBaseUrl;
 const redisHost = process.env.redisHost;
 const redisPassword = process.env.redisPassword;
 const redisPort = process.env.redisPort;
-
-console.log('redis host: ', redisHost);
-console.log('redis password: ', redisPassword);
-console.log('redis port: ', redisPort);
 
 const redisStore = require('connect-redis')(session);
 const redisClient = redis.createClient({
@@ -33,6 +30,22 @@ const redisClient = redis.createClient({
         password: redisPassword
     }
 );
+
+passport.serializeUser((user, done) => {
+    console.log("in passport serializer: ", user);
+    done(null, user.email);
+});
+
+passport.deserializeUser((username, done) => {
+    console.log("in passport deserializer: ", username);
+    UserService.findOne({username: username})
+        .then((user) => {
+            done(null, user);
+        })
+        .catch((error) => {
+            done(null);
+        });
+});
 
 setupPassport();
 
