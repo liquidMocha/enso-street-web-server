@@ -1,8 +1,25 @@
 import passport from "passport";
 import UserService from "./user/UserService";
 import * as bcrypt from "bcrypt";
+import authenticationMiddleware from "./authenticationMiddleware";
 
 const LocalStrategy = require('passport-local').Strategy;
+
+passport.serializeUser((user, done) => {
+    console.log("in passport serializer: ", user);
+    done(null, user.email);
+});
+
+passport.deserializeUser((username, done) => {
+    console.log("in passport deserializer: ", username);
+    UserService.findOne({username: username})
+        .then((user) => {
+            done(null, user);
+        })
+        .catch((error) => {
+            done(null);
+        });
+});
 
 const setupPassport = () => {
     passport.use('local', new LocalStrategy({usernameField: 'email'},
@@ -26,21 +43,7 @@ const setupPassport = () => {
                 });
         }));
 
-    passport.serializeUser(function (user, done) {
-        console.log("in passport serializer: ", user);
-        done(null, user.email);
-    });
-
-    passport.deserializeUser(function (username, done) {
-        console.log("in passport deserializer: ", username);
-        UserService.findOne({username: username})
-            .then((user) => {
-                done(null, user);
-            })
-            .catch((error) => {
-                done(error, null);
-            });
-    });
+    passport.authenticationMiddleware = authenticationMiddleware;
 };
 
 export default setupPassport
