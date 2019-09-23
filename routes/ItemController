@@ -12,6 +12,7 @@ router.post('/createItem',
         } else {
             console.log('in create item endpoint denied');
             console.log('req.user: ', req.user);
+            console.log('req.session: ', req.session);
             res.status(401).send();
         }
     });
