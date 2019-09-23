@@ -36,6 +36,7 @@ const app = express();
 app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
 let cookieExpirationInMils = 1000 * 60 * 30;
+app.set('trust proxy', 1);
 app.use(session({
     cookie: {
         secure: true,
