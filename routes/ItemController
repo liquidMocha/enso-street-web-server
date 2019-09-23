@@ -6,9 +6,11 @@ router.post('/createItem',
     (req, res, next) => {
         if (req.isAuthenticated()) {
             console.log('in create item endpoint', req.session);
-            console.log('use is: ', req.user);
+            console.log('user is: ', req.user);
             res.status(201).send();
         } else {
+            console.log('in create item endpoint denied');
+            console.log('req.user: ', req.user);
             res.status(401).send();
         }
     });
