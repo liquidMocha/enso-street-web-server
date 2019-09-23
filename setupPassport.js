@@ -6,6 +6,22 @@ import authenticationMiddleware from "./authenticationMiddleware";
 const LocalStrategy = require('passport-local').Strategy;
 
 const setupPassport = () => {
+    passport.serializeUser((user, done) => {
+        console.log("in passport serializer: ", user);
+        done(null, user.email);
+    });
+
+    passport.deserializeUser((username, done) => {
+        console.log("in passport deserializer: ", username);
+        UserService.findOne({username: username})
+            .then((user) => {
+                done(null, user);
+            })
+            .catch((error) => {
+                done(null);
+            });
+    });
+
     passport.use('local', new LocalStrategy({usernameField: 'email'},
         (email, password, done) => {
             UserService.findOne({username: email})

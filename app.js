@@ -15,7 +15,6 @@ import session from "express-session";
 import redis from "redis";
 import passport from "passport";
 import setupPassport from "./setupPassport";
-import UserService from "./user/UserService";
 
 dotenv.config();
 const uiDomain = process.env.uiBaseUrl;
@@ -30,29 +29,6 @@ const redisClient = redis.createClient({
         password: redisPassword
     }
 );
-
-passport.serializeUser((user, done) => {
-    redisClient.keys('*', function (err, keys) {
-        if (err) return console.log(err);
-
-        for (let i = 0, len = keys.length; i < len; i++) {
-            console.log(keys[i]);
-        }
-    });
-    console.log("in passport serializer: ", user);
-    done(null, user.email);
-});
-
-passport.deserializeUser((username, done) => {
-    console.log("in passport deserializer: ", username);
-    UserService.findOne({username: username})
-        .then((user) => {
-            done(null, user);
-        })
-        .catch((error) => {
-            done(null);
-        });
-});
 
 setupPassport();
 
