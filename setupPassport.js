@@ -31,6 +31,7 @@ const setupPassport = () => {
     });
 
     passport.deserializeUser(function (username, done) {
+        console.log("in passport deserializer: ", username);
         UserService.findOne({username: username})
             .then((user) => {
                 done(null, user);
