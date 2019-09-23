@@ -24,7 +24,7 @@ const redisPort = process.env.redisPort;
 
 console.log('redis host: ', redisHost);
 console.log('redis password: ', redisPassword);
-console.log('redis port: ', redisPassword);
+console.log('redis port: ', redisPort);
 
 const redisStore = require('connect-redis')(session);
 const redisClient = redis.createClient({
