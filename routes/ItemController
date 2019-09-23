@@ -1,13 +1,16 @@
 import express from "express";
-import passport from "passport";
 
 const router = express.Router();
 
 router.post('/createItem',
-    passport.authorize('local'),
-    async (req, res, next) => {
-        console.log('in create item endpoint', req.session);
-        res.status(201).send();
+    (req, res, next) => {
+        if (req.isAuthenticated()) {
+            console.log('in create item endpoint', req.session);
+            console.log('use is: ', req.user);
+            res.status(201).send();
+        } else {
+            res.status(401).send();
+        }
     });
 
 export default router;
