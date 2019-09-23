@@ -7,13 +7,10 @@ const LocalStrategy = require('passport-local').Strategy;
 
 const setupPassport = () => {
     passport.serializeUser((user, done) => {
-        console.log("in passport serializer: ", user);
-        console.log("in passport serializer, user.email: ", user.email);
         done(null, user.email);
     });
 
     passport.deserializeUser((username, done) => {
-        console.log("in passport deserializer: ", username);
         UserService.findOne({username: username})
             .then((user) => {
                 done(null, user);
