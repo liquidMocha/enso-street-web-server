@@ -42,7 +42,7 @@ app.use(session({
     saveUninitialized: false,
     resave: false
 }));
-app.use(cors({origin: uiDomain}));
+app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
 app.use(helmet());
 
