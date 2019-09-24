@@ -3,7 +3,7 @@ import UserService from "./user/UserService";
 import * as bcrypt from "bcrypt";
 
 const LocalStrategy = require('passport-local').Strategy;
-// const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const setupPassport = () => {
     passport.serializeUser((user, done) => {
@@ -37,14 +37,22 @@ const setupPassport = () => {
                 });
         }));
 
-    // passport.use('googleSignOn', new GoogleStrategy({
-    //         clientId: process.env.googleClientId,
-    //         clientSecret: process.env.googleClientSecret,
-    //         callbackUrl: process.env.googleSignOnCallbackUrl
-    //     },
-    //     (accessToken, refreshToken, profile, cb) => {
-    //         UserService.findOrCreate({profile: profile})
-    //     }));
+    passport.use('googleSignOn', new GoogleStrategy({
+            clientID: process.env.googleClientId,
+            clientSecret: process.env.googleClientSecret,
+            callbackUrl: process.env.googleSignOnCallbackUrl
+        },
+        (accessToken, refreshToken, profile, cb) => {
+            UserService.findOrCreate({profile: profile})
+                .then(user => {
+                    return cb(null, user);
+                })
+                .catch(error => {
+                        return cb(error, null);
+                    }
+                );
+
+        }));
 };
 
 export default setupPassport

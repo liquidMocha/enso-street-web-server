@@ -25,4 +25,7 @@ router.post('/login',
     }
 );
 
+router.post('/googleSignOn',
+    passport.authenticate('googleSignOn'));
+
 export default router;

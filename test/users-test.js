@@ -4,7 +4,7 @@ import app from "../app";
 import sinon from 'sinon';
 
 describe('users', () => {
-    let createUserStub = sinon.stub(UserService, 'createUser');
+    let createUserStub = sinon.stub(UserService, 'createEnsoUser');
 
     beforeEach(() => {
         createUserStub.resetHistory();

@@ -61,16 +61,16 @@ export default class UserService {
         })
     }
 
-    // static findOrCreate = ({profile: profile}) => {
-    //     return database.task(t => {
-    //         return t.oneOrNone("select * from public.user where email = $1", profile.email, user => user)
-    //             .then(user => {
-    //                 return user || t.one("insert into public.user(name, email, created_on) " +
-    //                     "values ($1, $2, $3)",
-    //                     [profile.name, profile.email, this.now()])
-    //             })
-    //     })
-    // };
+    static findOrCreate = ({profile: profile}) => {
+        return database.task(t => {
+            return t.oneOrNone("select * from public.user where email = $1", profile.email, user => user)
+                .then(user => {
+                    return user || t.one("insert into public.user(email) " +
+                        "values ($1) returning email",
+                        [profile.email])
+                })
+        })
+    };
 }
 
 class User {
