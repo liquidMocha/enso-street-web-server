@@ -1,29 +1,38 @@
 import UsersService from "../user/UserService";
 import express from "express";
-import passport from "passport";
+import * as bcrypt from "bcrypt";
 
 const router = express.Router();
 
-router.post('/createUser', async (req, res) => {
+router.post('/createUser', async (req, res, next) => {
     const name = req.body.name;
     const password = req.body.password;
     const email = req.body.email;
-    UsersService.createEnsoUser(name, password, email)
+    UsersService.createUser(name, password, email)
         .then(() => {
             res.status(201).send();
         })
-        .catch((error) => {
-            console.log(error);
+        .catch(() => {
             res.status(500).send();
-        });
+        })
+    ;
 });
 
-router.post('/login',
-    passport.authenticate('local'),
-    (req, res) => {
-        res.status(200).send('authentication successful');
-    }
-);
+router.post('/login', async (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    UsersService.getPasswordForUser(email).then((hashedPassword) => {
+        bcrypt.compare(password, hashedPassword, function (err, match) {
+            if (match) {
+                req.session.email = email;
+                res.status(200).send('authentication successful');
+            } else {
+                res.status(401).send('authentication failed');
+            }
+        });
+    });
+});
 
 router.post('/googleSignOn',
     passport.authenticate('googleSignOn'));

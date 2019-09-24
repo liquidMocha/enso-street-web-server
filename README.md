@@ -4,8 +4,6 @@ To start local PostgreSql:
 Database migration:
 run ```db-migrate up```
 
-create new migration ```db-migrate create <title>```
-
 Postgresql:
 
 connect to Postgres: 

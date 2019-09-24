@@ -7,8 +7,7 @@
   "private": true,
   "scripts": {
     "start": "node -r esm app.js",
-    "test": "./node_modules/mocha/bin/mocha --exit -r esm",
-    "dev:server": "nodemon -r esm app.js"
+    "test": "./node_modules/mocha/bin/mocha --exit -r esm"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
@@ -26,14 +25,10 @@
     "helmet": "^3.21.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
-    "passport": "^0.4.0",
-    "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0",
     "pg-promise": "^9.1.4",
     "pug": "^2.0.4",
     "redis": "^2.8.0",
-    "sinon": "^7.4.2",
-    "uuid": "^3.3.3"
+    "sinon": "^7.4.2"
   },
   "devDependencies": {
     "mocha": "^6.2.0",
