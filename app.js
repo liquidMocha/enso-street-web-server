@@ -31,6 +31,7 @@ const redisClient = redis.createClient({
 
 const app = express();
 let cookieExpirationInMils = 1000 * 60 * 30;
+app.set('trust proxy', 1);
 app.use(session({
     cookie: {
         secure: true,
