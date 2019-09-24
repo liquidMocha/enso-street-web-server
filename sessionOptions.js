@@ -13,13 +13,13 @@ const redisClient = redis.createClient({
     }
 );
 
-let cookieExpirationInMils = 1000 * 60 * 30;
+const cookieExpire30Minutes = 1000 * 60 * 30;
 
 const sessionOptions = {
     cookie: {
         secure: true,
         httpOnly: true,
-        maxAge: cookieExpirationInMils
+        maxAge: cookieExpire30Minutes
     },
     secret: process.env.sessionSecret,
     store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),

@@ -3,6 +3,7 @@ import UserService from "./user/UserService";
 import * as bcrypt from "bcrypt";
 
 const LocalStrategy = require('passport-local').Strategy;
+// const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const setupPassport = () => {
     passport.serializeUser((user, done) => {
@@ -10,7 +11,7 @@ const setupPassport = () => {
     });
 
     passport.deserializeUser((username, done) => {
-        UserService.findOne({username: username})
+        UserService.findOne({email: username})
             .then((user) => {
                 done(null, user);
             })
@@ -21,13 +22,9 @@ const setupPassport = () => {
 
     passport.use('local', new LocalStrategy({usernameField: 'email', passwordField: 'password'},
         (email, password, done) => {
-            UserService.findOne({username: email})
+            UserService.findOne({email: email})
                 .then((user) => {
-                    if (!user) {
-                        return done(null, false, {message: 'Email doesn\'t exist.'});
-                    }
-
-                    bcrypt.compare(password, user.password, function (err, match) {
+                    bcrypt.compare(password, user.password, (err, match) => {
                         if (match) {
                             done(null, user);
                         } else {
@@ -35,8 +32,19 @@ const setupPassport = () => {
                         }
                     });
                 })
-                .catch(done);
+                .catch(error => {
+                    done(error, null, {message: 'User doesn\'t exist.'});
+                });
         }));
+
+    // passport.use('googleSignOn', new GoogleStrategy({
+    //         clientId: process.env.googleClientId,
+    //         clientSecret: process.env.googleClientSecret,
+    //         callbackUrl: process.env.googleSignOnCallbackUrl
+    //     },
+    //     (accessToken, refreshToken, profile, cb) => {
+    //         UserService.findOrCreate({profile: profile})
+    //     }));
 };
 
 export default setupPassport

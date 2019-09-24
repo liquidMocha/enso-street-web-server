@@ -8,11 +8,12 @@ router.post('/createUser', async (req, res) => {
     const name = req.body.name;
     const password = req.body.password;
     const email = req.body.email;
-    UsersService.createUser(name, password, email)
+    UsersService.createEnsoUser(name, password, email)
         .then(() => {
             res.status(201).send();
         })
-        .catch(() => {
+        .catch((error) => {
+            console.log(error);
             res.status(500).send();
         });
 });
