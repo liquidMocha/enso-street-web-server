@@ -22,16 +22,20 @@ router.post('/login', async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    UsersService.findOne({email: email}).then((user) => {
-        bcrypt.compare(password, user.password, (err, match) => {
-            if (match) {
-                req.session.email = email;
-                res.status(200).send('authentication successful');
-            } else {
-                res.status(401).send('authentication failed');
-            }
+    UsersService.findOne({email: email})
+        .then((user) => {
+            bcrypt.compare(password, user.password, (err, match) => {
+                if (match) {
+                    req.session.email = email;
+                    res.status(200).send('authentication successful');
+                } else {
+                    res.status(401).send('authentication failed');
+                }
+            }).catch(error => {
+                res.status(500).send();
+                console.log(error);
+            });
         });
-    });
 });
 
 export default router;
