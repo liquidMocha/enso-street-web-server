@@ -24,17 +24,19 @@ router.post('/login', async (req, res, next) => {
 
     UsersService.findOne({email: email})
         .then((user) => {
-            bcrypt.compare(password, user.password, (err, match) => {
-                if (match) {
-                    req.session.email = email;
-                    res.status(200).send('authentication successful');
-                } else {
-                    res.status(401).send('authentication failed');
-                }
-            }).catch(error => {
+            if (user) {
+                bcrypt.compare(password, user.password, (err, match) => {
+                    if (match) {
+                        req.session.email = email;
+                        res.status(200).send('authentication successful');
+                    } else {
+                        res.status(401).send('authentication failed');
+                    }
+                })
+            } else {
                 res.status(500).send();
-                console.log(error);
-            });
+            }
+            ;
         });
 });
 
