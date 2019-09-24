@@ -12,37 +12,14 @@ import cors from "cors";
 import https from "https";
 import fs from "fs";
 import session from "express-session";
-import redis from "redis";
-// import redisConnection from "connect-redis";
+import sessionOptions from "./sessionOptions";
 
 dotenv.config();
 const uiDomain = process.env.uiBaseUrl;
-const redisHost = process.env.redisHost;
-const redisPassword = process.env.redisPassword;
-const redisPort = process.env.redisPort;
-
-const redisStore = require('connect-redis')(session);
-const redisClient = redis.createClient({
-        port: redisPort,
-        host: redisHost,
-        password: redisPassword
-    }
-);
 
 const app = express();
-let cookieExpirationInMils = 1000 * 60 * 30;
 app.set('trust proxy', 1);
-app.use(session({
-    cookie: {
-        secure: true,
-        httpOnly: true,
-        maxAge: cookieExpirationInMils
-    },
-    secret: process.env.sessionSecret,
-    store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),
-    saveUninitialized: false,
-    resave: false
-}));
+app.use(session(sessionOptions));
 app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
 app.use(helmet());
