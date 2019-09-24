@@ -2,4 +2,3 @@
 /certs/
 /.env
 /.idea/shelf/
-/.env.production
