@@ -49,19 +49,20 @@ app.use(session({
     resave: false
 }));
 
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(helmet());
 
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 const port = 8080;
 if (process.env.isLocal) {

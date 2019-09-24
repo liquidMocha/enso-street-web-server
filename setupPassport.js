@@ -1,7 +1,6 @@
 import passport from "passport";
 import UserService from "./user/UserService";
 import * as bcrypt from "bcrypt";
-import authenticationMiddleware from "./authenticationMiddleware";
 
 const LocalStrategy = require('passport-local').Strategy;
 
@@ -38,8 +37,6 @@ const setupPassport = () => {
                 })
                 .catch(done);
         }));
-
-    passport.authenticationMiddleware = authenticationMiddleware;
 };
 
 export default setupPassport

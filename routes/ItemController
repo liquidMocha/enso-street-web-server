@@ -1,14 +1,12 @@
 import express from "express";
+import authenticationMiddleware from "../authenticationMiddleware";
 
 const router = express.Router();
 
 router.post('/createItem',
+    authenticationMiddleware,
     (req, res, next) => {
-        if (req.isAuthenticated()) {
-            res.status(201).send();
-        } else {
-            res.status(401).send();
-        }
+        res.status(201).send();
     });
 
 export default router;
