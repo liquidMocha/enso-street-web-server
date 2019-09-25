@@ -56,8 +56,7 @@ router.post('/googleSignOn', (req, res) => {
         console.log('payload: -----------------------', payload);
         console.log('ticket attributes: ', ticket.getAttributes());
         console.log('ticket envelope:', ticket.getEnvelope());
-
-
+        console.log('ticket itself is: ', ticket);
     }).catch(error => console.log(error));
 });
 
