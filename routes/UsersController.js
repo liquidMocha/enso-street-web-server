@@ -5,7 +5,7 @@ import {OAuth2Client} from "google-auth-library";
 
 const router = express.Router();
 
-router.post('/createUser', (req, res, next) => {
+router.post('/createUser', (req, res) => {
     const name = req.body.name;
     const password = req.body.password;
     const email = req.body.email;
@@ -15,11 +15,10 @@ router.post('/createUser', (req, res, next) => {
         })
         .catch(() => {
             res.status(500).send();
-        })
-    ;
+        });
 });
 
-router.post('/login', (req, res, next) => {
+router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
@@ -37,7 +36,6 @@ router.post('/login', (req, res, next) => {
             } else {
                 res.status(500).send();
             }
-            ;
         });
 });
 
@@ -46,18 +44,19 @@ router.post('/googleSignOn', (req, res) => {
     const client = new OAuth2Client(CLIENT_ID);
     client.verifyIdToken({
         idToken: req.body.idToken,
-        audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
-        // Or, if multiple clients access the backend:
-        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+        audience: CLIENT_ID
     }).then(ticket => {
         const payload = ticket.getPayload();
-        const userid = payload['sub'];
-        console.log('userid: ------------------------', userid);
-        console.log('payload: -----------------------', payload);
-        console.log('ticket attributes: ', ticket.getAttributes());
-        console.log('ticket envelope:', ticket.getEnvelope());
-        console.log('ticket itself is: ', ticket);
-    }).catch(error => console.log(error));
+        const userEmail = payload.email;
+        const userName = payload.name;
+        return UsersService.findOrCreate({email: userEmail, name: userName});
+    }).then(user => {
+        req.session.email = user.email;
+        res.status(200).send('Google signon successful');
+    }).catch(error => {
+        console.log(error);
+        res.status(500).send();
+    });
 });
 
 export default router;
