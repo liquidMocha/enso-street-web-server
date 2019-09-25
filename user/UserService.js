@@ -56,9 +56,10 @@ export default class UserService {
         bcrypt.hash(password, saltRounds)
             .then(hashedPassword => {
                 return database.none('update public.user SET password = $1 where email = $2;', [hashedPassword, email]);
-            }).catch(error => {
-            console.log('error hashing password: ', error);
-        })
+            })
+            .catch(error => {
+                console.log('error hashing password: ', error);
+            })
     }
 
     static findOrCreate = ({profile: profile}) => {
