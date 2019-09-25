@@ -44,7 +44,7 @@ router.post('/login', (req, res, next) => {
 router.post('/googleSignOn', (req, res) => {
     const CLIENT_ID = process.env.googleClientId;
     const client = new OAuth2Client(CLIENT_ID);
-    const ticket = client.verifyIdToken({
+    client.verifyIdToken({
         idToken: req.body.idToken,
         audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
         // Or, if multiple clients access the backend:
@@ -54,6 +54,10 @@ router.post('/googleSignOn', (req, res) => {
         const userid = payload['sub'];
         console.log('userid: ------------------------', userid);
         console.log('payload: -----------------------', payload);
+        console.log('ticket attributes: ', ticket.getAttributes());
+        console.log('ticket envelope:', ticket.getEnvelope());
+
+
     }).catch(error => console.log(error));
 });
 
