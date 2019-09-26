@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import usersRouter from "./routes/UsersController";
 import itemRouter from "./routes/ItemController";
 import logger from "morgan";
-import cookieParser from "cookie-parser";
 import path from "path";
 import bodyParser from "body-parser";
 import helmet from "helmet";
@@ -30,7 +29,6 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const port = 8080;
 if (process.env.isLocal) {
