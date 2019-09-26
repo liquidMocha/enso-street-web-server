@@ -4,10 +4,18 @@ import app from "../app";
 import sinon from 'sinon';
 
 describe('users', () => {
-    let createUserStub = sinon.stub(UserService, 'createEnsoUser');
+    let createUserStub;
+
+    before(() => {
+        createUserStub = sinon.stub(UserService, 'createEnsoUser');
+    });
 
     beforeEach(() => {
         createUserStub.resetHistory();
+    });
+
+    after(() => {
+        sinon.restore();
     });
 
     describe('create user', () => {

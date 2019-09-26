@@ -8,6 +8,14 @@
     "password": "password",
     "database": "enso-street"
   },
+  "test": {
+    "driver": "postgres",
+    "host": "localhost",
+    "port": "5432",
+    "user": "enso-street",
+    "password": "password",
+    "database": "enso-street-test"
+  },
   "dev": {
     "ENV": "DATABASE_URL"
   }

@@ -4,12 +4,17 @@ import * as bcrypt from "bcrypt";
 export default class UserService {
     static findOne = ({email: email}) => {
         return database.oneOrNone(
-            "select * from public.user where email = $1", [email],
+            "select * " +
+            "from public.user " +
+            "left join public.user_profile profile " +
+            "   on public.user.id = profile.user_id " +
+            "where email = $1", [email],
             userEntity => {
                 if (userEntity) {
                     return new User({
                         password: userEntity.password,
-                        email: userEntity.email
+                        email: userEntity.email,
+                        profile: new UserProfile({name: userEntity.name})
                     })
                 } else {
                     return null;
@@ -18,14 +23,13 @@ export default class UserService {
     };
 
     static createEnsoUser = (name, password, email) => {
-        return UserService.findOne({email: email})
+        return this.findOne({email: email})
             .then(user => {
-                console.log('found user when creating user: ', user);
                 if (user) {
                     throw new Error('Account Exists');
                 } else {
                     const saltRounds = 14;
-                    bcrypt.hash(password, saltRounds)
+                    return bcrypt.hash(password, saltRounds)
                         .then(hashedPassword => {
                             return database.one(
                                 "insert into public.user(password, email) " +
@@ -47,27 +51,30 @@ export default class UserService {
     };
 
     static findOrCreate = ({email: email, name: name}) => {
-        return UserService.findOne({email: email})
+        return this.findOne({email: email})
             .then(userEntity => {
                 if (userEntity) {
                     return Promise.resolve(userEntity);
                 } else {
-                    database.tx(transaction => {
-                        return transaction.batch([
-                            transaction.one("insert into public.user(email) values ($1) returning id", email)
-                                .then(data => {
-                                    transaction.none("insert into public.user_profile (name, user_id) values ($1, $2)", [name, data.id])
-                                })
-                        ])
-                    }).then(_ => {
-                            return UserService.findOne({email: email});
-                        }
-                    )
+                    return this.createOAuthUser(email, name)
+                        .then(_ => {
+                            return this.findOne({email: email});
+                        });
                 }
             })
             .catch(error => console.log('Error when findOrCreate user for email: ', email,
                 '\n Error: ', error));
     };
+
+    static createOAuthUser = (email, name) => {
+        return database.one("insert into public.user(email) values ($1) returning id", email)
+            .then(data => {
+                return database.none("insert into public.user_profile (name, user_id) values ($1, $2)", [name, data.id])
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
 }
 
 class User {
