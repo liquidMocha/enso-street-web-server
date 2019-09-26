@@ -10,6 +10,7 @@
     "test": "NODE_ENV=test nyc ./node_modules/mocha/bin/mocha --exit -r esm"
   },
   "dependencies": {
+    "@hapi/joi": "^16.1.4",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "connect-redis": "^4.0.2",

@@ -29,9 +29,9 @@ describe('users', () => {
 
         beforeEach(() => {
             user = {
-                'email': 'user@email.com',
-                'name': 'Robert Dunder',
-                'password': 'ituhg240#'
+                email: 'user@email.com',
+                name: 'Robert Dunder',
+                password: '12345678'
             };
         });
 
@@ -59,12 +59,22 @@ describe('users', () => {
                 .send(user)
                 .expect(500, (error) => {
                     sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
-                    if (error) {
-                        return done(error);
-                    }
 
-                    done();
+                    done(error);
                 });
+        });
+
+        describe('should sanitize input', () => {
+            it('should not try to create user if password is less than minimum password length', (done) => {
+                request(app)
+                    .post('/users/createUser')
+                    .send({password: 'a'})
+                    .expect(500, (error) => {
+                        sinon.assert.notCalled(createUserStub);
+
+                        done(error);
+                    })
+            })
         })
     });
 
