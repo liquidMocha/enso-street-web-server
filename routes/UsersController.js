@@ -25,18 +25,21 @@ router.post('/login', (req, res) => {
     UsersService.findOne({email: email})
         .then((user) => {
             if (user) {
-                bcrypt.compare(password, user.password, (err, match) => {
-                    if (match) {
-                        req.session.email = email;
-                        res.status(200).send('authentication successful');
-                    } else {
-                        res.status(401).send('authentication failed');
-                    }
-                })
+                return bcrypt.compare(password, user.password);
             } else {
-                res.status(500).send();
+                res.status(401).send('authentication failed');
+                return Promise.reject('authentication failed')
             }
-        });
+        })
+        .then((match) => {
+            if (match) {
+                req.session.email = email;
+                res.status(200).send('authentication successful');
+            } else {
+                res.status(401).send('authentication failed');
+            }
+        })
+        .catch(error => console.log(error));
 });
 
 router.post('/googleSignOn', (req, res) => {
