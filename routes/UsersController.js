@@ -70,4 +70,13 @@ router.post('/googleSignOn', (req, res) => {
     });
 });
 
+router.get('/logout', (req, res) => {
+    req.session.destroy(error => {
+        if (error) {
+            console.log(error);
+        }
+    });
+    res.status(200).send();
+});
+
 export default router;
