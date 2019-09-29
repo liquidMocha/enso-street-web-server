@@ -1,0 +1,1 @@
+web: db-migrate up -e dev && npm start
