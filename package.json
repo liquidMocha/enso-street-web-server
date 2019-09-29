@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "db-migrate up && node -r esm app.js",
+    "start": "node -r esm app.js",
     "test": "NODE_ENV=test nyc ./node_modules/mocha/bin/mocha --exit -r esm"
   },
   "dependencies": {
