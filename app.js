@@ -30,7 +30,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
-const port = 8080;
+const port = process.env.PORT || 8080;
 if (process.env.isLocal) {
     let cert = fs.readFileSync(__dirname + '/certs/certificate.pem');
     let key = fs.readFileSync(__dirname + '/certs/private.key');
