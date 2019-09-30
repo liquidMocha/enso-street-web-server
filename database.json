@@ -14,7 +14,7 @@
     "port": "5432",
     "user": "enso-street",
     "password": "password",
-    "database": "enso-street-test"
+    "database": "circle_test"
   },
   "dev": {
     "ENV": "DATABASE_URL"
