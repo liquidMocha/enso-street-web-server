@@ -25,6 +25,12 @@ jobs:
       - run:
           name: test
           command: npm test
+          environment:
+            uiBaseUrl: http://localhost:3000
+            databaseUri: postgres://enso-street:password@localhost:5432/enso-street-test
+            sessionSecret: this-is-a-session-secret
+            redisHost: localhost
+            redisPort: 6379
 
       - run:
           name: Setup CF CLI
