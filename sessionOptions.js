@@ -13,7 +13,7 @@ const redisClient = redis.createClient({
     }
 );
 
-let cookieExpirationInMils = 1000 * 60 * 30;
+const cookieExpirationInMils = 1000 * 60 * 30;
 
 const sessionOptions = {
     cookie: {
