@@ -23,3 +23,11 @@ Start docker Redis:
 
 set custom git hook location
 ```git config core.hooksPath <path>```
+
+
+Heroku deployment:
+```heroku login```
+to create new app:
+```heroku create```
+push to heroku:
+```git push heroku master```

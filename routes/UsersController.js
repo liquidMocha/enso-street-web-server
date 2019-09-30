@@ -50,10 +50,12 @@ router.post('/login', (req, res) => {
         .catch(error => console.log(error));
 });
 
+const CLIENT_ID = process.env.googleClientId;
+const googleOAuthClient = new OAuth2Client(CLIENT_ID);
+console.log('client id: ', CLIENT_ID);
+
 router.post('/googleSignOn', (req, res) => {
-    const CLIENT_ID = process.env.googleClientId;
-    const client = new OAuth2Client(CLIENT_ID);
-    client.verifyIdToken({
+    googleOAuthClient.verifyIdToken({
         idToken: req.body.idToken,
         audience: CLIENT_ID
     }).then(ticket => {
