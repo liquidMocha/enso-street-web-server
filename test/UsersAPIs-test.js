@@ -35,7 +35,7 @@ describe('users', () => {
             };
         });
 
-        it('should return a 201 if successfully created user', (done) => {
+        it('should return 201 if successfully created user', (done) => {
             createUserStub.resolves();
 
             request(app)

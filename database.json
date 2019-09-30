@@ -9,12 +9,7 @@
     "database": "enso-street"
   },
   "test": {
-    "driver": "postgres",
-    "host": "localhost",
-    "port": "5432",
-    "user": "enso-street",
-    "password": "password",
-    "database": "circle_test"
+    "ENV": "databaseUri"
   },
   "dev": {
     "ENV": "DATABASE_URL"
