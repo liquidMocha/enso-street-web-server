@@ -27,7 +27,7 @@ jobs:
           name: test
           command: npm test
           environment:
-            databaseUri: postgres://postgres@localhost:5432/circletest
+            databaseUri: postgres://postgres@localhost:5432/circle_test
 
       - run:
           name: Setup CF CLI
