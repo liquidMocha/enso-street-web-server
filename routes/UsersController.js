@@ -13,6 +13,7 @@ router.post('/createUser', (req, res) => {
         password: Joi.string().min(8)
     });
 
+    console.log('asldfjskldfjlkjsdlajflkfjsfjkfjsdl;fjslad;');
     schema.validateAsync(req.body)
         .then(value => {
             return UsersService.createEnsoUser(value.name, value.password, value.email);
