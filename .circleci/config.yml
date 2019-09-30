@@ -25,7 +25,7 @@ jobs:
 
       - run:
           name: test
-          command: db-migrate up && npm test
+          command: ./node_modules/db-migrate/bin/db-migrate up && npm test
           environment:
             databaseUri: postgres://postgres@localhost:5432/circle_test
 
