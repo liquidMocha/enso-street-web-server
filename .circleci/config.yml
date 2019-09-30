@@ -5,6 +5,8 @@ jobs:
     docker:
       - image: circleci/node:12-browsers
       - image: circleci/postgres:latest-ram
+        environment:
+          POSTGRES_USER: enso-street
 
     steps:
       - checkout
