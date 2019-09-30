@@ -52,7 +52,6 @@ router.post('/login', (req, res) => {
 
 const CLIENT_ID = process.env.googleClientId;
 const googleOAuthClient = new OAuth2Client(CLIENT_ID);
-console.log('client id: ', CLIENT_ID);
 
 router.post('/googleSignOn', (req, res) => {
     googleOAuthClient.verifyIdToken({
