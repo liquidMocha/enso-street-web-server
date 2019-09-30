@@ -4,6 +4,7 @@ jobs:
     working_directory: ~/enso-street-web-server
     docker:
       - image: circleci/node:12-browsers
+      - image: circleci/postgres:latest-ram
 
     steps:
       - checkout
@@ -26,11 +27,7 @@ jobs:
           name: test
           command: npm test
           environment:
-            uiBaseUrl: http://localhost:3000
-            databaseUri: postgres://enso-street:password@localhost:5432/enso-street-test
-            sessionSecret: this-is-a-session-secret
-            redisHost: localhost
-            redisPort: 6379
+            databaseUri: postgres://postgres@localhost:5432/circletest
 
       - run:
           name: Setup CF CLI
