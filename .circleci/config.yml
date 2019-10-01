@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  heroku: circleci/heroku@1.0.0
 jobs:
   build:
     working_directory: ~/enso-street-web-server
@@ -33,17 +35,15 @@ jobs:
             databaseUri: postgres://enso-street@localhost:5432/circle_test
             sessionSecret: this-is-a-session-secret
 
-      - run:
-          name: Setup CF CLI
-          command: |
-            curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
-            sudo dpkg -i cf-cli_amd64.deb
-            cf -v
-            cf api https://api.run.pivotal.io
-            cf auth "$CF_USER" "$CF_PASSWORD"
-            cf target -o hanchenjhc -s development
+  heroku_deploy:
+    jobs:
+      - heroku/deploy-via-git
 
-      - run:
-          name: CF Deploy
-          command: |
-            cf push
+workflows:
+  version: 2.1
+  deploy-to-heroku:
+    jobs:
+      - build
+      - heroku_deploy:
+          requires:
+            - build
