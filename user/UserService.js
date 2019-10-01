@@ -78,6 +78,10 @@ export default class UserService {
 
     static incrementFailedAttempt = (email) => {
         return database.none("update public.user SET failed_login_attempts = failed_login_attempts + 1 where email = $1;", email);
+    };
+
+    static resetFailedAttempts = (email) => {
+        return database.none("update public.user SET failed_login_attempts = 0 where email = $1;", email);
     }
 }
 

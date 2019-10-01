@@ -43,6 +43,7 @@ router.post('/login', (req, res) => {
             if (match) {
                 req.session.email = email;
                 res.status(200).send('authentication successful');
+                return UsersService.resetFailedAttempts(email);
             } else {
                 res.status(401).send('authentication failed');
                 return UsersService.incrementFailedAttempt(email);

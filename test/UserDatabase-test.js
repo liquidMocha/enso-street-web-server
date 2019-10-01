@@ -133,17 +133,51 @@ describe('UserService', () => {
         })
     });
 
-    it('increment failed sign in attempt', async () => {
+    describe('track failed login attempts', () => {
         const email = 'some@email.com';
-        await setupUser({email: email});
 
-        await UserService.incrementFailedAttempt(email)
-            .then(() => {
-                return database.one('select failed_login_attempts from public.user where email = $1;', email);
-            })
-            .then(data => {
-                expect(data.failed_login_attempts).to.equal(1);
-            })
-            .catch(error => expect.fail(error));
+        const shouldFailedOnce = async () => {
+            await setupUser({email: email});
+
+            await UserService.incrementFailedAttempt(email)
+                .then(() => {
+                    return database.one('select failed_login_attempts from public.user where email = $1;', email);
+                })
+                .then(data => {
+                    expect(data.failed_login_attempts).to.equal(1);
+                })
+                .catch(error => expect.fail(error));
+        };
+
+        it('should increment failed sign in attempt', shouldFailedOnce);
+
+        it('should not increment failed sign in attempt for other user', async () => {
+            const failedUser = 'failed@email.com';
+            await setupUser({email: failedUser});
+            const irrelavantUser = 'notFailed@email.com';
+            await setupUser({email: irrelavantUser});
+
+            await UserService.incrementFailedAttempt(email)
+                .then(() => {
+                    return database.one('select failed_login_attempts from public.user where email = $1;', irrelavantUser);
+                })
+                .then(data => {
+                    expect(data.failed_login_attempts).to.equal(0);
+                })
+                .catch(error => expect.fail(error));
+        });
+
+        it('should reset failed sign in attempt', async () => {
+            await shouldFailedOnce();
+
+            await UserService.resetFailedAttempts(email)
+                .then(() => {
+                    return database.one('select failed_login_attempts from public.user where email = $1;', email);
+                })
+                .then(data => {
+                    expect(data.failed_login_attempts).to.equal(0);
+                })
+        });
     });
+
 });

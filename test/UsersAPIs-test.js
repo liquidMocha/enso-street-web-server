@@ -8,12 +8,17 @@ import bcrypt from "bcrypt";
 const UsersController = require('../routes/UsersController'); // This is necessary to show test coverage
 
 describe('users', () => {
-    let createUserStub, findUserStub, bcryptStub, incrementFailedAttemptStub;
+    let createUserStub,
+        findUserStub,
+        bcryptStub,
+        incrementFailedAttemptStub,
+        resetFailedAttemptStub;
 
     before(() => {
         createUserStub = sinon.stub(UserService, 'createEnsoUser');
         findUserStub = sinon.stub(UserService, 'findOne');
         incrementFailedAttemptStub = sinon.stub(UserService, 'incrementFailedAttempt');
+        resetFailedAttemptStub = sinon.stub(UserService, 'resetFailedAttempts');
         bcryptStub = sinon.stub(bcrypt);
     });
 
@@ -92,6 +97,25 @@ describe('users', () => {
                 .expect(200, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
                     sinon.assert.calledWithExactly(bcryptStub.compare, 'somepass', 'abc');
+
+                    if (error) {
+                        return done(error);
+                    }
+                    done();
+                })
+        });
+
+        it('should reset failed sign in attempts when login successful', (done) => {
+            const expectedEmail = "some@email.org";
+
+            findUserStub.resolves({password: 'abc'});
+            bcryptStub.compare.resolves(true);
+
+            request(app)
+                .post('/users/login')
+                .send({email: expectedEmail, password: 'somepass'})
+                .expect(200, (error) => {
+                    sinon.assert.calledWithExactly(resetFailedAttemptStub, expectedEmail);
 
                     if (error) {
                         return done(error);
