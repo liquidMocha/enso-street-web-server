@@ -3,7 +3,7 @@ workflows:
   deploy-to-heroku:
     jobs:
       - build
-      - heroku_deploy:
+      - heroku/deploy-via-git:
           requires:
             - build
 
@@ -44,7 +44,3 @@ jobs:
           environment:
             databaseUri: postgres://enso-street@localhost:5432/circle_test
             sessionSecret: this-is-a-session-secret
-
-  heroku_deploy:
-    jobs:
-      - heroku/deploy-via-git
