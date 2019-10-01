@@ -1,6 +1,5 @@
 import UsersService from "../user/UserService";
 import express from "express";
-import * as bcrypt from "bcrypt";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
 
@@ -33,7 +32,7 @@ router.post('/login', (req, res) => {
     UsersService.findOne({email: email})
         .then((user) => {
             if (user) {
-                return bcrypt.compare(password, user.password);
+                return user.login(password);
             } else {
                 res.status(401).send('authentication failed');
                 return Promise.reject('authentication failed')
@@ -43,10 +42,8 @@ router.post('/login', (req, res) => {
             if (match) {
                 req.session.email = email;
                 res.status(200).send('authentication successful');
-                return UsersService.resetFailedAttempts(email);
             } else {
                 res.status(401).send('authentication failed');
-                return UsersService.incrementFailedAttempt(email);
             }
         })
         .catch(error => console.log(error));

@@ -3,6 +3,7 @@ import UserService from "../user/UserService";
 import app from "../app";
 import sinon from 'sinon';
 import bcrypt from "bcrypt";
+import {User} from "../user/User";
 
 // noinspection JSUnusedLocalSymbols
 const UsersController = require('../routes/UsersController'); // This is necessary to show test coverage
@@ -88,7 +89,7 @@ describe('users', () => {
         it('should return 200 when found user and password matches', (done) => {
             const expectedEmail = "some@email.org";
 
-            findUserStub.resolves({password: 'abc'});
+            findUserStub.resolves(new User({password: 'abc'}));
             bcryptStub.compare.resolves(true);
 
             request(app)
@@ -108,7 +109,7 @@ describe('users', () => {
         it('should reset failed sign in attempts when login successful', (done) => {
             const expectedEmail = "some@email.org";
 
-            findUserStub.resolves({password: 'abc'});
+            findUserStub.resolves(new User({email: expectedEmail, password: 'abc'}));
             bcryptStub.compare.resolves(true);
 
             request(app)
@@ -144,8 +145,7 @@ describe('users', () => {
 
         it('should return 401 when user found but password unmatched', (done) => {
             const expectedEmail = 'some@email';
-            findUserStub.resolves({password: 'password'});
-
+            findUserStub.resolves(new User({email: expectedEmail, password: 'password'}));
             bcryptStub.compare.resolves(false);
 
             request(app)
@@ -164,6 +164,8 @@ describe('users', () => {
 
         it('should increment failed login attempts when password unmatched', (done) => {
             const expectedEmail = 'some@email.com';
+            findUserStub.resolves(new User({email: expectedEmail, password: 'password'}));
+            bcryptStub.compare.resolves(false);
 
             request(app)
                 .post('/users/login')

@@ -1,5 +1,7 @@
 import database from '../database';
 import * as bcrypt from "bcrypt";
+import {User} from "./User";
+import {UserProfile} from "./UserProfile";
 
 export default class UserService {
     static findOne = ({email: email}) => {
@@ -85,17 +87,3 @@ export default class UserService {
     }
 }
 
-class User {
-    constructor({password: password, email: email, createdOn: createdOn, profile: profile}) {
-        this.password = password;
-        this.email = email;
-        this.createdOn = createdOn;
-        this.profile = profile;
-    }
-}
-
-class UserProfile {
-    constructor({name: name}) {
-        this.name = name;
-    }
-}
