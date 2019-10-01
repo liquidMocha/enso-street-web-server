@@ -1,6 +1,16 @@
+workflows:
+  version: 2.1
+  deploy-to-heroku:
+    jobs:
+      - build
+      - heroku_deploy:
+          requires:
+            - build
+
 version: 2.1
 orbs:
   heroku: circleci/heroku@1.0.0
+
 jobs:
   build:
     working_directory: ~/enso-street-web-server
@@ -38,12 +48,3 @@ jobs:
   heroku_deploy:
     jobs:
       - heroku/deploy-via-git
-
-workflows:
-  version: 2.1
-  deploy-to-heroku:
-    jobs:
-      - build
-      - heroku_deploy:
-          requires:
-            - build
