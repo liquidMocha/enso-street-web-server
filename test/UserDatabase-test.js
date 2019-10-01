@@ -131,5 +131,19 @@ describe('UserService', () => {
                     expect.fail(error);
                 })
         })
-    })
+    });
+
+    it('increment failed sign in attempt', async () => {
+        const email = 'some@email.com';
+        await setupUser({email: email});
+
+        await UserService.incrementFailedAttempt(email)
+            .then(() => {
+                return database.one('select failed_login_attempts from public.user where email = $1;', email);
+            })
+            .then(data => {
+                expect(data.failed_login_attempts).to.equal(1);
+            })
+            .catch(error => expect.fail(error));
+    });
 });

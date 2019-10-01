@@ -8,11 +8,12 @@ import bcrypt from "bcrypt";
 const UsersController = require('../routes/UsersController'); // This is necessary to show test coverage
 
 describe('users', () => {
-    let createUserStub, findUserStub, bcryptStub;
+    let createUserStub, findUserStub, bcryptStub, incrementFailedAttemptStub;
 
     before(() => {
         createUserStub = sinon.stub(UserService, 'createEnsoUser');
         findUserStub = sinon.stub(UserService, 'findOne');
+        incrementFailedAttemptStub = sinon.stub(UserService, 'incrementFailedAttempt');
         bcryptStub = sinon.stub(bcrypt);
     });
 
@@ -135,6 +136,19 @@ describe('users', () => {
                     }
                     done();
                 })
-        })
+        });
+
+        it('should increment failed login attempts when password unmatched', (done) => {
+            const expectedEmail = 'some@email.com';
+
+            request(app)
+                .post('/users/login')
+                .send({email: expectedEmail, password: 'somepass'})
+                .expect(401, (error) => {
+                    sinon.assert.calledWithExactly(incrementFailedAttemptStub, expectedEmail);
+
+                    done(error);
+                })
+        });
     })
 });
