@@ -14,7 +14,7 @@ import session from "express-session";
 import sessionOptions from "./sessionOptions";
 
 dotenv.config();
-const uiDomain = process.env.uiBaseUrl;
+const uiDomain = "*";
 
 const app = express();
 app.set('trust proxy', 1);
