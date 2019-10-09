@@ -6,12 +6,7 @@ const redisPassword = process.env.redisPassword;
 const redisPort = process.env.redisPort;
 
 const redisStore = require('connect-redis')(session);
-const redisClient = redis.createClient({
-        port: redisPort,
-        host: redisHost,
-        password: redisPassword
-    }
-);
+const redisClient = redis.createClient(process.env.REDIS_URL);
 
 const cookieExpirationInMils = 1000 * 60 * 30;
 

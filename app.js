@@ -14,12 +14,11 @@ import session from "express-session";
 import sessionOptions from "./sessionOptions";
 
 dotenv.config();
-const uiDomain = "*";
+const uiDomain = process.env.uiBaseUrl;
 
 const app = express();
 app.set('trust proxy', 1);
 app.use(session(sessionOptions));
-console.log('cors allowed origin: ', uiDomain);
 app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
 app.use(helmet());
