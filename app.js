@@ -1,6 +1,7 @@
 import express from "express";
 
 import dotenv from 'dotenv';
+import locationRouter from "./routes/LocationController";
 import usersRouter from "./routes/UsersController";
 import itemRouter from "./routes/ItemController";
 import logger from "morgan";
@@ -47,5 +48,6 @@ if (process.env.isLocal) {
 
 app.use('/items', itemRouter);
 app.use('/users', usersRouter);
+app.use('/users/locations', locationRouter);
 
 export default app;

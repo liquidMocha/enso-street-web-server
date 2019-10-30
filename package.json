@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "node -r esm app.js",
-    "test": "NODE_ENV=test nyc ./node_modules/mocha/bin/mocha --exit -r esm",
+    "test": "NODE_ENV=test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
   },
