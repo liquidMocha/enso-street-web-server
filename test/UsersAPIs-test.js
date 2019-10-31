@@ -4,6 +4,8 @@ import app from "../app";
 import sinon from 'sinon';
 import bcrypt from "bcrypt";
 import {User} from "../user/User";
+import express from "express";
+import {assert} from "chai";
 
 // noinspection JSUnusedLocalSymbols
 const UsersController = require('../routes/UsersController'); // This is necessary to show test coverage
@@ -176,5 +178,44 @@ describe('users', () => {
                     done(error);
                 })
         });
+    });
+
+    describe('is requester logged in', () => {
+        it('should return true if user is logged in', (done) => {
+            const email = 'some@loggedin.email';
+
+            const testApp = express();
+            testApp.use((req, res, next) => {
+                req.session = {email: email};
+                next();
+            });
+
+            testApp.use(app);
+
+            request(testApp)
+                .get('/users/isLoggedIn')
+                .expect(200, (error, response) => {
+                    assert.equal(true, response.body.loggedIn);
+                    return done(error);
+                });
+        });
+
+        it('should return false if user is not logged in', (done) => {
+            const testApp = express();
+            testApp.use((req, res, next) => {
+                req.session = {};
+                next();
+            });
+
+            testApp.use(app);
+
+            request(testApp)
+                .get('/users/isLoggedIn')
+                .expect(200, (error, response) => {
+                    assert.equal(false, response.body.loggedIn);
+                    return done(error);
+                });
+        })
+
     })
 });

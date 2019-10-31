@@ -70,6 +70,14 @@ router.post('/googleSignOn', (req, res) => {
     });
 });
 
+router.get('/isLoggedIn', (req, res) => {
+    if (req.session.email) {
+        res.status(200).json({loggedIn: true});
+    } else {
+        res.status(200).json({loggedIn: false});
+    }
+});
+
 router.get('/logout', (req, res) => {
     req.session.destroy(error => {
         if (error) {
