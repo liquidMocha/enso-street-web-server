@@ -37,6 +37,8 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.disable('etag');
+
 const port = process.env.PORT || 8080;
 if (process.env.isLocal) {
     let cert = fs.readFileSync(__dirname + '/certs/certificate.pem');
