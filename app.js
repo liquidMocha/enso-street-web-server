@@ -31,6 +31,12 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(function (req, res, next) {
+    req.headers['if-none-match'] = 'no-match-for-this';
+    next();
+});
+
 const port = process.env.PORT || 8080;
 if (process.env.isLocal) {
     let cert = fs.readFileSync(__dirname + '/certs/certificate.pem');
@@ -45,11 +51,6 @@ if (process.env.isLocal) {
 } else {
     app.listen(port, () => console.log(`Enso street web server is listening on port ${port}!`));
 }
-
-app.use(function (req, res, next) {
-    req.headers['if-none-match'] = 'no-match-for-this';
-    next();
-});
 
 app.use('/items', itemRouter);
 app.use('/users', usersRouter);
