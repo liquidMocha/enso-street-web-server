@@ -193,7 +193,7 @@ describe('users', () => {
             testApp.use(app);
 
             request(testApp)
-                .get('/users/isLoggedIn')
+                .post('/users/isLoggedIn')
                 .expect(200, (error, response) => {
                     assert.equal(true, response.body.loggedIn);
                     return done(error);
@@ -210,7 +210,7 @@ describe('users', () => {
             testApp.use(app);
 
             request(testApp)
-                .get('/users/isLoggedIn')
+                .post('/users/isLoggedIn')
                 .expect(200, (error, response) => {
                     assert.equal(false, response.body.loggedIn);
                     return done(error);

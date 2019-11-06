@@ -70,7 +70,7 @@ router.post('/googleSignOn', (req, res) => {
     });
 });
 
-router.get('/isLoggedIn', (req, res) => {
+router.post('/isLoggedIn', (req, res) => {
     console.log('req.fresh ', req.fresh);
     res.setHeader('Last-Modified', (new Date()).toUTCString());
     if (req.session.email) {
