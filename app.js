@@ -46,6 +46,11 @@ if (process.env.isLocal) {
     app.listen(port, () => console.log(`Enso street web server is listening on port ${port}!`));
 }
 
+app.use(function (req, res, next) {
+    req.headers['if-none-match'] = 'no-match-for-this';
+    next();
+});
+
 app.use('/items', itemRouter);
 app.use('/users', usersRouter);
 app.use('/users/locations', locationRouter);
