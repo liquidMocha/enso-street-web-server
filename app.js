@@ -54,8 +54,8 @@ if (process.env.isLocal) {
     app.listen(port, () => console.log(`Enso street web server is listening on port ${port}!`));
 }
 
-app.use('/items', itemRouter);
-app.use('/users', usersRouter);
-app.use('/users/locations', locationRouter);
+app.use('/api/items', itemRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/users/locations', locationRouter);
 
 export default app;

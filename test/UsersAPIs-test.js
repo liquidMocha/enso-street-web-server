@@ -48,7 +48,7 @@ describe('users', () => {
             createUserStub.resolves();
 
             request(app)
-                .post('/users/createUser')
+                .post('/api/users/createUser')
                 .send(user)
                 .expect(201, (error) => {
                     sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
@@ -64,7 +64,7 @@ describe('users', () => {
             createUserStub.rejects();
 
             request(app)
-                .post('/users/createUser')
+                .post('/api/users/createUser')
                 .send(user)
                 .expect(500, (error) => {
                     sinon.assert.calledWithExactly(createUserStub, user.name, user.password, user.email);
@@ -76,7 +76,7 @@ describe('users', () => {
         describe('should sanitize input', () => {
             it('should not try to create user if password is less than minimum password length', (done) => {
                 request(app)
-                    .post('/users/createUser')
+                    .post('/api/users/createUser')
                     .send({password: 'a'})
                     .expect(500, (error) => {
                         sinon.assert.notCalled(createUserStub);
@@ -95,7 +95,7 @@ describe('users', () => {
             bcryptStub.compare.resolves(true);
 
             request(app)
-                .post('/users/login')
+                .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(200, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
@@ -115,7 +115,7 @@ describe('users', () => {
             bcryptStub.compare.resolves(true);
 
             request(app)
-                .post('/users/login')
+                .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(200, (error) => {
                     sinon.assert.calledWithExactly(resetFailedAttemptStub, expectedEmail);
@@ -132,7 +132,7 @@ describe('users', () => {
             findUserStub.resolves(null);
 
             request(app)
-                .post('/users/login')
+                .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(401, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
@@ -151,7 +151,7 @@ describe('users', () => {
             bcryptStub.compare.resolves(false);
 
             request(app)
-                .post('/users/login')
+                .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(401, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
@@ -170,7 +170,7 @@ describe('users', () => {
             bcryptStub.compare.resolves(false);
 
             request(app)
-                .post('/users/login')
+                .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(401, (error) => {
                     sinon.assert.calledWithExactly(incrementFailedAttemptStub, expectedEmail);
@@ -193,7 +193,7 @@ describe('users', () => {
             testApp.use(app);
 
             request(testApp)
-                .post('/users/isLoggedIn')
+                .post('/api/users/isLoggedIn')
                 .expect(200, (error, response) => {
                     assert.equal(true, response.body.loggedIn);
                     return done(error);
@@ -210,7 +210,7 @@ describe('users', () => {
             testApp.use(app);
 
             request(testApp)
-                .post('/users/isLoggedIn')
+                .post('/api/users/isLoggedIn')
                 .expect(200, (error, response) => {
                     assert.equal(false, response.body.loggedIn);
                     return done(error);

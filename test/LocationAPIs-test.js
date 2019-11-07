@@ -25,7 +25,7 @@ describe('location', () => {
 
     it('should bounce the user if come in without a cookie', (done) => {
         request(app)
-            .post('/users/locations/addLocation')
+            .post('/api/users/locations/addLocation')
             .expect(401, (error) => {
                 return done(error);
             })
@@ -51,9 +51,9 @@ describe('location', () => {
         testApp.use(app);
 
         request(testApp)
-            .post('/users/login');
+            .post('/api/users/login');
         request(testApp)
-            .post('/users/locations/addLocation')
+            .post('/api/users/locations/addLocation')
             .send(location)
             .expect(201, (error, response) => {
                 sinon.assert.calledWithExactly(addLocationForUserStub, {location: location, email: email});
