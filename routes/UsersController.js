@@ -71,8 +71,8 @@ router.post('/googleSignOn', (req, res) => {
 });
 
 router.post('/isLoggedIn', (req, res) => {
-    console.log('req.fresh ', req.fresh);
     res.setHeader('Last-Modified', (new Date()).toUTCString());
+
     if (req.session.email) {
         res.status(200).json({loggedIn: true});
     } else {

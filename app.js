@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from 'dotenv';
 import locationRouter from "./routes/LocationController";
 import usersRouter from "./routes/UsersController";
-import itemRouter from "./routes/ItemController";
+import itemRouter from "./item/ItemController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";

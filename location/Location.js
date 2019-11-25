@@ -1,13 +1,13 @@
 export default class Location {
     constructor({
-                    nickname: nickname,
-                    address: address,
+                    id: id,
+                    street: street,
                     city: city,
                     state: state,
                     zipCode: zipCode
                 }) {
-        this.nickname = nickname;
-        this.address = address;
+        this.id = id;
+        this.street = street;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;

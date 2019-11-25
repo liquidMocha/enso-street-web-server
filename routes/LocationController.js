@@ -8,7 +8,6 @@ router.post('/addLocation', (req, res, next) => {
     if (req.session.email) {
         const locationPayload = req.body;
         const locationToCreate = new Location({
-            nickname: locationPayload.nickname,
             address: locationPayload.address,
             city: locationPayload.city,
             state: locationPayload.state,

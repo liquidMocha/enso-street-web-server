@@ -33,7 +33,6 @@ describe('location', () => {
 
     it('should create location for user', (done) => {
         location = new Location({
-            nickname: "Home",
             address: "1725 Slough Avenue",
             city: "Scranton",
             state: "PA",

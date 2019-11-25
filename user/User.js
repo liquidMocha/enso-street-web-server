@@ -2,11 +2,12 @@ import * as bcrypt from "bcrypt";
 import UserService from "./UserService";
 
 export class User {
-    constructor({password: password, email: email, createdOn: createdOn, profile: profile}) {
+    constructor({id: id, password: password, email: email, createdOn: createdOn, profile: profile}) {
         this.password = password;
         this.email = email;
         this.createdOn = createdOn;
         this.profile = profile;
+        this.id = id;
     }
 
     login = (password) => {

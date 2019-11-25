@@ -14,6 +14,7 @@ export default class UserService {
             userEntity => {
                 if (userEntity) {
                     return new User({
+                        id: userEntity.user_id,
                         password: userEntity.password,
                         email: userEntity.email,
                         profile: new UserProfile({name: userEntity.name})

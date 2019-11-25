@@ -1,0 +1,39 @@
+import express from "express";
+import ItemDTO from "./ItemDTO";
+import ItemDAO from "./ItemDAO";
+
+const router = express.Router();
+
+router.post('/', (req, res, next) => {
+    if (req.session.email) {
+        const itemPayload = req.body;
+        const itemDTO = new ItemDTO(
+            {
+                title: itemPayload.title,
+                rentalDailyPrice: itemPayload.rentalDailyPrice,
+                deposit: itemPayload.deposit,
+                condition: itemPayload.condition,
+                categories: itemPayload.categories,
+                description: itemPayload.description,
+                canBeDelivered: itemPayload.canBeDelivered,
+                deliveryStarting: itemPayload.deliveryStarting,
+                deliveryAdditional: itemPayload.deliveryAdditional,
+                location: itemPayload.location,
+                userEmail: req.session.email
+            }
+        );
+
+        const itemDAO = ItemDAO.fromDTO(itemDTO);
+        itemDAO.save()
+            .then(() => {
+                res.status(201).send();
+            })
+            .catch(() => {
+                res.status(500).send();
+            });
+    } else {
+        res.status(401).send();
+    }
+});
+
+export default router;
