@@ -8,7 +8,7 @@ const redisPort = process.env.redisPort;
 const redisStore = require('connect-redis')(session);
 const redisClient = redis.createClient(process.env.REDIS_URL);
 
-const cookieExpirationInMils = 1000 * 60 * 30;
+const cookieExpirationInMils = 1000 * 60 * 60 * 24 * 30;
 
 const sessionOptions = {
     cookie: {
