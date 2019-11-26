@@ -2,6 +2,7 @@ import ItemRepository from "./ItemRepository";
 
 export default class ItemDAO {
     constructor({
+                    id: id,
                     title: title,
                     rentalDailyPrice: rentalDailyPrice,
                     deposit: deposit,
@@ -14,6 +15,7 @@ export default class ItemDAO {
                     location: location,
                     ownerEmail: user
                 }) {
+        this.id = id;
         this.title = title;
         this.rentalDailyPrice = rentalDailyPrice;
         this.deposit = deposit;

@@ -1,6 +1,7 @@
 import express from "express";
 import ItemDTO from "./ItemDTO";
 import ItemDAO from "./ItemDAO";
+import ItemRepository from "./ItemRepository";
 
 const router = express.Router();
 
@@ -30,6 +31,17 @@ router.post('/', (req, res, next) => {
             })
             .catch(() => {
                 res.status(500).send();
+            });
+    } else {
+        res.status(401).send();
+    }
+});
+
+router.get('/', (req, res, next) => {
+    if (req.session.email) {
+        ItemRepository.getItemsForUser(req.session.email)
+            .then(items => {
+                res.status(200).json(items);
             });
     } else {
         res.status(401).send();

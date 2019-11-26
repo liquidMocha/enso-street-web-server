@@ -1,6 +1,7 @@
 import database from '../database';
 import {createLocation} from "../location/LocationRepository";
 import UserService from "../user/UserService";
+import ItemDTO from "./ItemDTO";
 
 export default class ItemRepository {
     static save = (itemDAO) => {
@@ -73,5 +74,54 @@ export default class ItemRepository {
                 console.log("Error when saving item: ", error);
                 throw new Error("Error when creating item");
             });
+    };
+
+    static getItemsForUser = (userEmail) => {
+        return UserService.findOne({email: userEmail})
+            .then(user => {
+                return database.many(
+                        `select item.id,
+                                item.title,
+                                item.rentaldailyprice,
+                                item.deposit,
+                                condition.condition,
+                                item.description,
+                                item.canbedelivered,
+                                item.deliverystarting,
+                                item.deliveryadditional,
+                                location.zipcode,
+                                category.name
+                         from item
+                                  join condition on item.condition = condition.id
+                                  join location on item.location = location.id
+                                  join itemtocategory on itemtocategory.itemid = item.id
+                                  join category on itemtocategory.categoryid = category.id
+                         where item.owner = $1`,
+                    [user.id]
+                )
+            })
+            .then((entities) => {
+                return entities.map(itemEntity => {
+                    return new ItemDTO({
+                        id: itemEntity.id,
+                        title: itemEntity.title,
+                        rentalDailyPrice: itemEntity.rentaldailyprice,
+                        deposit: itemEntity.deposit,
+                        condition: itemEntity.condition,
+                        description: itemEntity.description,
+                        canBeDelivered: itemEntity.canbedelivered,
+                        deliveryStarting: itemEntity.deliverystarting,
+                        deliveryAdditional: itemEntity.deliveryadditional,
+                        location: {
+                            zipCode: itemEntity.zipcode
+                        }
+                    })
+                });
+            })
+            .catch(error => {
+                console.log(error);
+                throw new Error("Error when retrieving items");
+            });
+
     }
 }
