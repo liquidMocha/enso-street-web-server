@@ -90,7 +90,7 @@ export default class ItemRepository {
                                 item.deliverystarting,
                                 item.deliveryadditional,
                                 location.zipcode,
-                                category.name
+                                category.name AS categoryname
                          from item
                                   join condition on item.condition = condition.id
                                   join location on item.location = location.id
@@ -101,22 +101,31 @@ export default class ItemRepository {
                 )
             })
             .then((entities) => {
-                return entities.map(itemEntity => {
-                    return new ItemDTO({
-                        id: itemEntity.id,
-                        title: itemEntity.title,
-                        rentalDailyPrice: itemEntity.rentaldailyprice,
-                        deposit: itemEntity.deposit,
-                        condition: itemEntity.condition,
-                        description: itemEntity.description,
-                        canBeDelivered: itemEntity.canbedelivered,
-                        deliveryStarting: itemEntity.deliverystarting,
-                        deliveryAdditional: itemEntity.deliveryadditional,
-                        location: {
-                            zipCode: itemEntity.zipcode
-                        }
-                    })
+                const resultIds = [];
+                const result = [];
+                entities.forEach(itemEntity => {
+                    if (resultIds.includes(itemEntity.id)) {
+                        result.find(element => element.id === itemEntity.id).addCategory(itemEntity.categoryname);
+                    } else {
+                        resultIds.push(itemEntity.id);
+                        result.push(new ItemDTO({
+                            id: itemEntity.id,
+                            title: itemEntity.title,
+                            rentalDailyPrice: itemEntity.rentaldailyprice,
+                            deposit: itemEntity.deposit,
+                            condition: itemEntity.condition,
+                            categories: [itemEntity.categoryname],
+                            description: itemEntity.description,
+                            canBeDelivered: itemEntity.canbedelivered,
+                            deliveryStarting: itemEntity.deliverystarting,
+                            deliveryAdditional: itemEntity.deliveryadditional,
+                            location: {
+                                zipCode: itemEntity.zipcode
+                            }
+                        }))
+                    }
                 });
+                return result;
             })
             .catch(error => {
                 console.log(error);
