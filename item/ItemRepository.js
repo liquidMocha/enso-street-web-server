@@ -2,28 +2,28 @@ import database from '../database';
 import {createLocation} from "../location/LocationRepository";
 import UserService from "../user/UserService";
 import ItemDTO from "./ItemDTO";
+import * as aws from "aws-sdk";
 
 export default class ItemRepository {
-    static save = (itemDAO) => {
-        const conditionId = database.one("select id " +
+    static getConditionId = (condition) => {
+        return database.one("select id " +
             "from public.condition " +
             "where condition = $1",
-            [itemDAO.condition],
-            condition => condition.id
+            [condition],
+            result => result.id
         );
+    };
 
-        const userId = UserService.findOne({email: itemDAO.ownerEmail});
-        const locationId = UserService.findOne({email: itemDAO.ownerEmail})
+    static saveItem = (itemDAO) => {
+        const conditionId = ItemRepository.getConditionId(itemDAO.condition);
+
+        const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
+        const locationId = itemDAO.location.id || ownerUserId
             .then(user => {
-                if (itemDAO.location.id) {
-                    return itemDAO.location.id;
-                } else {
-                    return createLocation(itemDAO.location, user.id);
-                }
+                return createLocation(itemDAO.location, user.id);
             });
 
-
-        return Promise.all([conditionId, userId, locationId])
+        return Promise.all([conditionId, ownerUserId, locationId])
             .then((values) => {
                 const conditionId = values[0];
                 const userId = values[1].id;
@@ -57,23 +57,60 @@ export default class ItemRepository {
                     ],
                     result => result.id
                 );
-            })
-            .then(itemId => {
-                return Promise.all(itemDAO.categories.map(category => {
-                    database.one(
-                        "select id from public.category where name = $1",
-                        [category]
-                    ).then(categoryId => {
-                        return database.none(
-                            "insert into public.itemToCategory (categoryId, itemId) " +
-                            "VALUES ($1, $2);", [categoryId.id, itemId]);
-                    })
-                }));
-            })
-            .catch(error => {
-                console.log("Error when saving item: ", error);
-                throw new Error("Error when creating item");
             });
+    };
+
+    static save = (itemDAO) => {
+        const conditionId = ItemRepository.getConditionId(itemDAO.condition);
+
+        const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
+        const locationId = itemDAO.location.id || ownerUserId
+            .then(user => {
+                return createLocation(itemDAO.location, user.id);
+            });
+
+
+        const eventualItemId = ItemRepository.saveItem(itemDAO);
+
+        const saveCategoriesPromises = eventualItemId.then(itemId => {
+            return Promise.all(itemDAO.categories.map(category => {
+                database.one(
+                    "select id from public.category where name = $1",
+                    [category]
+                ).then(categoryId => {
+                    return database.none(
+                        "insert into public.itemToCategory (categoryId, itemId) " +
+                        "VALUES ($1, $2);", [categoryId.id, itemId]);
+                })
+            }));
+        }).catch(error => {
+            console.log("Error when saving item: ", error);
+            throw new Error("Error when creating item");
+        });
+
+        const S3_BUCKET = process.env.Bucket;
+        const s3 = new aws.S3({
+            signatureVersion: 'v4'
+        });
+        const signedRequestPromise = eventualItemId.then(itemId => {
+            const s3Params = {
+                Bucket: S3_BUCKET,
+                Key: itemId,
+                Expires: 500,
+                ACL: 'public-read'
+            };
+
+            return s3.getSignedUrlPromise('putObject', s3Params);
+        }).then(signedRequest => {
+            return signedRequest;
+        }).catch(error => {
+            console.error(error);
+        });
+
+        return Promise.all([signedRequestPromise, saveCategoriesPromises])
+            .then(values => {
+                return values[0];
+            })
     };
 
     static getItemsForUser = (userEmail) => {
