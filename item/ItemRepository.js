@@ -29,20 +29,18 @@ export default class ItemRepository {
                 const userId = values[1].id;
                 const locationId = values[2];
                 return database.one(
-                    "insert into public.item(" +
-                    "title," +
-                    "rentalDailyPrice," +
-                    "deposit," +
-                    "condition," +
-                    "description," +
-                    "canBeDelivered," +
-                    "deliveryStarting," +
-                    "deliveryAdditional," +
-                    "location," +
-                    "owner" +
-                    " )" +
-                    "values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) " +
-                    "returning id",
+                        `insert into public.item(title,
+                                                 rentalDailyPrice,
+                                                 deposit,
+                                                 condition,
+                                                 description,
+                                                 canBeDelivered,
+                                                 deliveryStarting,
+                                                 deliveryAdditional,
+                                                 location,
+                                                 owner)
+                         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                         returning id`,
                     [
                         itemDAO.title,
                         itemDAO.rentalDailyPrice,
@@ -79,8 +77,8 @@ export default class ItemRepository {
                     [category]
                 ).then(categoryId => {
                     return database.none(
-                        "insert into public.itemToCategory (categoryId, itemId) " +
-                        "VALUES ($1, $2);", [categoryId.id, itemId]);
+                            `insert into public.itemToCategory (categoryId, itemId)
+                             VALUES ($1, $2);`, [categoryId.id, itemId]);
                 })
             }));
         }).catch(error => {
@@ -97,9 +95,15 @@ export default class ItemRepository {
                 Bucket: S3_BUCKET,
                 Key: itemId,
                 Expires: 500,
-                ACL: 'public-read'
+                ACL: 'public-read',
+                ContentType: 'image/jpeg'
             };
 
+            const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
+            database.none(`update item
+                           set image_url = $1
+                           where item.id = $2;`,
+                [imageUrl, itemId]);
             return s3.getSignedUrlPromise('putObject', s3Params);
         }).then(signedRequest => {
             return signedRequest;
@@ -110,7 +114,7 @@ export default class ItemRepository {
         return Promise.all([signedRequestPromise, saveCategoriesPromises])
             .then(values => {
                 return values[0];
-            })
+            });
     };
 
     static getItemsForUser = (userEmail) => {
@@ -127,7 +131,8 @@ export default class ItemRepository {
                                 item.deliverystarting,
                                 item.deliveryadditional,
                                 location.zipcode,
-                                category.name AS categoryname
+                                category.name AS categoryname,
+                                item.image_url
                          from item
                                   join condition on item.condition = condition.id
                                   join location on item.location = location.id
@@ -158,7 +163,8 @@ export default class ItemRepository {
                             deliveryAdditional: itemEntity.deliveryadditional,
                             location: {
                                 zipCode: itemEntity.zipcode
-                            }
+                            },
+                            imageUrl: itemEntity.image_url
                         }))
                     }
                 });

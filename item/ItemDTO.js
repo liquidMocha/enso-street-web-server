@@ -11,7 +11,8 @@ export default class ItemDTO {
                     deliveryStarting: deliveryStarting,
                     deliveryAdditional: deliveryAdditional,
                     location: location,
-                    userEmail: userEmail
+                    userEmail: userEmail,
+                    imageUrl: imageUrl
                 }) {
         this.id = id;
         this.title = title;
@@ -25,6 +26,7 @@ export default class ItemDTO {
         this.deliveryAdditional = deliveryAdditional;
         this.location = location;
         this.userEmail = userEmail;
+        this.imageUrl = imageUrl;
     }
 
     addCategory(category) {
