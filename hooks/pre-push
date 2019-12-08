@@ -5,4 +5,4 @@ echo 'pulling from current branch'
 git pull -r
 
 echo 'running tests'
-npm test
+npm run localTest

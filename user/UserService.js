@@ -6,7 +6,7 @@ import {UserProfile} from "./UserProfile";
 export default class UserService {
     static findOne = ({email: email}) => {
         return database.oneOrNone(
-            "select * " +
+            "select *, public.user.id as userId " +
             "from public.user " +
             "left join public.user_profile profile " +
             "   on public.user.id = profile.user_id " +
@@ -14,7 +14,7 @@ export default class UserService {
             userEntity => {
                 if (userEntity) {
                     return new User({
-                        id: userEntity.user_id,
+                        id: userEntity.userid,
                         password: userEntity.password,
                         email: userEntity.email,
                         profile: new UserProfile({name: userEntity.name})

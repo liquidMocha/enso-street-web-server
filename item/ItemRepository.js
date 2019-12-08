@@ -16,11 +16,13 @@ export default class ItemRepository {
 
     static saveItem = (itemDAO) => {
         const conditionId = ItemRepository.getConditionId(itemDAO.condition);
-
         const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
         const locationId = itemDAO.location.id || ownerUserId
             .then(user => {
                 return createLocation(itemDAO.location, user.id);
+            })
+            .catch(error => {
+                throw new Error("Error creating location for user: " + itemDAO.ownerEmail);
             });
 
         return Promise.all([conditionId, ownerUserId, locationId])
@@ -59,38 +61,49 @@ export default class ItemRepository {
     };
 
     static save = (itemDAO) => {
-        const conditionId = ItemRepository.getConditionId(itemDAO.condition);
-
-        const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
-        const locationId = itemDAO.location.id || ownerUserId
-            .then(user => {
-                return createLocation(itemDAO.location, user.id);
-            });
-
-
         const eventualItemId = ItemRepository.saveItem(itemDAO);
 
-        const saveCategoriesPromises = eventualItemId.then(itemId => {
-            return Promise.all(itemDAO.categories.map(category => {
-                database.one(
-                    "select id from public.category where name = $1",
-                    [category]
-                ).then(categoryId => {
-                    return database.none(
-                            `insert into public.itemToCategory (categoryId, itemId)
-                             VALUES ($1, $2);`, [categoryId.id, itemId]);
-                })
-            }));
-        }).catch(error => {
-            console.log("Error when saving item: ", error);
-            throw new Error("Error when creating item");
-        });
+        const saveCategoriesPromises = eventualItemId
+            .then(itemId => {
+                return this.saveCategories(itemDAO.categories, itemId);
+            }).catch(error => {
+                throw new Error("Error when creating item: " + error);
+            });
 
+        const signedRequestPromise = this.getSignedS3Request(eventualItemId);
+
+        return Promise.all([signedRequestPromise, saveCategoriesPromises])
+            .then(values => {
+                return values[0];
+            });
+    };
+
+    static saveCategories = (categories, itemId) => {
+        return Promise.all(categories.map(category => {
+            return database.one(
+                "select id from public.category where name = $1",
+                [category]
+            ).then(categoryId => {
+                return database.none(
+                        `insert into public.itemToCategory (categoryId, itemId)
+                         VALUES ($1, $2);`, [categoryId.id, itemId]);
+            })
+        }));
+    };
+
+    static getSignedS3Request(eventualItemId) {
         const S3_BUCKET = process.env.Bucket;
         const s3 = new aws.S3({
             signatureVersion: 'v4'
         });
-        const signedRequestPromise = eventualItemId.then(itemId => {
+
+        return eventualItemId.then(itemId => {
+            const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
+            return database.none(`update item
+                                  set image_url = $1
+                                  where item.id = $2;`,
+                [imageUrl, itemId]);
+        }).then(() => {
             const s3Params = {
                 Bucket: S3_BUCKET,
                 Key: itemId,
@@ -98,24 +111,13 @@ export default class ItemRepository {
                 ACL: 'public-read',
                 ContentType: 'image/jpeg'
             };
-
-            const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
-            database.none(`update item
-                           set image_url = $1
-                           where item.id = $2;`,
-                [imageUrl, itemId]);
             return s3.getSignedUrlPromise('putObject', s3Params);
         }).then(signedRequest => {
             return signedRequest;
         }).catch(error => {
-            console.error(error);
+            console.error('Error when creating image upload link: ' + error);
         });
-
-        return Promise.all([signedRequestPromise, saveCategoriesPromises])
-            .then(values => {
-                return values[0];
-            });
-    };
+    }
 
     static getItemsForUser = (userEmail) => {
         return UserService.findOne({email: userEmail})
@@ -171,8 +173,7 @@ export default class ItemRepository {
                 return result;
             })
             .catch(error => {
-                console.log(error);
-                throw new Error("Error when retrieving items");
+                throw new Error("Error when retrieving items: " + error);
             });
 
     }
