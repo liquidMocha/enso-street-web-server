@@ -4,14 +4,12 @@ workflows:
     jobs:
       - build
       - heroku/deploy-via-git:
-          environment:
-            TEST_ENV_VAR: "something something something"
           requires:
             - build
 
 version: 2.1
 orbs:
-  heroku: circleci/heroku@0.0.8
+  heroku: circleci/heroku@0.0.10
 
 jobs:
   build:
