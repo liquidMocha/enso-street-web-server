@@ -9,7 +9,7 @@
     "database": "enso-street"
   },
   "test": {
-    "ENV": "databaseUri"
+    "ENV": "DATABASE_URL"
   },
   "dev": {
     "ENV": "DATABASE_URL"
