@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import locationRouter from "./routes/LocationController";
 import usersRouter from "./routes/UsersController";
 import itemRouter from "./item/ItemController";
+import categoryRouter from "./routes/CategoryController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";
@@ -57,5 +58,6 @@ if (process.env.isLocal) {
 app.use('/api/items', itemRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/users/locations', locationRouter);
+app.use('/api/category', categoryRouter);
 
 export default app;
