@@ -57,6 +57,8 @@ export default class ItemRepository {
                     ],
                     result => result.id
                 );
+            }).catch(error => {
+                throw new Error("Error when saving item: " + error);
             });
     };
 
@@ -70,7 +72,9 @@ export default class ItemRepository {
                 throw new Error("Error when creating item: " + error);
             });
 
-        const signedRequestPromise = this.getSignedS3Request(eventualItemId);
+        const signedRequestPromise = eventualItemId.then(itemId => {
+            return this.getSignedS3Request(itemId);
+        });
 
         return Promise.all([signedRequestPromise, saveCategoriesPromises])
             .then(values => {
@@ -91,30 +95,27 @@ export default class ItemRepository {
         }));
     };
 
-    static getSignedS3Request(eventualItemId) {
+    static getSignedS3Request(itemId) {
         const S3_BUCKET = process.env.Bucket;
         const s3 = new aws.S3({
             signatureVersion: 'v4'
         });
 
-        return eventualItemId.then(itemId => {
-            const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
-            return database.none(`update item
-                                  set image_url = $1
-                                  where item.id = $2;`,
-                [imageUrl, itemId]);
-        }).then(() => {
-            const s3Params = {
-                Bucket: S3_BUCKET,
-                Key: itemId,
-                Expires: 500,
-                ACL: 'public-read',
-                ContentType: 'image/jpeg'
-            };
-            return s3.getSignedUrlPromise('putObject', s3Params);
-        }).then(signedRequest => {
-            return signedRequest;
-        }).catch(error => {
+        const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
+        return database.none(`update item
+                              set image_url = $1
+                              where item.id = $2;`,
+            [imageUrl, itemId])
+            .then(() => {
+                const s3Params = {
+                    Bucket: S3_BUCKET,
+                    Key: itemId,
+                    Expires: 500,
+                    ACL: 'public-read',
+                    ContentType: 'image/jpeg'
+                };
+                return s3.getSignedUrlPromise('putObject', s3Params);
+            }).catch(error => {
             console.error('Error when creating image upload link: ' + error);
         });
     }
@@ -122,7 +123,7 @@ export default class ItemRepository {
     static getItemsForUser = (userEmail) => {
         return UserService.findOne({email: userEmail})
             .then(user => {
-                return database.many(
+                return database.manyOrNone(
                         `select item.id,
                                 item.title,
                                 item.rentaldailyprice,
