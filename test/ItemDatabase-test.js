@@ -2,6 +2,8 @@ import database from "../database";
 import ItemRepository from "../item/ItemRepository";
 import ItemDAO from "../item/ItemDAO";
 import {setupUser} from "./TestHelper";
+import sinon from "sinon";
+import ImageRepository from "../item/ImageRepository";
 
 const {expect} = require('chai');
 
@@ -16,6 +18,7 @@ describe('item data', () => {
     });
 
     it('should save an item', async () => {
+        const mock = sinon.mock(ImageRepository).expects("getSignedS3Request");
         const title = "some title";
         const rentalDailyPrice = 1.23;
         const deposit = 50.23;
@@ -39,6 +42,7 @@ describe('item data', () => {
             location: location,
             ownerEmail: userEmail
         })).then((data) => {
+            mock.verify();
             return database.many(`select *, c.name as category
                                   from public.item
                                            join itemtocategory i on item.id = i.itemid
