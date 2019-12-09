@@ -41,7 +41,4 @@ jobs:
 
       - run:
           name: test
-          command: ./node_modules/db-migrate/bin/db-migrate up -e test && npm test
-          environment:
-            databaseUri: postgres://enso-street@localhost:5432/circle_test
-            sessionSecret: this-is-a-session-secret
+          command: npm test
