@@ -7,8 +7,7 @@
   "private": true,
   "scripts": {
     "start": "node -r esm app.js",
-    "localTest": "databaseUri=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && databaseUri=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
-    "test": "NODE_ENV=test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
+    "test": "databaseUri=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && databaseUri=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
   },
