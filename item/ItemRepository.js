@@ -110,7 +110,8 @@ export default class ItemRepository {
                                 item.deliveryadditional,
                                 location.zipcode,
                                 category.name AS categoryname,
-                                item.image_url
+                                item.image_url,
+                                item.created_on
                          from item
                                   join condition on item.condition = condition.id
                                   join location on item.location = location.id
@@ -139,6 +140,7 @@ export default class ItemRepository {
                             canBeDelivered: itemEntity.canbedelivered,
                             deliveryStarting: itemEntity.deliverystarting,
                             deliveryAdditional: itemEntity.deliveryadditional,
+                            createdOn: itemEntity.created_on,
                             location: {
                                 zipCode: itemEntity.zipcode
                             },
