@@ -117,7 +117,8 @@ export default class ItemRepository {
                                   join location on item.location = location.id
                                   join itemtocategory on itemtocategory.itemid = item.id
                                   join category on itemtocategory.categoryid = category.id
-                         where item.owner = $1`,
+                         where item.owner = $1
+                           and item.archived != true`,
                     [user.id]
                 )
             })
