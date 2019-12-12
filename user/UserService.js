@@ -4,6 +4,16 @@ import {User} from "./User";
 import {UserProfile} from "./UserProfile";
 
 export default class UserService {
+    static getEmailById = (userId) => {
+        return database.one(
+                `select email from public."user" where id = $1`, [userId]
+        ).then(result => {
+            return result.email;
+        }).catch(error => {
+            throw new Error(`Error when getting user email by ID: ${error}`)
+        });
+    };
+
     static findOne = ({email: email}) => {
         return database.oneOrNone(
             "select *, public.user.id as userId " +

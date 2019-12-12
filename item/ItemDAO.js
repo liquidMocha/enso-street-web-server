@@ -47,5 +47,13 @@ export default class ItemDAO {
 
     save = () => {
         return ItemRepository.save(this);
-    }
+    };
+
+    archive = (deleterEmail) => {
+        if (deleterEmail === this.ownerEmail) {
+            return ItemRepository.archive(this.id);
+        } else {
+            throw new Error(`User ${deleterEmail} does not own the item.`)
+        }
+    };
 }

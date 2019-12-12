@@ -3,6 +3,7 @@ import {createLocation} from "../location/LocationRepository";
 import UserService from "../user/UserService";
 import ItemDTO from "./ItemDTO";
 import ImageRepository from "./ImageRepository";
+import ItemDAO from "./ItemDAO";
 
 export default class ItemRepository {
     static getConditionId = (condition) => {
@@ -12,6 +13,30 @@ export default class ItemRepository {
             [condition],
             result => result.id
         );
+    };
+
+    static archive = (itemId) => {
+        return database.none(`UPDATE public.item
+                              SET archived = true
+                              where id = $1`, [itemId])
+    };
+
+    static getItemById = (itemId) => {
+        return database.one(`select owner
+                             from public.item
+                             where id = $1`, [itemId]
+        ).then(result => {
+            return result.owner;
+        }).then(ownerId => {
+            return UserService.getEmailById(ownerId);
+        }).then(ownerEmail => {
+            return new ItemDAO({
+                id: itemId,
+                ownerEmail: ownerEmail
+            })
+        }).catch(error => {
+            throw new Error("Error when retrieving item information: " + error);
+        })
     };
 
     static saveItem = (itemDAO) => {

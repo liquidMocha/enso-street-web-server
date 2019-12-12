@@ -54,4 +54,21 @@ router.get('/', (req, res, next) => {
     }
 });
 
+router.delete('/', (req, res, next) => {
+    const payload = req.body;
+
+    if (req.session.email) {
+        ItemRepository.getItemById(payload.itemId).then(itemDAO => {
+            return itemDAO.archive(req.session.email);
+        }).then(() => {
+            res.status(200).send();
+        }).catch(error => {
+            res.status(500).send();
+            throw new Error("Error when deleting item: " + error);
+        });
+    } else {
+        res.status(401).send();
+    }
+});
+
 export default router;
