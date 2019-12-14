@@ -5,14 +5,14 @@ export default class LocationRepository {
     static createLocation = (location, userId) => {
         return database.one(
                 `insert into public.location
-                     (street, zipCode, city, state, "user")
-                 VALUES ($1, $2, $3, $4, $5)
+                     (street, zipCode, city, state, nickname, "user")
+                 VALUES ($1, $2, $3, $4, $5, $6)
                  returning id;`,
-            [location.street, location.zipCode, location.city, location.state, userId]
+            [location.street, location.zipCode, location.city, location.state, location.nickname, userId]
         ).then(data => {
             return data.id;
         }).catch(error => {
-            console.log("Error creating location: ", error);
+            throw new Error(`Error creating location: ${error}`);
         })
     };
 
