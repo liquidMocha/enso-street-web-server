@@ -133,7 +133,11 @@ export default class ItemRepository {
                                 item.canbedelivered,
                                 item.deliverystarting,
                                 item.deliveryadditional,
+                                location.street,
                                 location.zipcode,
+                                location.city,
+                                location.state,
+                                location.nickname,
                                 category.name AS categoryname,
                                 item.image_url,
                                 item.created_on
@@ -168,7 +172,11 @@ export default class ItemRepository {
                             deliveryAdditional: itemEntity.deliveryadditional,
                             createdOn: itemEntity.created_on,
                             location: {
-                                zipCode: itemEntity.zipcode
+                                street: itemEntity.street,
+                                zipCode: itemEntity.zipcode,
+                                city: itemEntity.city,
+                                state: itemEntity.state,
+                                nickname: itemEntity.nickname
                             },
                             imageUrl: itemEntity.image_url
                         }))
