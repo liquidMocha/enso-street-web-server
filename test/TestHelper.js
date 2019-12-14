@@ -15,4 +15,6 @@ export async function setupUser({email: email, password: password, name: name}) 
             [name, data.id]
         );
     }
+
+    return data.id;
 }

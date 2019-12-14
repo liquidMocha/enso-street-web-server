@@ -18,7 +18,7 @@ export default class LocationRepository {
 
     static getLocationsForUser = (userId) => {
         return database.manyOrNone(
-                `select id, street, zipcode, city, state, "user"
+                `select id, street, zipcode, city, state, nickname
                  from public.location
                  where "user" = $1`,
             [userId]
@@ -29,7 +29,8 @@ export default class LocationRepository {
                     street: location.street,
                     city: location.city,
                     state: location.state,
-                    zipCode: location.zipcode
+                    zipCode: location.zipcode,
+                    nickname: location.nickname
                 });
             });
         }).catch(error => {

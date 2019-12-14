@@ -3,6 +3,7 @@ import UserService from "../user/UserService";
 import ItemDTO from "./ItemDTO";
 import ImageRepository from "./ImageRepository";
 import ItemDAO from "./ItemDAO";
+import LocationRepository from "../location/LocationRepository";
 
 export default class ItemRepository {
     static getConditionId = (condition) => {

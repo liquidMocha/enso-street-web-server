@@ -4,12 +4,14 @@ export default class Location {
                     street: street,
                     city: city,
                     state: state,
-                    zipCode: zipCode
+                    zipCode: zipCode,
+                    nickname: nickname
                 }) {
         this.id = id;
         this.street = street;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+        this.nickname = nickname;
     }
 }

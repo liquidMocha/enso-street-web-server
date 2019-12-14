@@ -9,8 +9,9 @@ const {expect} = require('chai');
 
 describe('item data', () => {
     const userEmail = 'some@email.com';
+    let userId;
     beforeEach(async () => {
-        await setupUser({email: userEmail});
+        userId = await setupUser({email: userEmail});
     });
 
     afterEach(() => {
@@ -28,7 +29,7 @@ describe('item data', () => {
         const canBeDelivered = true;
         const deliveryStarting = 1.45;
         const deliveryAdditional = 0.8;
-        const location = {};
+        const location = {street: '', zipCode: '', city: '', state: '', userId: userId};
         await ItemRepository.save(new ItemDAO({
             title: title,
             rentalDailyPrice: rentalDailyPrice,
