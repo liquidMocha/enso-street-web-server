@@ -1,5 +1,4 @@
 import database from '../database';
-import {createLocation} from "../location/LocationRepository";
 import UserService from "../user/UserService";
 import ItemDTO from "./ItemDTO";
 import ImageRepository from "./ImageRepository";
@@ -44,7 +43,7 @@ export default class ItemRepository {
         const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
         const locationId = itemDAO.location.id || ownerUserId
             .then(user => {
-                return createLocation(itemDAO.location, user.id);
+                return LocationRepository.createLocation(itemDAO.location, user.id);
             })
             .catch(error => {
                 throw new Error("Error creating location for user: " + itemDAO.ownerEmail);

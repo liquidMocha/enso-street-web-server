@@ -1,21 +1,22 @@
 import express from "express";
-import Location from '../location/Location';
-import LocationService from "../location/LocationService";
+import LocationRepository from "../location/LocationRepository";
+import UserService from "../user/UserService";
 
 const router = express.Router();
 
-router.post('/addLocation', (req, res, next) => {
+router.get('/', (req, res, next) => {
     if (req.session.email) {
-        const locationPayload = req.body;
-        const locationToCreate = new Location({
-            address: locationPayload.address,
-            city: locationPayload.city,
-            state: locationPayload.state,
-            zipCode: locationPayload.zipCode
-        });
-
-        LocationService.addLocationForUser({location: locationToCreate, email: req.session.email});
-        res.status(201).send();
+        UserService.findOne({email: req.session.email})
+            .then(user => {
+                if (user) {
+                    LocationRepository.getLocationsForUser(user.id)
+                        .then(locations => {
+                            res.status(200).json(locations);
+                        });
+                } else {
+                    res.status(404).send();
+                }
+            })
     } else {
         res.status(401).send();
     }
