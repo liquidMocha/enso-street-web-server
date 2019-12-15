@@ -16,6 +16,31 @@ export default class LocationRepository {
         })
     };
 
+    static updateLocation = (location, userId) => {
+        return database.one(
+                `UPDATE public.location
+                 SET street   = $1,
+                     zipcode  = $2,
+                     city     = $3,
+                     state    = $4,
+                     nickname = $5
+                 WHERE id = $6
+                 RETURNING id, street, zipcode, city, state, nickname`,
+            [location.street, location.zipCode, location.city, location.state, location.nickname, location.id]
+        ).then(data => {
+            return new Location({
+                id: data.id,
+                street: data.street,
+                city: data.city,
+                state: data.state,
+                zipCode: data.zipcode,
+                nickname: data.nickname
+            })
+        }).catch(error => {
+            throw new Error(`Error updating location ${location.id}: ${error}`)
+        })
+    };
+
     static getLocationsForUser = (userId) => {
         return database.manyOrNone(
                 `select id, street, zipcode, city, state, nickname

@@ -1,6 +1,7 @@
 import express from "express";
 import LocationRepository from "../location/LocationRepository";
 import UserService from "../user/UserService";
+import Location from '../location/Location';
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.get('/', (req, res, next) => {
 
 router.put('/', (req, res, next) => {
     const userEmail = req.session.email;
-    if (req.session.email) {
+    if (userEmail) {
         UserService.findOne({email: userEmail})
             .then(user => {
                 if (user) {
@@ -36,6 +37,39 @@ router.put('/', (req, res, next) => {
             .then(locationId => {
                 res.status(201).json(locationId);
             });
+    } else {
+        res.status(401).send();
+    }
+});
+
+router.put('/:locationId', (req, res, next) => {
+    const userEmail = req.session.email;
+    const locationId = req.params.locationId;
+    const location = req.body.location;
+
+    if (userEmail) {
+        UserService.findOne({email: userEmail})
+            .then(user => {
+                if (user) {
+                    return LocationRepository.updateLocation(new Location(
+                        {
+                            id: locationId,
+                            street: location.street,
+                            city: location.city,
+                            state: location.state,
+                            zipCode: location.zipCode,
+                            nickname: location.nickname
+                        }
+                    ), user.id);
+                } else {
+                    res.status(401).send();
+                }
+            }).then(location => {
+            res.status(200).json(location);
+        }).catch(error => {
+            console.error(error);
+            res.status(500).send();
+        })
     } else {
         res.status(401).send();
     }
