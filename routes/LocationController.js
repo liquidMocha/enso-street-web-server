@@ -2,6 +2,7 @@ import express from "express";
 import LocationRepository from "../location/LocationRepository";
 import UserService from "../user/UserService";
 import Location from '../location/Location';
+import HereApiClient from "../location/HereApiClient";
 
 const router = express.Router();
 
@@ -70,6 +71,32 @@ router.put('/:locationId', (req, res, next) => {
             console.error(error);
             res.status(500).send();
         })
+    } else {
+        res.status(401).send();
+    }
+});
+
+router.get('/autosuggest/:searchTerm', (req, res, next) => {
+    const userEmail = req.session.email;
+
+    if (userEmail) {
+        HereApiClient.autosuggest(req.params.searchTerm)
+            .then(result => {
+                const suggestedAddresses = result.suggestions.map(suggestion => {
+                    const address = suggestion.address;
+                    return {
+                        street: address.street,
+                        zipcode: address.postalCode,
+                        city: address.city,
+                        state: address.state
+                    }
+                });
+                res.status(200).json(suggestedAddresses);
+            })
+            .catch(error => {
+                console.error(error);
+                throw new Error(`Error when getting autosuggest location.`);
+            });
     } else {
         res.status(401).send();
     }
