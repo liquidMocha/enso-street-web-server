@@ -75,8 +75,9 @@ export default class ItemRepository {
                                                  deliveryStarting,
                                                  deliveryAdditional,
                                                  location,
-                                                 owner)
-                         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                                                 owner,
+                                                 searchable)
+                         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                          returning id`,
                     [
                         itemDAO.title,
@@ -88,7 +89,8 @@ export default class ItemRepository {
                         itemDAO.deliveryStarting,
                         itemDAO.deliveryAdditional,
                         locationId,
-                        userId
+                        userId,
+                        true
                     ],
                     result => result.id
                 );
