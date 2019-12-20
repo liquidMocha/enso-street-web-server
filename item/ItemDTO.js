@@ -13,7 +13,8 @@ export default class ItemDTO {
                     location: location,
                     userEmail: userEmail,
                     imageUrl: imageUrl,
-                    createdOn: createdOn
+                    createdOn: createdOn,
+                    searchable: searchable
                 }) {
         this.id = id;
         this.title = title;
@@ -29,6 +30,7 @@ export default class ItemDTO {
         this.userEmail = userEmail;
         this.imageUrl = imageUrl;
         this.createdOn = createdOn;
+        this.searchable = searchable;
     }
 
     addCategory(category) {
