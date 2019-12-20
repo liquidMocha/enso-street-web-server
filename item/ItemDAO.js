@@ -13,7 +13,8 @@ export default class ItemDAO {
                     deliveryStarting: deliveryStarting,
                     deliveryAdditional: deliveryAdditional,
                     location: location,
-                    ownerEmail: user
+                    ownerEmail: user,
+                    searchable: searchable
                 }) {
         this.id = id;
         this.title = title;
@@ -27,6 +28,7 @@ export default class ItemDAO {
         this.deliveryAdditional = deliveryAdditional;
         this.location = location;
         this.ownerEmail = user;
+        this.searchable = searchable;
     }
 
     static fromDTO(itemDTO) {
@@ -41,9 +43,14 @@ export default class ItemDAO {
             deliveryStarting: itemDTO.deliveryStarting,
             deliveryAdditional: itemDTO.deliveryAdditional,
             location: itemDTO.location,
-            ownerEmail: itemDTO.userEmail
+            ownerEmail: itemDTO.userEmail,
+            searchable: itemDTO.searchable
         })
     }
+
+    update = (updatedItem) => {
+        return ItemRepository.updateItem({...updatedItem, id: this.id});
+    };
 
     save = () => {
         return ItemRepository.save(this);

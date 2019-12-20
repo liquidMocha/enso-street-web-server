@@ -6,6 +6,16 @@ import ItemDAO from "./ItemDAO";
 import LocationRepository from "../location/LocationRepository";
 
 export default class ItemRepository {
+
+    static updateItem = (updatedItem) => {
+        return database.none(
+                `UPDATE public.item
+                 SET rentaldailyprice = COALESCE($1, rentaldailyprice),
+                     searchable       = COALESCE($2, searchable)
+                 WHERE id = $3`,
+            [updatedItem.rentalDailyPrice, updatedItem.searchable, updatedItem.id]);
+    };
+
     static getConditionId = (condition) => {
         return database.one("select id " +
             "from public.condition " +
@@ -140,7 +150,8 @@ export default class ItemRepository {
                                 location.nickname,
                                 category.name AS categoryname,
                                 item.image_url,
-                                item.created_on
+                                item.created_on,
+                                item.searchable
                          from item
                                   join condition on item.condition = condition.id
                                   join location on item.location = location.id
@@ -178,7 +189,8 @@ export default class ItemRepository {
                                 state: itemEntity.state,
                                 nickname: itemEntity.nickname
                             },
-                            imageUrl: itemEntity.image_url
+                            imageUrl: itemEntity.image_url,
+                            searchable: itemEntity.searchable
                         }))
                     }
                 });
