@@ -86,7 +86,7 @@ router.get('/autosuggest/:searchTerm', (req, res, next) => {
                     const address = suggestion.address;
                     return {
                         street: address.street,
-                        zipcode: address.postalCode,
+                        zipCode: address.postalCode,
                         city: address.city,
                         state: address.state
                     }
