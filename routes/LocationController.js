@@ -102,4 +102,16 @@ router.get('/autosuggest/:searchTerm', (req, res, next) => {
     }
 });
 
+router.get('/reverseGeocode', (req, res, next) => {
+    const queryParameters = req.query;
+    HereApiClient.reverseGeocode({latitude: queryParameters.latitude, longitude: queryParameters.longitude})
+        .then(result => {
+            res.status(200).json(result);
+        }).catch(error => {
+            console.error(`Error when reverse geocoding: ${error}.`);
+            res.status(500).send();
+        }
+    );
+});
+
 export default router;
