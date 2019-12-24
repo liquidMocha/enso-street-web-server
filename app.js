@@ -13,6 +13,7 @@ import helmet from "helmet";
 import cors from "cors";
 import https from "https";
 import fs from "fs";
+import axios from "axios";
 import session from "express-session";
 import sessionOptions from "./sessionOptions";
 
@@ -55,6 +56,13 @@ if (process.env.isLocal) {
 } else {
     app.listen(port, () => console.log(`Enso street web server is listening on port ${port}!`));
 }
+
+axios.interceptors.request.use(config => {
+    console.log(`URL: ${config.url}; Method: ${config.method}`);
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
 
 app.use('/api/items', itemRouter);
 app.use('/api/users', usersRouter);
