@@ -1,5 +1,5 @@
 import express from "express";
-import CategoryRepository from "../category/CategoryRepository";
+import CategoryRepository from "./CategoryRepository";
 
 const router = express.Router();
 

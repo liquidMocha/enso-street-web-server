@@ -2,10 +2,10 @@ require('newrelic');
 import express from "express";
 
 import dotenv from 'dotenv';
-import locationRouter from "./routes/LocationController";
-import usersRouter from "./routes/UsersController";
+import locationRouter from "./location/LocationController";
+import usersRouter from "./user/UsersController";
 import itemRouter from "./item/ItemController";
-import categoryRouter from "./routes/CategoryController";
+import categoryRouter from "./category/CategoryController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";

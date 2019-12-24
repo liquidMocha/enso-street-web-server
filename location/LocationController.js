@@ -1,8 +1,8 @@
 import express from "express";
-import LocationRepository from "../location/LocationRepository";
+import LocationRepository from "./LocationRepository";
 import UserService from "../user/UserService";
-import Location from '../location/Location';
-import HereApiClient from "../location/HereApiClient";
+import Location from './Location';
+import HereApiClient from "./HereApiClient";
 
 const router = express.Router();
 

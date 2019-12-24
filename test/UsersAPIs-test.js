@@ -8,7 +8,7 @@ import express from "express";
 import {assert} from "chai";
 
 // noinspection JSUnusedLocalSymbols
-const UsersController = require('../routes/UsersController'); // This is necessary to show test coverage
+const UsersController = require('../user/UsersController'); // This is necessary to show test coverage
 
 describe('users', () => {
     let createUserStub,
