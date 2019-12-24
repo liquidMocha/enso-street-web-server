@@ -1,8 +1,0 @@
----
-applications:
-  - name: enso-street-web-server
-    command: db-migrate up -e dev && npm start
-    memory: 128M
-    disk_quota: 512M
-    services:
-      - enso-street-db

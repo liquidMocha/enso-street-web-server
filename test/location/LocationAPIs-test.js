@@ -1,6 +1,6 @@
 import sinon from "sinon";
 
-const LocationController = require('../location/LocationController');
+const LocationController = require('../../location/LocationController');
 
 describe('location', () => {
     let location;

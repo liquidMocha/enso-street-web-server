@@ -1,9 +1,9 @@
-import database from "../database";
-import ItemRepository from "../item/ItemRepository";
-import ItemDAO from "../item/ItemDAO";
-import {setupUser} from "./TestHelper";
+import database from "../../database";
+import ItemRepository from "../../item/ItemRepository";
+import ItemDAO from "../../item/ItemDAO";
+import {setupUser} from "../TestHelper";
 import sinon from "sinon";
-import ImageRepository from "../item/ImageRepository";
+import ImageRepository from "../../item/ImageRepository";
 
 const {expect} = require('chai');
 

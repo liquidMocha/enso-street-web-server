@@ -1,14 +1,14 @@
 import request from "supertest";
-import UserService from "../user/UserService";
-import app from "../app";
+import UserService from "../../user/UserService";
+import app from "../../app";
 import sinon from 'sinon';
 import bcrypt from "bcrypt";
-import {User} from "../user/User";
+import {User} from "../../user/User";
 import express from "express";
 import {assert} from "chai";
 
 // noinspection JSUnusedLocalSymbols
-const UsersController = require('../user/UsersController'); // This is necessary to show test coverage
+const UsersController = require('../../user/UsersController'); // This is necessary to show test coverage
 
 describe('users', () => {
     let createUserStub,

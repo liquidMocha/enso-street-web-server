@@ -1,5 +1,5 @@
-import database from "../database";
-import UserService from "../user/UserService";
+import database from "../../database";
+import UserService from "../../user/UserService";
 
 const {expect} = require('chai');
 

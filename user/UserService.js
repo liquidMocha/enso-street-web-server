@@ -6,7 +6,7 @@ import {UserProfile} from "./UserProfile";
 export default class UserService {
     static getEmailById = (userId) => {
         return database.one(
-                `select email from public."user" where id = $1`, [userId]
+                `SELECT email FROM public."user" WHERE id = $1`, [userId]
         ).then(result => {
             return result.email;
         }).catch(error => {
@@ -16,11 +16,10 @@ export default class UserService {
 
     static findOne = ({email: email}) => {
         return database.oneOrNone(
-            "select *, public.user.id as userId " +
-            "from public.user " +
-            "left join public.user_profile profile " +
-            "   on public.user.id = profile.user_id " +
-            "where email = $1", [email],
+                `SELECT *, public.user.id as userId 
+                        FROM public.user LEFT JOIN public.user_profile profile    
+                        ON public.user.id = profile.user_id 
+                        WHERE email = $1`, [email],
             userEntity => {
                 if (userEntity) {
                     return new User({
