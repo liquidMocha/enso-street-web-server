@@ -18,3 +18,10 @@ export async function setupUser({email: email, password: password, name: name}) 
 
     return data.id;
 }
+
+export async function setupCategories(categories) {
+    const values = categories.forEach(category => {
+        database.none(`INSERT INTO public.category (name)
+                       VALUES ($1)`, [category])
+    });
+}
