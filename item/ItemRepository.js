@@ -1,5 +1,5 @@
 import database from '../database';
-import UserService from "../user/UserService";
+import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
 import ImageRepository from "./ImageRepository";
 import ItemDAO from "./ItemDAO";
@@ -38,7 +38,7 @@ export default class ItemRepository {
         ).then(result => {
             return result.owner;
         }).then(ownerId => {
-            return UserService.getEmailById(ownerId);
+            return UserRepository.getEmailById(ownerId);
         }).then(ownerEmail => {
             return new ItemDAO({
                 id: itemId,
@@ -51,7 +51,7 @@ export default class ItemRepository {
 
     static saveItem = (itemDAO) => {
         const conditionId = ItemRepository.getConditionId(itemDAO.condition);
-        const ownerUserId = UserService.findOne({email: itemDAO.ownerEmail});
+        const ownerUserId = UserRepository.findOne({email: itemDAO.ownerEmail});
         const locationId = itemDAO.location.id || ownerUserId
             .then(user => {
                 return LocationRepository.createLocation(itemDAO.location, user.id);
@@ -133,7 +133,7 @@ export default class ItemRepository {
     };
 
     static getItemsForUser = (userEmail) => {
-        return UserService.findOne({email: userEmail})
+        return UserRepository.findOne({email: userEmail})
             .then(user => {
                 return database.manyOrNone(
                         `select item.id,

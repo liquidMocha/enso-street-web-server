@@ -1,4 +1,4 @@
-import UsersService from "./UserService";
+import UsersService from "./UserRepository";
 import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";

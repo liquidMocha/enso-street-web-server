@@ -1,5 +1,5 @@
 import database from "../../database";
-import UserService from "../../user/UserService";
+import UserRepository from "../../user/UserRepository";
 
 const {expect} = require('chai');
 
@@ -23,7 +23,7 @@ describe('UserService', () => {
             const expectedName = 'Pam Helpert';
             await setupUser({email: expectedEmail, password: expectedPassword, name: expectedName});
 
-            await UserService.findOne({email: expectedEmail})
+            await UserRepository.findOne({email: expectedEmail})
                 .then(userEntity => {
                     expect(userEntity.email).to.equal(expectedEmail);
                     expect(userEntity.password).to.equal(expectedPassword);
@@ -39,7 +39,7 @@ describe('UserService', () => {
             const expectedPassword = 'some password';
             await setupUser({email: expectedEmail, password: expectedPassword});
 
-            await UserService.findOne({email: expectedEmail})
+            await UserRepository.findOne({email: expectedEmail})
                 .then(userEntity => {
                     expect(userEntity).not.to.be.null;
                 })
@@ -52,7 +52,7 @@ describe('UserService', () => {
             const existingEmail = 'abc@123.com';
             await setupUser({email: existingEmail});
 
-            await UserService.findOne({email: 'wrong email'})
+            await UserRepository.findOne({email: 'wrong email'})
                 .then(user => {
                     expect(user).to.be.null;
                 })
@@ -68,7 +68,7 @@ describe('UserService', () => {
             const expectedName = 'Jim Helpert';
             await setupUser({email: expectedEmail, name: expectedName});
 
-            await UserService.findOrCreate({email: expectedEmail})
+            await UserRepository.findOrCreate({email: expectedEmail})
                 .then(user => {
                     expect(user.email).to.equal(expectedEmail);
                     expect(user.profile.name).to.equal(expectedName);
@@ -82,7 +82,7 @@ describe('UserService', () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            await UserService.findOrCreate({email: expectedEmail, name: expectedName})
+            await UserRepository.findOrCreate({email: expectedEmail, name: expectedName})
                 .then(() => {
                     return database.one('select * from public.user where email = $1', expectedEmail)
                 })
@@ -98,7 +98,7 @@ describe('UserService', () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            const user = await UserService.findOrCreate({email: expectedEmail, name: expectedName});
+            const user = await UserRepository.findOrCreate({email: expectedEmail, name: expectedName});
             expect(user.email).to.equal(expectedEmail);
             expect(user.profile.name).to.equal(expectedName);
         })
@@ -109,7 +109,7 @@ describe('UserService', () => {
             const existingEmail = 'existing@email.com';
             await setupUser({email: existingEmail});
 
-            await UserService.createEnsoUser("someName", "pass", existingEmail)
+            await UserRepository.createEnsoUser("someName", "pass", existingEmail)
                 .catch(error => {
                     expect(error.message).to.contains('Account Exists')
                 })
@@ -119,7 +119,7 @@ describe('UserService', () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            await UserService.createEnsoUser(expectedName, "pass", expectedEmail)
+            await UserRepository.createEnsoUser(expectedName, "pass", expectedEmail)
                 .then(() => {
                     return database.one('select * from public.user where email = $1', expectedEmail);
                 })
@@ -139,7 +139,7 @@ describe('UserService', () => {
         const shouldFailedOnce = async () => {
             await setupUser({email: email});
 
-            await UserService.incrementFailedAttempt(email)
+            await UserRepository.incrementFailedAttempt(email)
                 .then(() => {
                     return database.one('select failed_login_attempts from public.user where email = $1;', email);
                 })
@@ -157,7 +157,7 @@ describe('UserService', () => {
             const irrelavantUser = 'notFailed@email.com';
             await setupUser({email: irrelavantUser});
 
-            await UserService.incrementFailedAttempt(email)
+            await UserRepository.incrementFailedAttempt(email)
                 .then(() => {
                     return database.one('select failed_login_attempts from public.user where email = $1;', irrelavantUser);
                 })
@@ -170,7 +170,7 @@ describe('UserService', () => {
         it('should reset failed sign in attempt', async () => {
             await shouldFailedOnce();
 
-            await UserService.resetFailedAttempts(email)
+            await UserRepository.resetFailedAttempts(email)
                 .then(() => {
                     return database.one('select failed_login_attempts from public.user where email = $1;', email);
                 })

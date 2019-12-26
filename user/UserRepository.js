@@ -3,7 +3,7 @@ import * as bcrypt from "bcrypt";
 import {User} from "./User";
 import {UserProfile} from "./UserProfile";
 
-export default class UserService {
+export default class UserRepository {
     static getEmailById = (userId) => {
         return database.one(
                 `SELECT email FROM public."user" WHERE id = $1`, [userId]

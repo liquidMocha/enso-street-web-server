@@ -1,5 +1,5 @@
 import request from "supertest";
-import UserService from "../../user/UserService";
+import UserRepository from "../../user/UserRepository";
 import app from "../../app";
 import sinon from 'sinon';
 import bcrypt from "bcrypt";
@@ -18,10 +18,10 @@ describe('users', () => {
         resetFailedAttemptStub;
 
     before(() => {
-        createUserStub = sinon.stub(UserService, 'createEnsoUser');
-        findUserStub = sinon.stub(UserService, 'findOne');
-        incrementFailedAttemptStub = sinon.stub(UserService, 'incrementFailedAttempt');
-        resetFailedAttemptStub = sinon.stub(UserService, 'resetFailedAttempts');
+        createUserStub = sinon.stub(UserRepository, 'createEnsoUser');
+        findUserStub = sinon.stub(UserRepository, 'findOne');
+        incrementFailedAttemptStub = sinon.stub(UserRepository, 'incrementFailedAttempt');
+        resetFailedAttemptStub = sinon.stub(UserRepository, 'resetFailedAttempts');
         bcryptStub = sinon.stub(bcrypt);
     });
 

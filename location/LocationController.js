@@ -1,6 +1,6 @@
 import express from "express";
 import LocationRepository from "./LocationRepository";
-import UserService from "../user/UserService";
+import UserRepository from "../user/UserRepository";
 import Location from './Location';
 import HereApiClient from "./HereApiClient";
 
@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/', (req, res, next) => {
     if (req.session.email) {
-        UserService.findOne({email: req.session.email})
+        UserRepository.findOne({email: req.session.email})
             .then(user => {
                 if (user) {
                     LocationRepository.getLocationsForUser(user.id)
@@ -27,7 +27,7 @@ router.get('/', (req, res, next) => {
 router.put('/', (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
-        UserService.findOne({email: userEmail})
+        UserRepository.findOne({email: userEmail})
             .then(user => {
                 if (user) {
                     return LocationRepository.createLocation(req.body.location, user.id);
@@ -49,7 +49,7 @@ router.put('/:locationId', (req, res, next) => {
     const location = req.body.location;
 
     if (userEmail) {
-        UserService.findOne({email: userEmail})
+        UserRepository.findOne({email: userEmail})
             .then(user => {
                 if (user) {
                     return LocationRepository.updateLocation(new Location(
