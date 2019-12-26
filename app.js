@@ -66,7 +66,7 @@ axios.interceptors.request.use(config => {
 
 app.use('/api/items', itemRouter);
 app.use('/api/users', usersRouter);
-app.use('/api/users/locations', locationRouter);
+app.use('/api/locations', locationRouter);
 app.use('/api/category', categoryRouter);
 
 export default app;
