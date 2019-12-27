@@ -17,9 +17,9 @@ export default class ItemRepository {
     };
 
     static getConditionId = (condition) => {
-        return database.one("select id " +
-            "from public.condition " +
-            "where condition = $1",
+        return database.one(`SELECT id
+                             FROM public.condition
+                             WHERE condition = $1`,
             [condition],
             result => result.id
         );

@@ -1,6 +1,12 @@
 import * as aws from "aws-sdk";
 import database from "../database";
 
+aws.config.update({
+    region: 'us-east-2',
+    accessKeyId: process.env.AWSAccessKeyId,
+    secretAccessKey: process.env.AWSSecretKey
+});
+
 export default class ImageRepository {
     static getSignedS3Request(itemId) {
         const S3_BUCKET = process.env.Bucket;
@@ -9,9 +15,9 @@ export default class ImageRepository {
         });
 
         const imageUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${itemId}`;
-        return database.none(`update item
-                              set image_url = $1
-                              where item.id = $2;`,
+        return database.none(`UPDATE item
+                              SET image_url = $1
+                              WHERE item.id = $2;`,
             [imageUrl, itemId])
             .then(() => {
                 const s3Params = {
