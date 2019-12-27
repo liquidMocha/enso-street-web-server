@@ -1,7 +1,5 @@
 import sinon from "sinon";
 
-const LocationController = require('../../location/LocationController');
-
 describe('location', () => {
     let location;
     let addLocationForUserStub;

@@ -4,8 +4,6 @@ import express from "express";
 import sinon from "sinon";
 import ItemRepository from "../../item/ItemRepository";
 
-const ItemController = require('../../item/ItemController');
-
 describe('item API', () => {
     describe('create new item', () => {
         let saveItemStub;
@@ -64,8 +62,6 @@ describe('item API', () => {
                     }));
                     done();
                 });
-
-
         })
     });
 });
