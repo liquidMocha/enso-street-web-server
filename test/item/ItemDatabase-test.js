@@ -16,12 +16,15 @@ describe('item data', () => {
     });
 
     afterEach(() => {
+        sinon.restore();
         database.none(`TRUNCATE public.item CASCADE;`);
     });
 
     describe('save item', () => {
         it('should save an item', async () => {
-            const mock = sinon.mock(ImageRepository).expects("getSignedS3Request");
+            const s3SignedUrl = 'some.url';
+            const fakeS3SignedRequest = sinon.fake.returns(s3SignedUrl);
+            sinon.replace(ImageRepository, "getSignedS3Request", fakeS3SignedRequest);
             const title = "some title";
             const rentalDailyPrice = 1.23;
             const deposit = 50.23;
@@ -45,7 +48,8 @@ describe('item data', () => {
                 location: location,
                 ownerEmail: userEmail
             })).then((data) => {
-                mock.verify();
+                expect(fakeS3SignedRequest.callCount).to.equal(1);
+                expect(data).to.equal(s3SignedUrl);
                 return database.many(`select *, c.name as category
                                       from public.item
                                                join itemtocategory i on item.id = i.itemid

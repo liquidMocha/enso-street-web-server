@@ -2,9 +2,11 @@ import database from "../database";
 
 export async function setupUser({email: email, password: password, name: name}) {
     const data = await database.one(`
-                insert into public.user(email, password)
-                values ($1, $2)
-                returning id`,
+                INSERT INTO public.user(email, password)
+                VALUES ($1, $2)
+                ON CONFLICT (email) DO UPDATE
+                    SET password=$2
+                RETURNING id`,
         [email, password]
     );
 
@@ -22,6 +24,7 @@ export async function setupUser({email: email, password: password, name: name}) 
 export async function setupCategories(categories) {
     const values = categories.forEach(category => {
         database.none(`INSERT INTO public.category (name)
-                       VALUES ($1)`, [category])
+                       VALUES ($1)
+                       ON CONFLICT DO NOTHING`, [category])
     });
 }
