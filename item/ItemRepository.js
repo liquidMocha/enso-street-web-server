@@ -32,9 +32,9 @@ export default class ItemRepository {
     };
 
     static getItemById = (itemId) => {
-        return database.one(`select owner
-                             from public.item
-                             where id = $1`, [itemId]
+        return database.one(`SELECT owner
+                             FROM public.item
+                             WHERE id = $1`, [itemId]
         ).then(result => {
             return result.owner;
         }).then(ownerId => {
@@ -45,7 +45,7 @@ export default class ItemRepository {
                 ownerEmail: ownerEmail
             })
         }).catch(error => {
-            throw new Error("Error when retrieving item information: " + error);
+            throw new Error(`Error when retrieving item information: ${error}`);
         })
     };
 
@@ -57,7 +57,7 @@ export default class ItemRepository {
                 return LocationRepository.createLocation(itemDAO.location, user.id);
             })
             .catch(error => {
-                throw new Error("Error creating location for user: " + itemDAO.ownerEmail);
+                throw new Error(`Error creating location for user: ${itemDAO.ownerEmail}`);
             });
 
         return Promise.all([conditionId, ownerUserId, locationId])
@@ -66,7 +66,7 @@ export default class ItemRepository {
                 const userId = values[1].id;
                 const locationId = values[2];
                 return database.one(
-                        `insert into public.item(title,
+                        `INSERT INTO public.item(title,
                                                  rentalDailyPrice,
                                                  deposit,
                                                  condition,
@@ -77,8 +77,8 @@ export default class ItemRepository {
                                                  location,
                                                  owner,
                                                  searchable)
-                         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                         returning id`,
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                         RETURNING id`,
                     [
                         itemDAO.title,
                         itemDAO.rentalDailyPrice,
@@ -95,7 +95,7 @@ export default class ItemRepository {
                     result => result.id
                 );
             }).catch(error => {
-                throw new Error("Error when saving item: " + error);
+                throw new Error(`Error when saving item: ${error}`);
             });
     };
 
@@ -105,9 +105,21 @@ export default class ItemRepository {
         const saveCategoriesPromises = eventualItemId
             .then(itemId => {
                 return this.saveCategories(itemDAO.categories, itemId);
-            }).catch(error => {
-                throw new Error("Error when creating item: " + error);
+            })
+            .catch(error => {
+                throw new Error(`Error when creating item: ${error}`);
             });
+
+        eventualItemId.then(itemId => {
+            const imageUrl = `https://${process.env.Bucket}.s3.amazonaws.com/${itemId}`;
+
+            return database.none(`UPDATE item
+                                  SET image_url = $1
+                                  WHERE item.id = $2;`,
+                [imageUrl, itemId])
+        }).catch(error => {
+            console.error(`Error when updating item image url.`)
+        });
 
         const signedRequestPromise = eventualItemId.then(itemId => {
             return ImageRepository.getSignedS3Request(itemId);
@@ -122,11 +134,13 @@ export default class ItemRepository {
     static saveCategories = (categories, itemId) => {
         return Promise.all(categories.map(category => {
             return database.one(
-                "select id from public.category where name = $1",
+                    `SELECT id
+                     FROM public.category
+                     WHERE name = $1`,
                 [category]
             ).then(categoryId => {
                 return database.none(
-                        `insert into public.itemToCategory (categoryId, itemId)
+                        `INSERT INTO public.itemToCategory (categoryId, itemId)
                          VALUES ($1, $2);`, [categoryId.id, itemId]);
             })
         }));
@@ -135,34 +149,38 @@ export default class ItemRepository {
     static getItemsForUser = (userEmail) => {
         return UserRepository.findOne({email: userEmail})
             .then(user => {
-                return database.manyOrNone(
-                        `select item.id,
-                                item.title,
-                                item.rentaldailyprice,
-                                item.deposit,
-                                condition.condition,
-                                item.description,
-                                item.canbedelivered,
-                                item.deliverystarting,
-                                item.deliveryadditional,
-                                location.street,
-                                location.zipcode,
-                                location.city,
-                                location.state,
-                                location.nickname,
-                                category.name AS categoryname,
-                                item.image_url,
-                                item.created_on,
-                                item.searchable
-                         from item
-                                  join condition on item.condition = condition.id
-                                  join location on item.location = location.id
-                                  join itemtocategory on itemtocategory.itemid = item.id
-                                  join category on itemtocategory.categoryid = category.id
-                         where item.owner = $1
-                           and item.archived != true`,
-                    [user.id]
-                )
+                if (user) {
+                    return database.manyOrNone(
+                            `SELECT item.id,
+                                    item.title,
+                                    item.rentaldailyprice,
+                                    item.deposit,
+                                    condition.condition,
+                                    item.description,
+                                    item.canbedelivered,
+                                    item.deliverystarting,
+                                    item.deliveryadditional,
+                                    location.street,
+                                    location.zipcode,
+                                    location.city,
+                                    location.state,
+                                    location.nickname,
+                                    category.name AS categoryname,
+                                    item.image_url,
+                                    item.created_on,
+                                    item.searchable
+                             FROM item
+                                      JOIN condition ON item.condition = condition.id
+                                      JOIN location ON item.location = location.id
+                                      JOIN itemtocategory ON itemtocategory.itemid = item.id
+                                      JOIN category ON itemtocategory.categoryid = category.id
+                             WHERE item.owner = $1
+                               AND item.archived != TRUE`,
+                        [user.id]
+                    )
+                } else {
+                    throw new Error(`User not found.`);
+                }
             })
             .then((entities) => {
                 const resultIds = [];
@@ -199,7 +217,7 @@ export default class ItemRepository {
                 return result;
             })
             .catch(error => {
-                throw new Error("Error when retrieving items: " + error);
+                throw new Error(`Error when retrieving items: ${error}`);
             });
 
     }
