@@ -39,6 +39,6 @@ jobs:
           paths:
             - ./node_modules
 
-      - run:
-          name: test
-          command: npm test
+#      - run:
+#          name: test
+#          command: npm test
