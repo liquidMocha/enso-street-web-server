@@ -17,7 +17,7 @@ jobs:
     docker:
       - image: circleci/node:12-browsers
       - image: mdillon/postgis:latest
-        env:
+        environment:
           - POSTGRES_USER: enso-street
           - POSTGRES_DB: enso-street-test
       - image: circleci/redis:latest
