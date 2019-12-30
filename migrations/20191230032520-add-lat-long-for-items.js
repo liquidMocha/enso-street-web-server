@@ -15,7 +15,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db, callback) {
-    db.runSql(`CREATE EXTENSION IF NOT EXISTS "Postgis";`);
+    db.runSql(`create extension if not exists "postgis";`);
 
     db.runSql(
             `ALTER TABLE public.item
