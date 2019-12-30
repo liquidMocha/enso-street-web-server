@@ -13,7 +13,7 @@ const should = chai.should();
 chai.use(chaiAsPromised);
 const {expect} = require('chai');
 
-describe('item data', () => {
+describe.only('item data', () => {
     const userEmail = 'some@email.com';
     let userId;
     beforeEach(async () => {
@@ -58,13 +58,18 @@ describe('item data', () => {
             const locationZipCode = '10101';
             const locationCity = 'Chicago';
             const locationState = 'Illinois';
+            const latitude = 41.90934;
+            const longitude = -87.62785;
+
             const location = {
                 nickname: locationNickname,
                 street: locationStreet,
                 zipCode: locationZipCode,
                 city: locationCity,
                 state: locationState,
-                userId: userId
+                userId: userId,
+                latitude: latitude,
+                longitude: longitude
             };
 
             await ItemRepository.save(new ItemDAO({
@@ -99,6 +104,8 @@ describe('item data', () => {
             expect(items[0].location.zipCode).to.equal(locationZipCode);
             expect(items[0].location.city).to.equal(locationCity);
             expect(items[0].location.state).to.equal(locationState);
+            expect(items[0].location.latitude).to.equal(latitude);
+            expect(items[0].location.longitude).to.equal(longitude);
             expect(items[0].imageUrl).to.include(`https://${process.env.Bucket}.s3.amazonaws.com`);
             expect(items[0].searchable).to.equal(true);
         })

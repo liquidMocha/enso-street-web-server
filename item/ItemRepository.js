@@ -65,8 +65,10 @@ export default class ItemRepository {
                 const conditionId = values[0];
                 const userId = values[1].id;
                 const locationId = values[2];
+                //sanitize lat lon
+                const geographicLocation = `ST_GeomFromEWKT('SRID=4326;POINT(${itemDAO.location.longitude} ${itemDAO.location.latitude})')`;
                 return database.one(
-                        `INSERT INTO public.item(title,
+                    `INSERT INTO public.item(title,
                                                  rentalDailyPrice,
                                                  deposit,
                                                  condition,
@@ -76,8 +78,9 @@ export default class ItemRepository {
                                                  deliveryAdditional,
                                                  location,
                                                  owner,
-                                                 searchable)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                                                 searchable,
+                                                 geo_location)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, ${geographicLocation})
                          RETURNING id`,
                     [
                         itemDAO.title,
@@ -165,10 +168,12 @@ export default class ItemRepository {
                                     location.city,
                                     location.state,
                                     location.nickname,
-                                    category.name AS categoryname,
+                                    category.name                     AS categoryname,
                                     item.image_url,
                                     item.created_on,
-                                    item.searchable
+                                    item.searchable,
+                                    ST_X(item.geo_location::geometry) AS longitude,
+                                    ST_Y(item.geo_location::geometry) AS latitude
                              FROM item
                                       JOIN condition ON item.condition = condition.id
                                       JOIN location ON item.location = location.id
@@ -207,7 +212,9 @@ export default class ItemRepository {
                                 zipCode: itemEntity.zipcode,
                                 city: itemEntity.city,
                                 state: itemEntity.state,
-                                nickname: itemEntity.nickname
+                                nickname: itemEntity.nickname,
+                                latitude: itemEntity.latitude,
+                                longitude: itemEntity.longitude
                             },
                             imageUrl: itemEntity.image_url,
                             searchable: itemEntity.searchable
