@@ -16,7 +16,7 @@ jobs:
     working_directory: ~/enso-street-web-server
     docker:
       - image: circleci/node:12-browsers
-      - image: circleci/postgres:latest-ram
+      - image: mdillon/postgis:9.5
         environment:
           POSTGRES_USER: enso-street
           POSTGRES_DB: enso-street-test
