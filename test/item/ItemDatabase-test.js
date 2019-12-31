@@ -13,7 +13,7 @@ const should = chai.should();
 chai.use(chaiAsPromised);
 const {expect} = require('chai');
 
-describe.only('item data', () => {
+describe('item data', () => {
     const userEmail = 'some@email.com';
     let userId;
     beforeEach(async () => {
