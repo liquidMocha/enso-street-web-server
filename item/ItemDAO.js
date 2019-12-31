@@ -1,4 +1,5 @@
 import ItemRepository from "./ItemRepository";
+import HereApiClient from "../location/HereApiClient";
 
 export default class ItemDAO {
     constructor({
@@ -32,20 +33,32 @@ export default class ItemDAO {
     }
 
     static fromDTO(itemDTO) {
-        return new ItemDAO({
-            title: itemDTO.title,
-            rentalDailyPrice: itemDTO.rentalDailyPrice,
-            deposit: itemDTO.deposit,
-            condition: itemDTO.condition,
-            categories: itemDTO.categories,
-            description: itemDTO.description,
-            canBeDelivered: itemDTO.canBeDelivered,
-            deliveryStarting: itemDTO.deliveryStarting,
-            deliveryAdditional: itemDTO.deliveryAdditional,
-            location: itemDTO.location,
-            ownerEmail: itemDTO.userEmail,
-            searchable: itemDTO.searchable
-        })
+        const street = `${itemDTO.location.street ? (itemDTO.location.street + ', ') : ''}`;
+        const city = `${itemDTO.location.city ? (itemDTO.location.city + ', ') : ''}`;
+        const state = `${itemDTO.location.state ? (itemDTO.location.state + ', ') : ''}`;
+        const zipCode = `${itemDTO.location.zipCode ? (itemDTO.location.zipCode) : ''}`;
+        const addressString = `${street}${city}${state}${zipCode}`;
+        const addressCoordinates = HereApiClient.geocode(addressString);
+
+        return addressCoordinates.then(({latitude, longitude}) => {
+            return new ItemDAO({
+                title: itemDTO.title,
+                rentalDailyPrice: itemDTO.rentalDailyPrice,
+                deposit: itemDTO.deposit,
+                condition: itemDTO.condition,
+                categories: itemDTO.categories,
+                description: itemDTO.description,
+                canBeDelivered: itemDTO.canBeDelivered,
+                deliveryStarting: itemDTO.deliveryStarting,
+                deliveryAdditional: itemDTO.deliveryAdditional,
+                location: {...itemDTO.location, latitude, longitude},
+                ownerEmail: itemDTO.userEmail,
+                searchable: itemDTO.searchable
+            });
+        }).catch(error => {
+            console.log(`Error when converting item to DAO: ${error}`);
+        });
+
     }
 
     update = (updatedItem) => {

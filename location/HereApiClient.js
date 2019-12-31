@@ -28,5 +28,20 @@ export default class HereApiClient {
         ).then(response => {
             return response.data.Response.View[0].Result[0].Location.Address.Label;
         })
+    };
+
+    static geocode = (searchAddress) => {
+        return axios.get('https://geocoder.ls.hereapi.com/search/6.2/geocode.json',
+            {
+                params: {
+                    apiKey: process.env.HERE_API_KEY,
+                    languages: 'en-US',
+                    maxresults: 1,
+                    searchtext: searchAddress
+                }
+            }).then(response => {
+            const navigationPosition = response.data.Response.View[0].Result[0].Location.NavigationPosition[0];
+            return {latitude: navigationPosition.Latitude, longitude: navigationPosition.Longitude};
+        })
     }
 }

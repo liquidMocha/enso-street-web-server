@@ -3,16 +3,26 @@ import request from "supertest";
 import express from "express";
 import sinon from "sinon";
 import ItemRepository from "../../item/ItemRepository";
+import HereApiClient from "../../location/HereApiClient";
 
-describe('item API', () => {
+describe.only('item API', () => {
     describe('create new item', () => {
         let saveItemStub;
+        let geocodeStub;
+
         before(() => {
             saveItemStub = sinon
                 .stub(ItemRepository, 'save')
                 .returns(new Promise(((resolve, reject) => {
                     resolve('signed-request')
                 })));
+
+            geocodeStub = sinon
+                .stub(HereApiClient, 'geocode')
+                .returns(new Promise(((resolve, reject) => {
+                        resolve({latitude: 12.34, longitude: 33.45})
+                    })
+                ));
         });
 
         beforeEach(() => {
@@ -42,7 +52,12 @@ describe('item API', () => {
                 canBeDelivered: true,
                 deliveryStarting: 2.29,
                 deliveryAdditional: 0.69,
-                location: {}
+                location: {
+                    street: '1725 Slough Avenue',
+                    city: 'scranton',
+                    state: 'PA',
+                    zipCode: 17870
+                }
             };
 
             const testApp = express();
@@ -57,6 +72,7 @@ describe('item API', () => {
                 .post('/api/items')
                 .send(item)
                 .expect(201, (error, response) => {
+                    sinon.assert.calledWith(geocodeStub, '1725 Slough Avenue, scranton, PA, 17870');
                     sinon.assert.calledWithMatch(saveItemStub, sinon.match({
                         ...item
                     }));

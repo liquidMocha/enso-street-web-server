@@ -26,13 +26,13 @@ router.post('/', (req, res, next) => {
 
         const itemDAO = ItemDAO.fromDTO(itemDTO);
 
-        itemDAO.save()
-            .then((signedRequest) => {
-                res.status(201).json(signedRequest);
-            })
-            .catch(() => {
-                res.status(500).send();
-            });
+        itemDAO.then(dao => {
+            return dao.save();
+        }).then((signedRequest) => {
+            res.status(201).json(signedRequest);
+        }).catch(() => {
+            res.status(500).send();
+        });
     } else {
         res.status(401).send();
     }

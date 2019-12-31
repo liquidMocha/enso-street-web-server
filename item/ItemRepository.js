@@ -121,7 +121,8 @@ export default class ItemRepository {
                                   WHERE item.id = $2;`,
                 [imageUrl, itemId])
         }).catch(error => {
-            console.error(`Error when updating item image url.`)
+            console.error(`Error when updating item image url. ${error}`);
+            throw new Error('Error when updating item image url.')
         });
 
         const signedRequestPromise = eventualItemId.then(itemId => {
