@@ -221,6 +221,22 @@ export default class ItemRepository {
             .catch(error => {
                 throw new Error(`Error when retrieving items: ${error}`);
             });
+    };
 
-    }
+    static getItemsInRangeFrom = ({latitude, longitude}, rangeInMiles) => {
+        return database.manyOrNone(
+                `SELECT id,
+                        title,
+                        rentaldailyprice,
+                        city,
+                        zipcode,
+                        ST_X(item.geo_location::geometry) AS longitude,
+                        ST_Y(item.geo_location::geometry) AS latitude
+                 FROM item
+                 WHERE ST_Distance_Sphere(geo_location::geometry, ST_MakePoint($1, $2)) <= $3 * 1609.34
+                   AND archived != true
+                   AND searchable = true`,
+            [longitude, latitude, rangeInMiles]
+        )
+    };
 }
