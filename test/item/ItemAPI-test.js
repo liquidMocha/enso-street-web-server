@@ -5,7 +5,7 @@ import sinon from "sinon";
 import ItemRepository from "../../item/ItemRepository";
 import HereApiClient from "../../location/HereApiClient";
 
-describe.only('item API', () => {
+describe('item API', () => {
     describe('create new item', () => {
         let saveItemStub;
         let geocodeStub;
