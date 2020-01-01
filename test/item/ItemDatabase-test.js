@@ -53,16 +53,14 @@ describe('item data', () => {
             const canBeDelivered = true;
             const deliveryStarting = 1.45;
             const deliveryAdditional = 0.8;
-            const locationNickname = 'Home';
             const locationStreet = 'Clark';
             const locationZipCode = '10101';
             const locationCity = 'Chicago';
-            const locationState = 'Illinois';
+            const locationState = 'IL';
             const latitude = 41.90934;
             const longitude = -87.62785;
 
             const location = {
-                nickname: locationNickname,
                 street: locationStreet,
                 zipCode: locationZipCode,
                 city: locationCity,
@@ -99,7 +97,6 @@ describe('item data', () => {
             expect(items[0].canBeDelivered).to.equal(canBeDelivered);
             expect(Number(items[0].deliveryStarting)).to.equal(deliveryStarting);
             expect(Number(items[0].deliveryAdditional)).to.equal(deliveryAdditional);
-            expect(items[0].location.nickname).to.equal(locationNickname);
             expect(items[0].location.street).to.equal(locationStreet);
             expect(items[0].location.zipCode).to.equal(locationZipCode);
             expect(items[0].location.city).to.equal(locationCity);

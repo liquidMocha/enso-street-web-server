@@ -3,7 +3,6 @@ import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
 import ImageRepository from "./ImageRepository";
 import ItemDAO from "./ItemDAO";
-import LocationRepository from "../location/LocationRepository";
 
 export default class ItemRepository {
 
@@ -52,19 +51,11 @@ export default class ItemRepository {
     static saveItem = (itemDAO) => {
         const conditionId = ItemRepository.getConditionId(itemDAO.condition);
         const ownerUserId = UserRepository.findOne({email: itemDAO.ownerEmail});
-        const locationId = itemDAO.location.id || ownerUserId
-            .then(user => {
-                return LocationRepository.createLocation(itemDAO.location, user.id);
-            })
-            .catch(error => {
-                throw new Error(`Error creating location for user: ${itemDAO.ownerEmail}`);
-            });
 
-        return Promise.all([conditionId, ownerUserId, locationId])
+        return Promise.all([conditionId, ownerUserId])
             .then((values) => {
                 const conditionId = values[0];
                 const userId = values[1].id;
-                const locationId = values[2];
                 //sanitize lat lon
                 const geographicLocation = `ST_GeomFromEWKT('SRID=4326;POINT(${itemDAO.location.longitude} ${itemDAO.location.latitude})')`;
                 return database.one(
@@ -76,11 +67,14 @@ export default class ItemRepository {
                                                  canBeDelivered,
                                                  deliveryStarting,
                                                  deliveryAdditional,
-                                                 location,
                                                  owner,
                                                  searchable,
-                                                 geo_location)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, ${geographicLocation})
+                                                 geo_location,
+                                                 street,
+                                                 city,
+                                                 state,
+                                                 zipCode)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14)
                          RETURNING id`,
                     [
                         itemDAO.title,
@@ -91,9 +85,12 @@ export default class ItemRepository {
                         itemDAO.canBeDelivered,
                         itemDAO.deliveryStarting,
                         itemDAO.deliveryAdditional,
-                        locationId,
                         userId,
-                        true
+                        true,
+                        itemDAO.location.street,
+                        itemDAO.location.city,
+                        itemDAO.location.state,
+                        itemDAO.location.zipCode
                     ],
                     result => result.id
                 );
@@ -164,11 +161,10 @@ export default class ItemRepository {
                                     item.canbedelivered,
                                     item.deliverystarting,
                                     item.deliveryadditional,
-                                    location.street,
-                                    location.zipcode,
-                                    location.city,
-                                    location.state,
-                                    location.nickname,
+                                    item.street,
+                                    item.zipcode,
+                                    item.city,
+                                    item.state,
                                     category.name                     AS categoryname,
                                     item.image_url,
                                     item.created_on,
@@ -177,7 +173,6 @@ export default class ItemRepository {
                                     ST_Y(item.geo_location::geometry) AS latitude
                              FROM item
                                       JOIN condition ON item.condition = condition.id
-                                      JOIN location ON item.location = location.id
                                       JOIN itemtocategory ON itemtocategory.itemid = item.id
                                       JOIN category ON itemtocategory.categoryid = category.id
                              WHERE item.owner = $1
@@ -213,7 +208,6 @@ export default class ItemRepository {
                                 zipCode: itemEntity.zipcode,
                                 city: itemEntity.city,
                                 state: itemEntity.state,
-                                nickname: itemEntity.nickname,
                                 latitude: itemEntity.latitude,
                                 longitude: itemEntity.longitude
                             },
