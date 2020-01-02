@@ -1,0 +1,11 @@
+config:
+  target: 'https://enso-street-backend.herokuapp.com'
+  tls:
+    rejectUnauthorized: false
+  phases:
+    - duration: 5
+      arrivalRate: 100
+scenarios:
+  - flow:
+      - get:
+          url: "/api/category"

@@ -1,3 +1,4 @@
+# Database
 To start local PostgreSql:
 ```sudo docker run --name enso-street-db -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_USER=enso-street -d postgres```
 
@@ -18,18 +19,32 @@ list all databases: \l
 list all tables: \dt
 switch database: \c ${database-name}
 
+# Redis cache
 Start docker Redis:
 ```sudo docker run --name enso-redis -p 6379:6379 -d redis```
 List all keys: (using redis-cli) 
 ```KEYS *```
 
+# Git
 set custom git hook location
 ```git config core.hooksPath <path>```
 
-
+# Heroku
 Heroku deployment:
 ```heroku login```
 to create new app:
 ```heroku create```
 push to heroku:
 ```git push heroku master```
+
+# Performance test
+Performance test:
+note the 
+```
+tls:
+  rejectUnauthorized: false
+```
+for self signed certificate in local environments
+
+To run a particular performance test:
+```artillery run performance_tests/get-categories.yml```
