@@ -5,14 +5,63 @@ import ImageRepository from "./ImageRepository";
 import ItemDAO from "./ItemDAO";
 
 export default class ItemRepository {
-
     static updateItem = (updatedItem) => {
-        return database.none(
-                `UPDATE public.item
-                 SET rentaldailyprice = COALESCE($1, rentaldailyprice),
-                     searchable       = COALESCE($2, searchable)
-                 WHERE id = $3`,
-            [updatedItem.rentalDailyPrice, updatedItem.searchable, updatedItem.id]);
+        let eventualConditionId;
+        if (updatedItem.condition) {
+            eventualConditionId = ItemRepository.getConditionId(updatedItem.condition);
+        } else {
+            eventualConditionId = Promise.resolve();
+        }
+
+        let eventualCategoriesSaved;
+        if (updatedItem.categories) {
+            eventualCategoriesSaved = ItemRepository.saveCategories(updatedItem.categories, updatedItem.id);
+        } else {
+            eventualCategoriesSaved = Promise.resolve();
+        }
+
+        return eventualConditionId
+            .then(conditionId => {
+                return Promise.all([
+                    eventualCategoriesSaved,
+                    database.none(
+                            `UPDATE public.item
+                             SET rentaldailyprice   = COALESCE($1, rentaldailyprice),
+                                 searchable         = COALESCE($2, searchable),
+                                 title              = COALESCE($3, title),
+                                 condition          = COALESCE($4, condition),
+                                 description        = COALESCE($5, description),
+                                 canbedelivered     = COALESCE($6, canbedelivered),
+                                 deliverystarting   = COALESCE($7, deliverystarting),
+                                 deliveryadditional = COALESCE($8, deliveryadditional),
+                                 deposit            = COALESCE($9, deposit),
+                                 street             = COALESCE($10, street),
+                                 zipcode            = COALESCE($11, zipcode),
+                                 city               = COALESCE($12, city),
+                                 state              = COALESCE($13, state)
+                             WHERE id = $14`,
+                        [
+                            updatedItem.rentalDailyPrice,
+                            updatedItem.searchable,
+                            updatedItem.title,
+                            conditionId,
+                            updatedItem.description,
+                            updatedItem.canBeDelivered,
+                            updatedItem.deliveryStarting,
+                            updatedItem.deliveryAdditional,
+                            updatedItem.deposit,
+                            updatedItem.location ? updatedItem.location.street : null,
+                            updatedItem.location ? updatedItem.location.zipCode : null,
+                            updatedItem.location ? updatedItem.location.city : null,
+                            updatedItem.location ? updatedItem.location.state : null,
+                            updatedItem.id
+                        ])]
+                );
+            })
+            .catch(error => {
+                console.error(`Error when updating item ID: ${updatedItem.id}`);
+                throw new Error(`Error when updating item: ${error}`);
+            });
     };
 
     static getConditionId = (condition) => {
@@ -27,7 +76,9 @@ export default class ItemRepository {
     static archive = (itemId) => {
         return database.none(`UPDATE public.item
                               SET archived = true
-                              where id = $1`, [itemId])
+                              where id = $1`,
+            [itemId]
+        )
     };
 
     static getItemById = (itemId) => {
@@ -56,7 +107,6 @@ export default class ItemRepository {
             .then((values) => {
                 const conditionId = values[0];
                 const userId = values[1].id;
-                //sanitize lat lon
                 const geographicLocation = `ST_GeomFromEWKT('SRID=4326;POINT(${itemDAO.location.longitude} ${itemDAO.location.latitude})')`;
                 return database.one(
                     `INSERT INTO public.item(title,
@@ -133,18 +183,23 @@ export default class ItemRepository {
     };
 
     static saveCategories = (categories, itemId) => {
-        return Promise.all(categories.map(category => {
-            return database.one(
-                    `SELECT id
-                     FROM public.category
-                     WHERE name = $1`,
-                [category]
-            ).then(categoryId => {
-                return database.none(
-                        `INSERT INTO public.itemToCategory (categoryId, itemId)
-                         VALUES ($1, $2);`, [categoryId.id, itemId]);
-            })
-        }));
+        return database.none(`DELETE
+                              FROM public.itemtocategory
+                              WHERE itemid = $1`, itemId)
+            .then(() => {
+                return Promise.all(categories.map(category => {
+                    return database.one(
+                            `SELECT id
+                             FROM public.category
+                             WHERE name = $1`,
+                        [category]
+                    ).then(categoryId => {
+                        return database.none(
+                                `INSERT INTO public.itemToCategory (categoryId, itemId)
+                                 VALUES ($1, $2);`, [categoryId.id, itemId]);
+                    })
+                }));
+            });
     };
 
     static getItemsForUser = (userEmail) => {

@@ -106,5 +106,5 @@ describe('item data', () => {
             expect(items[0].imageUrl).to.include(`https://${process.env.Bucket}.s3.amazonaws.com`);
             expect(items[0].searchable).to.equal(true);
         })
-    })
+    });
 });
