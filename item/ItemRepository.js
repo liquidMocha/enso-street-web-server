@@ -20,12 +20,15 @@ export default class ItemRepository {
             eventualCategoriesSaved = Promise.resolve();
         }
 
+        const geographicLocation = ItemRepository.getGeographicLocationFrom(
+            updatedItem.location.longitude, updatedItem.location.latitude);
+
         return eventualConditionId
             .then(conditionId => {
                 return Promise.all([
                     eventualCategoriesSaved,
                     database.none(
-                            `UPDATE public.item
+                        `UPDATE public.item
                              SET rentaldailyprice   = COALESCE($1, rentaldailyprice),
                                  searchable         = COALESCE($2, searchable),
                                  title              = COALESCE($3, title),
@@ -38,7 +41,8 @@ export default class ItemRepository {
                                  street             = COALESCE($10, street),
                                  zipcode            = COALESCE($11, zipcode),
                                  city               = COALESCE($12, city),
-                                 state              = COALESCE($13, state)
+                                 state              = COALESCE($13, state),
+                                 geo_location       = COALESCE(${geographicLocation}, geo_location)
                              WHERE id = $14`,
                         [
                             updatedItem.rentalDailyPrice,
@@ -99,6 +103,10 @@ export default class ItemRepository {
         })
     };
 
+    static getGeographicLocationFrom = (longitude, latitude) => {
+        return `ST_GeomFromEWKT('SRID=4326;POINT(${longitude} ${latitude})')`
+    };
+
     static saveItem = (itemDAO) => {
         const conditionId = ItemRepository.getConditionId(itemDAO.condition);
         const ownerUserId = UserRepository.findOne({email: itemDAO.ownerEmail});
@@ -107,7 +115,8 @@ export default class ItemRepository {
             .then((values) => {
                 const conditionId = values[0];
                 const userId = values[1].id;
-                const geographicLocation = `ST_GeomFromEWKT('SRID=4326;POINT(${itemDAO.location.longitude} ${itemDAO.location.latitude})')`;
+                const geographicLocation = ItemRepository.getGeographicLocationFrom(
+                    itemDAO.location.longitude, itemDAO.location.latitude);
                 return database.one(
                     `INSERT INTO public.item(title,
                                                  rentalDailyPrice,

@@ -5,25 +5,28 @@ import ItemRepository from "./ItemRepository";
 
 const router = express.Router();
 
+const buildItemDTO = (itemPayload, userEmail) => {
+    return new ItemDTO(
+        {
+            title: itemPayload.title,
+            rentalDailyPrice: itemPayload.rentalDailyPrice,
+            deposit: itemPayload.deposit,
+            condition: itemPayload.condition,
+            categories: itemPayload.categories,
+            description: itemPayload.description,
+            canBeDelivered: itemPayload.canBeDelivered,
+            deliveryStarting: itemPayload.deliveryStarting,
+            deliveryAdditional: itemPayload.deliveryAdditional,
+            location: itemPayload.location,
+            userEmail: userEmail
+        }
+    );
+};
+
 router.post('/', (req, res, next) => {
     if (req.session.email) {
         const itemPayload = req.body;
-        const itemDTO = new ItemDTO(
-            {
-                title: itemPayload.title,
-                rentalDailyPrice: itemPayload.rentalDailyPrice,
-                deposit: itemPayload.deposit,
-                condition: itemPayload.condition,
-                categories: itemPayload.categories,
-                description: itemPayload.description,
-                canBeDelivered: itemPayload.canBeDelivered,
-                deliveryStarting: itemPayload.deliveryStarting,
-                deliveryAdditional: itemPayload.deliveryAdditional,
-                location: itemPayload.location,
-                userEmail: req.session.email
-            }
-        );
-
+        const itemDTO = buildItemDTO(itemPayload, req.session.email);
         const itemDAO = ItemDAO.fromDTO(itemDTO);
 
         itemDAO.then(dao => {

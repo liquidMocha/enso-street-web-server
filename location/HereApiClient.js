@@ -42,6 +42,9 @@ export default class HereApiClient {
             }).then(response => {
             const navigationPosition = response.data.Response.View[0].Result[0].Location.NavigationPosition[0];
             return {latitude: navigationPosition.Latitude, longitude: navigationPosition.Longitude};
+        }).catch(error => {
+            console.error(`No coordinates found for address: ${searchAddress}: ${error}`);
+            return null;
         })
     }
 }

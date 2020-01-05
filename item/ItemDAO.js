@@ -33,12 +33,7 @@ export default class ItemDAO {
     }
 
     static fromDTO(itemDTO) {
-        const street = `${itemDTO.location.street ? (itemDTO.location.street + ', ') : ''}`;
-        const city = `${itemDTO.location.city ? (itemDTO.location.city + ', ') : ''}`;
-        const state = `${itemDTO.location.state ? (itemDTO.location.state + ', ') : ''}`;
-        const zipCode = `${itemDTO.location.zipCode ? (itemDTO.location.zipCode) : ''}`;
-        const addressString = `${street}${city}${state}${zipCode}`;
-        const addressCoordinates = HereApiClient.geocode(addressString);
+        const addressCoordinates = ItemDAO.lookupCoordinatesFrom(itemDTO.location);
 
         return addressCoordinates.then(({latitude, longitude}) => {
             return new ItemDAO({
@@ -58,11 +53,37 @@ export default class ItemDAO {
         }).catch(error => {
             console.log(`Error when converting item to DAO: ${error}`);
         });
-
     }
 
+    static lookupCoordinatesFrom = (location) => {
+        const street = `${location.street ? (location.street + ', ') : ''}`;
+        const city = `${location.city ? (location.city + ', ') : ''}`;
+        const state = `${location.state ? (location.state + ', ') : ''}`;
+        const zipCode = `${location.zipCode ? (location.zipCode) : ''}`;
+        const addressString = `${street}${city}${state}${zipCode}`;
+        return HereApiClient.geocode(addressString);
+    };
+
     update = (updatedItem) => {
-        return ItemRepository.updateItem({...updatedItem, id: this.id});
+        let coordinates;
+        if (updatedItem.location) {
+            coordinates = ItemDAO.lookupCoordinatesFrom(updatedItem.location);
+        } else {
+            coordinates = Promise.resolve({});
+        }
+
+        return coordinates.then(({latitude, longitude}) => {
+            return ItemRepository.updateItem({
+                ...updatedItem,
+                id: this.id,
+                location:
+                    {
+                        ...updatedItem.location,
+                        latitude: latitude,
+                        longitude: longitude
+                    }
+            });
+        });
     };
 
     save = () => {
