@@ -211,80 +211,73 @@ export default class ItemRepository {
             });
     };
 
-    static getItemsForUser = (userEmail) => {
-        return UserRepository.findOne({email: userEmail})
-            .then(user => {
-                if (user) {
-                    return database.manyOrNone(
-                            `SELECT item.id,
-                                    item.title,
-                                    item.rentaldailyprice,
-                                    item.deposit,
-                                    condition.condition,
-                                    item.description,
-                                    item.canbedelivered,
-                                    item.deliverystarting,
-                                    item.deliveryadditional,
-                                    item.street,
-                                    item.zipcode,
-                                    item.city,
-                                    item.state,
-                                    category.name                     AS categoryname,
-                                    item.image_url,
-                                    item.created_on,
-                                    item.searchable,
-                                    ST_X(item.geo_location::geometry) AS longitude,
-                                    ST_Y(item.geo_location::geometry) AS latitude
-                             FROM item
-                                      JOIN condition ON item.condition = condition.id
-                                      JOIN itemtocategory ON itemtocategory.itemid = item.id
-                                      JOIN category ON itemtocategory.categoryid = category.id
-                             WHERE item.owner = $1
-                               AND item.archived != TRUE`,
-                        [user.id]
-                    )
-                } else {
-                    throw new Error(`User not found.`);
-                }
-            })
-            .then((entities) => {
-                const resultIds = [];
-                const result = [];
-                entities.forEach(itemEntity => {
-                    if (resultIds.includes(itemEntity.id)) {
-                        result.find(element => element.id === itemEntity.id).addCategory(itemEntity.categoryname);
-                    } else {
-                        resultIds.push(itemEntity.id);
-                        result.push(new ItemDTO({
-                            id: itemEntity.id,
-                            title: itemEntity.title,
-                            rentalDailyPrice: itemEntity.rentaldailyprice,
-                            deposit: itemEntity.deposit,
-                            condition: itemEntity.condition,
-                            categories: [itemEntity.categoryname],
-                            description: itemEntity.description,
-                            canBeDelivered: itemEntity.canbedelivered,
-                            deliveryStarting: itemEntity.deliverystarting,
-                            deliveryAdditional: itemEntity.deliveryadditional,
-                            createdOn: itemEntity.created_on,
-                            location: {
-                                street: itemEntity.street,
-                                zipCode: itemEntity.zipcode,
-                                city: itemEntity.city,
-                                state: itemEntity.state,
-                                latitude: itemEntity.latitude,
-                                longitude: itemEntity.longitude
-                            },
-                            imageUrl: itemEntity.image_url,
-                            searchable: itemEntity.searchable
-                        }))
-                    }
+    static getItemsForUser = async (userEmail) => {
+        const user = await UserRepository.findOne({email: userEmail});
+
+        if (user) {
+            return await database.task(t => {
+                return t.map(`SELECT item.id,
+                                     item.title,
+                                     item.rentaldailyprice,
+                                     item.deposit,
+                                     condition.condition,
+                                     item.description,
+                                     item.canbedelivered,
+                                     item.deliverystarting,
+                                     item.deliveryadditional,
+                                     item.street,
+                                     item.zipcode,
+                                     item.city,
+                                     item.state,
+                                     item.image_url,
+                                     item.created_on,
+                                     item.searchable,
+                                     ST_X(item.geo_location::geometry) AS longitude,
+                                     ST_Y(item.geo_location::geometry) AS latitude
+                              FROM item
+                                       JOIN condition ON item.condition = condition.id
+                              WHERE item.owner = $1
+                                AND item.archived != TRUE`,
+                    [user.id], item => {
+                        return t.any(`SELECT name
+                                      FROM itemtocategory
+                                               JOIN category c ON itemtocategory.categoryid = c.id
+                                      WHERE itemid = $1`, [item.id])
+                            .then(categories => {
+                                item.categories = categories.map(category => category.name);
+                                return item;
+                            })
+                    }).then(t.batch);
+            }).then(itemEntities => {
+                return itemEntities.map(itemEntity => {
+                    return new ItemDTO({
+                        id: itemEntity.id,
+                        title: itemEntity.title,
+                        rentalDailyPrice: itemEntity.rentaldailyprice,
+                        deposit: itemEntity.deposit,
+                        condition: itemEntity.condition,
+                        categories: itemEntity.categories,
+                        description: itemEntity.description,
+                        canBeDelivered: itemEntity.canbedelivered,
+                        deliveryStarting: itemEntity.deliverystarting,
+                        deliveryAdditional: itemEntity.deliveryadditional,
+                        createdOn: itemEntity.created_on,
+                        location: {
+                            street: itemEntity.street,
+                            zipCode: itemEntity.zipcode,
+                            city: itemEntity.city,
+                            state: itemEntity.state,
+                            latitude: itemEntity.latitude,
+                            longitude: itemEntity.longitude,
+                        },
+                        imageUrl: itemEntity.image_url,
+                        searchable: itemEntity.searchable
+                    })
                 });
-                return result;
-            })
-            .catch(error => {
-                throw new Error(`Error when retrieving items: ${error}`);
             });
+        } else {
+            throw new Error(`User not found.`);
+        }
     };
 
     static getItemsInRangeFrom = ({latitude, longitude}, rangeInMiles) => {

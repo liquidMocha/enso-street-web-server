@@ -23,31 +23,32 @@ const buildItemDTO = (itemPayload, userEmail) => {
     );
 };
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
     if (req.session.email) {
         const itemPayload = req.body;
         const itemDTO = buildItemDTO(itemPayload, req.session.email);
-        const itemDAO = ItemDAO.fromDTO(itemDTO);
+        const itemDAO = await ItemDAO.fromDTO(itemDTO);
 
-        itemDAO.then(dao => {
-            return dao.save();
-        }).then((signedRequest) => {
+        try {
+            const signedRequest = await itemDAO.save();
             res.status(201).json(signedRequest);
-        }).catch(() => {
+        } catch (e) {
             res.status(500).send();
-        });
+        }
     } else {
         res.status(401).send();
     }
 });
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
-        ItemRepository.getItemsForUser(userEmail)
-            .then(items => {
-                res.status(200).json(items);
-            });
+        try {
+            const items = await ItemRepository.getItemsForUser(userEmail);
+            res.status(200).json(items);
+        } catch (e) {
+            console.error(`Error when retrieving item for user ${userEmail}: ${e}`)
+        }
     } else {
         res.status(401).send();
     }
