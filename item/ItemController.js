@@ -71,26 +71,23 @@ router.delete('/:itemId', (req, res, next) => {
     }
 });
 
-router.put('/:itemId', (req, res, next) => {
+router.put('/:itemId', async (req, res, next) => {
     const itemId = req.params.itemId;
     const userEmail = req.session.email;
 
     if (userEmail) {
-        ItemRepository.getItemById(itemId)
-            .then(itemDAO => {
-                if (itemDAO.ownerEmail === userEmail) {
-                    return itemDAO.update(req.body);
-                } else {
-                    res.status(401).send();
-                }
-            })
-            .then(() => {
+        try {
+            const itemDAO = await ItemRepository.getItemById(itemId);
+            if (itemDAO.ownerEmail === userEmail) {
+                await itemDAO.update(req.body);
                 res.status(200).send();
-            })
-            .catch(error => {
-                res.status(500).send();
-                throw new Error(`Error when updating item: ${error}`)
-            })
+            } else {
+                res.status(401).send();
+            }
+        } catch (error) {
+            console.error(`Error when updating item ${itemId}: ${error}`);
+            res.status(500).send();
+        }
     } else {
         res.status(401).send();
     }

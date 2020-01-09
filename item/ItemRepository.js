@@ -20,8 +20,11 @@ export default class ItemRepository {
             eventualCategoriesSaved = Promise.resolve();
         }
 
-        const geographicLocation = ItemRepository.getGeographicLocationFrom(
-            updatedItem.location.longitude, updatedItem.location.latitude);
+        let geographicLocation = null;
+        if (updatedItem.location) {
+            geographicLocation = ItemRepository.getGeographicLocationFrom(
+                updatedItem.location.longitude, updatedItem.location.latitude);
+        }
 
         return eventualConditionId
             .then(conditionId => {

@@ -64,25 +64,19 @@ export default class ItemDAO {
         return HereApiClient.geocode(addressString);
     };
 
-    update = (updatedItem) => {
+    update = async (updatedItem) => {
         let coordinates;
         if (updatedItem.location) {
             coordinates = ItemDAO.lookupCoordinatesFrom(updatedItem.location);
-        } else {
-            coordinates = Promise.resolve({});
+            updatedItem.location = {
+                ...updatedItem.location,
+                ...await coordinates
+            };
         }
 
-        return coordinates.then(({latitude, longitude}) => {
-            return ItemRepository.updateItem({
-                ...updatedItem,
-                id: this.id,
-                location:
-                    {
-                        ...updatedItem.location,
-                        latitude: latitude,
-                        longitude: longitude
-                    }
-            });
+        ItemRepository.updateItem({
+            ...updatedItem,
+            id: this.id,
         });
     };
 
