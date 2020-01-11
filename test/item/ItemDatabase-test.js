@@ -3,7 +3,7 @@ import ItemRepository from "../../item/ItemRepository";
 import ItemDAO from "../../item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
-import ImageRepository from "../../item/ImageRepository";
+import ImageRepository from "../../image/ImageRepository";
 import UserRepository from "../../user/UserRepository";
 import chai from 'chai';
 import 'chai-as-promised';

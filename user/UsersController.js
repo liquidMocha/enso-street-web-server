@@ -37,10 +37,12 @@ router.post('/login', async (req, res) => {
             if (passwordMatch) {
                 req.session.email = email;
                 res.status(200).send('authentication successful');
+            } else {
+                res.status(401).send('authentication failed');
             }
+        } else {
+            res.status(401).send('authentication failed');
         }
-
-        res.status(401).send('authentication failed');
     } catch (e) {
         console.error(`Error when try to log in ${email}: ${e}`);
         res.status(500);

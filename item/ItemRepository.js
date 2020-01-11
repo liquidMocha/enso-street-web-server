@@ -1,7 +1,7 @@
 import database from '../database';
 import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
-import ImageRepository from "./ImageRepository";
+import ImageRepository from "../image/ImageRepository";
 import ItemDAO from "./ItemDAO";
 
 export default class ItemRepository {
@@ -110,18 +110,19 @@ export default class ItemRepository {
         return `ST_GeomFromEWKT('SRID=4326;POINT(${longitude} ${latitude})')`
     };
 
-    static saveItem = (itemDAO) => {
+    static saveItem = async (itemDAO) => {
         const conditionId = ItemRepository.getConditionId(itemDAO.condition);
         const ownerUserId = UserRepository.findOne({email: itemDAO.ownerEmail});
 
-        return Promise.all([conditionId, ownerUserId])
-            .then((values) => {
-                const conditionId = values[0];
-                const userId = values[1].id;
-                const geographicLocation = ItemRepository.getGeographicLocationFrom(
-                    itemDAO.location.longitude, itemDAO.location.latitude);
-                return database.one(
-                    `INSERT INTO public.item(title,
+        const geographicLocation = ItemRepository.getGeographicLocationFrom(
+            itemDAO.location.longitude, itemDAO.location.latitude);
+
+        const [resolvedConditionId, resolvedOwner] =
+            await Promise.all([conditionId, ownerUserId]);
+
+        try {
+            return database.one(
+                `INSERT INTO public.item(title,
                                                  rentalDailyPrice,
                                                  deposit,
                                                  condition,
@@ -138,30 +139,31 @@ export default class ItemRepository {
                                                  zipCode)
                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14)
                          RETURNING id`,
-                    [
-                        itemDAO.title,
-                        itemDAO.rentalDailyPrice,
-                        itemDAO.deposit,
-                        conditionId,
-                        itemDAO.description,
-                        itemDAO.canBeDelivered,
-                        itemDAO.deliveryStarting,
-                        itemDAO.deliveryAdditional,
-                        userId,
-                        true,
-                        itemDAO.location.street,
-                        itemDAO.location.city,
-                        itemDAO.location.state,
-                        itemDAO.location.zipCode
-                    ],
-                    result => result.id
-                );
-            }).catch(error => {
-                throw new Error(`Error when saving item: ${error}`);
-            });
+                [
+                    itemDAO.title,
+                    itemDAO.rentalDailyPrice,
+                    itemDAO.deposit,
+                    resolvedConditionId,
+                    itemDAO.description,
+                    itemDAO.canBeDelivered,
+                    itemDAO.deliveryStarting,
+                    itemDAO.deliveryAdditional,
+                    resolvedOwner.id,
+                    true,
+                    itemDAO.location.street,
+                    itemDAO.location.city,
+                    itemDAO.location.state,
+                    itemDAO.location.zipCode
+                ],
+                result => result.id
+            );
+        } catch (error) {
+            console.error(`Error when saving item: ${error}`);
+            throw new Error(error);
+        }
     };
 
-    static save = (itemDAO) => {
+    static save = async (itemDAO) => {
         const eventualItemId = ItemRepository.saveItem(itemDAO);
 
         const saveCategoriesPromises = eventualItemId
@@ -195,23 +197,18 @@ export default class ItemRepository {
     };
 
     static saveCategories = (categories, itemId) => {
-        return database.none(`DELETE
+        return database.tx(async t => {
+            const existingCategoriesRemoved =
+                await t.none(`DELETE
                               FROM public.itemtocategory
-                              WHERE itemid = $1`, itemId)
-            .then(() => {
-                return Promise.all(categories.map(category => {
-                    return database.one(
-                            `SELECT id
-                             FROM public.category
-                             WHERE name = $1`,
-                        [category]
-                    ).then(categoryId => {
-                        return database.none(
-                                `INSERT INTO public.itemToCategory (categoryId, itemId)
-                                 VALUES ($1, $2);`, [categoryId.id, itemId]);
-                    })
-                }));
-            });
+                              WHERE itemid = $1`, itemId
+                );
+
+            return t.none(`INSERT INTO public.itemtocategory (categoryid, itemid)
+                           SELECT category.id, $1
+                           FROM category
+                           WHERE category.name IN ($2:csv)`, [itemId, categories]);
+        });
     };
 
     static getItemsForUser = async (userEmail) => {
