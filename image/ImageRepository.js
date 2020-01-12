@@ -7,7 +7,7 @@ aws.config.update({
 });
 
 export default class ImageRepository {
-    static getSignedS3Request(itemId) {
+    static getSignedS3Request(key) {
         const S3_BUCKET = process.env.Bucket;
         const s3 = new aws.S3({
             signatureVersion: 'v4'
@@ -15,7 +15,7 @@ export default class ImageRepository {
 
         const s3Params = {
             Bucket: S3_BUCKET,
-            Key: itemId,
+            Key: key,
             Expires: 500,
             ACL: 'public-read',
             ContentType: 'image/jpeg'

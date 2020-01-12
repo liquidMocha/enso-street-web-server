@@ -7,6 +7,7 @@ import usersRouter from "./user/UsersController";
 import itemRouter from "./item/ItemController";
 import categoryRouter from "./category/CategoryController";
 import searchRouter from "./search/SearchController";
+import imageRouter from "./image/ImageController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";
@@ -70,5 +71,6 @@ app.use('/api/users', usersRouter);
 app.use('/api/locations', locationRouter);
 app.use('/api/category', categoryRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/image', imageRouter);
 
 export default app;
