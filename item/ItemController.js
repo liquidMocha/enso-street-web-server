@@ -9,6 +9,7 @@ const buildItemDTO = (itemPayload, userEmail) => {
     return new ItemDTO(
         {
             title: itemPayload.title,
+            imageUrl: itemPayload.imageUrl,
             rentalDailyPrice: itemPayload.rentalDailyPrice,
             deposit: itemPayload.deposit,
             condition: itemPayload.condition,
@@ -30,8 +31,8 @@ router.post('/', async (req, res, next) => {
         const itemDAO = await ItemDAO.fromDTO(itemDTO);
 
         try {
-            const signedRequest = await itemDAO.save();
-            res.status(201).json(signedRequest);
+            await itemDAO.save();
+            res.status(201).send();
         } catch (e) {
             res.status(500).send();
         }

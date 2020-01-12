@@ -5,6 +5,7 @@ export default class ItemDAO {
     constructor({
                     id: id,
                     title: title,
+                    imageUrl: imageUrl,
                     rentalDailyPrice: rentalDailyPrice,
                     deposit: deposit,
                     condition: condition,
@@ -19,6 +20,7 @@ export default class ItemDAO {
                 }) {
         this.id = id;
         this.title = title;
+        this.imageUrl = imageUrl;
         this.rentalDailyPrice = rentalDailyPrice;
         this.deposit = deposit;
         this.condition = condition;
@@ -38,6 +40,7 @@ export default class ItemDAO {
         return addressCoordinates.then(({latitude, longitude}) => {
             return new ItemDAO({
                 title: itemDTO.title,
+                imageUrl: itemDTO.imageUrl,
                 rentalDailyPrice: itemDTO.rentalDailyPrice,
                 deposit: itemDTO.deposit,
                 condition: itemDTO.condition,

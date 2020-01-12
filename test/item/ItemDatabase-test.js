@@ -3,7 +3,6 @@ import ItemRepository from "../../item/ItemRepository";
 import ItemDAO from "../../item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
-import ImageRepository from "../../image/ImageRepository";
 import UserRepository from "../../user/UserRepository";
 import chai from 'chai';
 import 'chai-as-promised';
@@ -37,13 +36,6 @@ describe('item data', () => {
         });
 
         it('should save an item and get it back for user', async () => {
-            const s3SignedUrl = 'some.url';
-            const fakeS3SignedRequest = sinon.fake.returns(new Promise(
-                (resolve, reject) => {
-                    resolve(s3SignedUrl)
-                }));
-            sinon.replace(ImageRepository, "getSignedS3Request", fakeS3SignedRequest);
-
             const title = "some title";
             const rentalDailyPrice = 1.23;
             const deposit = 50.23;
@@ -59,6 +51,7 @@ describe('item data', () => {
             const locationState = 'IL';
             const latitude = 41.90934;
             const longitude = -87.62785;
+            const imageUrl = 'someurl.com';
 
             const location = {
                 street: locationStreet,
@@ -81,7 +74,8 @@ describe('item data', () => {
                 deliveryStarting: deliveryStarting,
                 deliveryAdditional: deliveryAdditional,
                 location: location,
-                ownerEmail: userEmail
+                ownerEmail: userEmail,
+                imageUrl: imageUrl
             }));
 
             const items = await ItemRepository.getItemsForUser(userEmail);
@@ -103,7 +97,7 @@ describe('item data', () => {
             expect(items[0].location.state).to.equal(locationState);
             expect(items[0].location.latitude).to.equal(latitude);
             expect(items[0].location.longitude).to.equal(longitude);
-            expect(items[0].imageUrl).to.include(`https://${process.env.Bucket}.s3.amazonaws.com`);
+            expect(items[0].imageUrl).to.equal(imageUrl);
             expect(items[0].searchable).to.equal(true);
         })
     });

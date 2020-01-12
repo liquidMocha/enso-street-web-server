@@ -1,7 +1,6 @@
 import database from '../database';
 import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
-import ImageRepository from "../image/ImageRepository";
 import ItemDAO from "./ItemDAO";
 
 export default class ItemRepository {
@@ -136,8 +135,9 @@ export default class ItemRepository {
                                                  street,
                                                  city,
                                                  state,
-                                                 zipCode)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14)
+                                                 zipCode,
+                                                 image_url)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14, $15)
                          RETURNING id`,
                 [
                     itemDAO.title,
@@ -153,7 +153,8 @@ export default class ItemRepository {
                     itemDAO.location.street,
                     itemDAO.location.city,
                     itemDAO.location.state,
-                    itemDAO.location.zipCode
+                    itemDAO.location.zipCode,
+                    itemDAO.imageUrl
                 ],
                 result => result.id
             );
@@ -164,45 +165,22 @@ export default class ItemRepository {
     };
 
     static save = async (itemDAO) => {
-        const eventualItemId = ItemRepository.saveItem(itemDAO);
+        try {
+            const eventualItemId = await ItemRepository.saveItem(itemDAO);
 
-        const saveCategoriesPromises = eventualItemId
-            .then(itemId => {
-                return this.saveCategories(itemDAO.categories, itemId);
-            })
-            .catch(error => {
-                throw new Error(`Error when creating item: ${error}`);
-            });
-
-        eventualItemId.then(itemId => {
-            const imageUrl = `https://${process.env.Bucket}.s3.amazonaws.com/${itemId}`;
-
-            return database.none(`UPDATE item
-                                  SET image_url = $1
-                                  WHERE item.id = $2;`,
-                [imageUrl, itemId])
-        }).catch(error => {
-            console.error(`Error when updating item image url. ${error}`);
-            throw new Error('Error when updating item image url.')
-        });
-
-        const signedRequestPromise = eventualItemId.then(itemId => {
-            return ImageRepository.getSignedS3Request(itemId);
-        });
-
-        return Promise.all([signedRequestPromise, saveCategoriesPromises])
-            .then(values => {
-                return values[0];
-            });
+            return this.saveCategories(itemDAO.categories, await eventualItemId);
+        } catch (error) {
+            console.error(`Error when creating item: ${error}`);
+            throw new Error('Error when creating item.');
+        }
     };
 
     static saveCategories = (categories, itemId) => {
         return database.tx(async t => {
-            const existingCategoriesRemoved =
-                await t.none(`DELETE
-                              FROM public.itemtocategory
-                              WHERE itemid = $1`, itemId
-                );
+            await t.none(`DELETE
+                          FROM public.itemtocategory
+                          WHERE itemid = $1`, itemId
+            );
 
             return t.none(`INSERT INTO public.itemtocategory (categoryid, itemid)
                            SELECT category.id, $1
