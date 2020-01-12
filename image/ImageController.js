@@ -8,7 +8,7 @@ router.get('/signedS3Request', async (req, res, next) => {
     const key = uuidv4();
     const signedRequest = await ImageRepository.getSignedS3Request(key);
 
-    res.status(200).json(key);
+    res.status(200).json({key: key, uploadRequest: signedRequest});
 });
 
 export default router;
