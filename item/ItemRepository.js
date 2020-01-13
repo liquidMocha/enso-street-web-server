@@ -44,8 +44,9 @@ export default class ItemRepository {
                                  zipcode            = COALESCE($11, zipcode),
                                  city               = COALESCE($12, city),
                                  state              = COALESCE($13, state),
-                                 geo_location       = COALESCE(${geographicLocation}, geo_location)
-                             WHERE id = $14`,
+                                 geo_location       = COALESCE(${geographicLocation}, geo_location),
+                                 image_url          = COALESCE($14, image_url)
+                             WHERE id = $15`,
                         [
                             updatedItem.rentalDailyPrice,
                             updatedItem.searchable,
@@ -60,6 +61,7 @@ export default class ItemRepository {
                             updatedItem.location ? updatedItem.location.zipCode : null,
                             updatedItem.location ? updatedItem.location.city : null,
                             updatedItem.location ? updatedItem.location.state : null,
+                            updatedItem.imageUrl,
                             updatedItem.id
                         ])]
                 );
