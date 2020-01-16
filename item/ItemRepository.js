@@ -121,9 +121,8 @@ export default class ItemRepository {
         const [resolvedConditionId, resolvedOwner] =
             await Promise.all([conditionId, ownerUserId]);
 
-        try {
-            return database.one(
-                `INSERT INTO public.item(title,
+        const savedItem = database.one(
+            `INSERT INTO public.item(title,
                                                  rentalDailyPrice,
                                                  deposit,
                                                  condition,
@@ -140,37 +139,38 @@ export default class ItemRepository {
                                                  zipCode,
                                                  image_url)
                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14, $15)
-                         RETURNING id`,
-                [
-                    itemDAO.title,
-                    itemDAO.rentalDailyPrice,
-                    itemDAO.deposit,
-                    resolvedConditionId,
-                    itemDAO.description,
-                    itemDAO.canBeDelivered,
-                    itemDAO.deliveryStarting,
-                    itemDAO.deliveryAdditional,
-                    resolvedOwner.id,
-                    true,
-                    itemDAO.location.street,
-                    itemDAO.location.city,
-                    itemDAO.location.state,
-                    itemDAO.location.zipCode,
-                    itemDAO.imageUrl
-                ],
-                result => result.id
-            );
-        } catch (error) {
-            console.error(`Error when saving item: ${error}`);
-            throw new Error(error);
-        }
+                         RETURNING id, title, description`,
+            [
+                itemDAO.title,
+                itemDAO.rentalDailyPrice,
+                itemDAO.deposit,
+                resolvedConditionId,
+                itemDAO.description,
+                itemDAO.canBeDelivered,
+                itemDAO.deliveryStarting,
+                itemDAO.deliveryAdditional,
+                resolvedOwner.id,
+                true,
+                itemDAO.location.street,
+                itemDAO.location.city,
+                itemDAO.location.state,
+                itemDAO.location.zipCode,
+                itemDAO.imageUrl
+            ],
+            result => result
+        );
+
+        const categoriesSaved = this.saveCategories(itemDAO.categories, (await savedItem).id);
+
+        return {
+            ...(await savedItem),
+            categories: [...(await categoriesSaved)]
+        };
     };
 
-    static save = async (itemDAO) => {
+    static save = (itemDAO) => {
         try {
-            const eventualItemId = await ItemRepository.saveItem(itemDAO);
-
-            return this.saveCategories(itemDAO.categories, await eventualItemId);
+            return ItemRepository.saveItem(itemDAO);
         } catch (error) {
             console.error(`Error when creating item: ${error}`);
             throw new Error('Error when creating item.');
@@ -184,10 +184,16 @@ export default class ItemRepository {
                           WHERE itemid = $1`, itemId
             );
 
-            return t.none(`INSERT INTO public.itemtocategory (categoryid, itemid)
-                           SELECT category.id, $1
-                           FROM category
-                           WHERE category.name IN ($2:csv)`, [itemId, categories]);
+            await t.none(`INSERT INTO public.itemtocategory (categoryid, itemid)
+                          SELECT category.id, $1
+                          FROM category
+                          WHERE category.name IN ($2:csv)`, [itemId, categories]);
+
+            const savedCategories = await t.many(`SELECT name
+                                                  FROM category
+                                                  WHERE name IN ($1:csv)`, [categories]);
+
+            return savedCategories.map(savedCategory => savedCategory.name);
         });
     };
 
