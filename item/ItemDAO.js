@@ -1,6 +1,6 @@
 import ItemRepository from "./ItemRepository";
 import HereApiClient from "../location/HereApiClient";
-import searchIndex from "../search/AlgoliaConfig";
+import {indexItem} from "../search/Index";
 
 export default class ItemDAO {
     constructor({
@@ -87,15 +87,8 @@ export default class ItemDAO {
     save = async () => {
         const itemSaved = await ItemRepository.save(this);
 
-        const itemToBeIndexed = {
-            objectID: itemSaved.id,
-            title: itemSaved.title,
-            description: itemSaved.description,
-            categories: itemSaved.categories
-        };
-
         try {
-            searchIndex.addObjects([itemToBeIndexed]);
+            indexItem(itemSaved);
         } catch (e) {
             console.error(e);
         }

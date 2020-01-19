@@ -1,39 +1,30 @@
 import express from "express";
 import ItemRepository from "../item/ItemRepository";
 import HereApiClient from "../location/HereApiClient";
+import {searchByLocation} from "./Index";
 
 const router = express.Router();
 
-router.post('/', (req, res, next) => {
+const getItemsInRangeFrom = (coordinates) => {
+    return ItemRepository.getItemsInRangeFrom({
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude
+    }, process.env.SEARCH_RANGE_IN_MILES);
+};
+
+router.post('/', async (req, res, next) => {
     const searchTerm = req.body.searchTerm;
     const coordinates = req.body.coordinates;
+
     if (!coordinates) {
         const address = req.body.address;
+        const coordinates = await HereApiClient.geocode(address);
 
-        HereApiClient.geocode(address)
-            .then((coordinates) => {
-                ItemRepository.getItemsInRangeFrom({
-                    latitude: coordinates.latitude,
-                    longitude: coordinates.longitude
-                }, process.env.SEARCH_RANGE_IN_MILES)
-                    .then(result => {
-                        res.status(200).json(result);
-                    })
-                    .catch(error => {
-                        console.error(`Error when searching: ${error}`);
-                    });
-            })
+        const searchResult = searchByLocation(searchTerm, coordinates);
+        res.status(200).json(await searchResult);
     } else {
-        ItemRepository.getItemsInRangeFrom({
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude
-        }, process.env.SEARCH_RANGE_IN_MILES)
-            .then(result => {
-                res.status(200).json(result);
-            })
-            .catch(error => {
-                console.error(`Error when searching: ${error}`);
-            });
+        const searchResult = searchByLocation(searchTerm, coordinates);
+        res.status(200).json(await searchResult);
     }
 });
 

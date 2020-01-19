@@ -139,7 +139,9 @@ export default class ItemRepository {
                                                  zipCode,
                                                  image_url)
                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14, $15)
-                         RETURNING id, title, description`,
+                         RETURNING id, title, description, 
+                             ST_X(item.geo_location::geometry) AS longitude,
+                             ST_Y(item.geo_location::geometry) AS latitude`,
             [
                 itemDAO.title,
                 itemDAO.rentalDailyPrice,
