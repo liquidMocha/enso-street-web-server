@@ -40,3 +40,7 @@ export const updateItemIndex = (item) => {
         }
     });
 };
+
+export const deleteItemIndex = (itemId) => {
+    searchIndex.deleteObject(itemId);
+};

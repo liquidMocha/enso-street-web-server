@@ -47,7 +47,7 @@ export default class ItemRepository {
                                  geo_location       = COALESCE(${geographicLocation}, geo_location),
                                  image_url          = COALESCE($14, image_url)
                              WHERE id = $15
-                             RETURNING id, title, description, 
+                             RETURNING id, title, description, searchable,
                              ST_X(item.geo_location::geometry) AS longitude,
                              ST_Y(item.geo_location::geometry) AS latitude`,
                         [
