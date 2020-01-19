@@ -27,3 +27,16 @@ export const searchByLocation = async (keyWord, {latitude, longitude}) => {
         console.error('Errored when searching: ', e);
     }
 };
+
+export const updateItemIndex = (item) => {
+    searchIndex.partialUpdateObject({
+        objectID: item.id,
+        title: item.title,
+        description: item.description,
+        categories: item.categories,
+        _geoloc: {
+            lat: item.latitude,
+            lng: item.longitude
+        }
+    });
+};

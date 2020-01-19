@@ -1,6 +1,6 @@
 import ItemRepository from "./ItemRepository";
 import HereApiClient from "../location/HereApiClient";
-import {indexItem} from "../search/Index";
+import {indexItem, updateItemIndex} from "../search/Index";
 
 export default class ItemDAO {
     constructor({
@@ -78,9 +78,18 @@ export default class ItemDAO {
             };
         }
 
-        ItemRepository.updateItem({
+        const savedItem = await ItemRepository.updateItem({
             ...updatedItem,
             id: this.id,
+        });
+
+        updateItemIndex({
+            id: savedItem[1].id,
+            title: savedItem[1].title,
+            description: savedItem[1].description,
+            latitude: savedItem[1].latitude,
+            longitude: savedItem[1].longitude,
+            categories: savedItem[0]
         });
     };
 

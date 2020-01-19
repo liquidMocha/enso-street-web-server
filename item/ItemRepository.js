@@ -29,7 +29,7 @@ export default class ItemRepository {
             .then(conditionId => {
                 return Promise.all([
                     eventualCategoriesSaved,
-                    database.none(
+                    database.one(
                         `UPDATE public.item
                              SET rentaldailyprice   = COALESCE($1, rentaldailyprice),
                                  searchable         = COALESCE($2, searchable),
@@ -46,7 +46,10 @@ export default class ItemRepository {
                                  state              = COALESCE($13, state),
                                  geo_location       = COALESCE(${geographicLocation}, geo_location),
                                  image_url          = COALESCE($14, image_url)
-                             WHERE id = $15`,
+                             WHERE id = $15
+                             RETURNING id, title, description, 
+                             ST_X(item.geo_location::geometry) AS longitude,
+                             ST_Y(item.geo_location::geometry) AS latitude`,
                         [
                             updatedItem.rentalDailyPrice,
                             updatedItem.searchable,
