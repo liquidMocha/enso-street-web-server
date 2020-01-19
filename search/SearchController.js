@@ -11,6 +11,9 @@ async function search(searchTerm, coordinates) {
         return searchHit.objectID
     });
 
+    if (ids.length === 0) {
+        return [];
+    }
     return (await ItemRepository.getItemByIds(ids)).map(item => {
         return {
             id: item.id,
