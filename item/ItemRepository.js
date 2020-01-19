@@ -89,6 +89,17 @@ export default class ItemRepository {
         )
     };
 
+    static getItemByIds = (itemIds) => {
+        return database.many(`SELECT id,
+                                     city,
+                                     image_url,
+                                     title,
+                                     rentaldailyprice,
+                                     zipcode
+                              FROM item
+                              WHERE id IN ($1:csv)`, itemIds);
+    };
+
     static getItemById = (itemId) => {
         return database.one(`SELECT owner
                              FROM public.item
