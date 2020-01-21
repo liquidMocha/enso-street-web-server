@@ -6,6 +6,7 @@ export default class HereApiClient {
             {
                 params: {
                     query: searchTerm,
+                    country: 'USA',
                     apiKey: process.env.HERE_API_KEY
                 }
             }
