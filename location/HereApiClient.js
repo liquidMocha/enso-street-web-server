@@ -1,11 +1,12 @@
 import axios from "axios";
 
 export default class HereApiClient {
-    static autosuggest = (searchTerm) => {
+    static autosuggest = (searchTerm, coordinates) => {
         return axios.get('https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json',
             {
                 params: {
                     query: searchTerm,
+                    prox: `${coordinates.latitude},${coordinates.longitude},10000`,
                     country: 'USA',
                     apiKey: process.env.HERE_API_KEY
                 }

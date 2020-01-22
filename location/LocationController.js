@@ -78,9 +78,12 @@ router.put('/:locationId', (req, res, next) => {
 
 router.get('/autosuggest/:searchTerm', (req, res, next) => {
     const userEmail = req.session.email;
+    const queryParameters = req.query;
 
     if (userEmail) {
-        HereApiClient.autosuggest(req.params.searchTerm)
+        HereApiClient.autosuggest(req.params.searchTerm,
+            {latitude: queryParameters.latitude, longitude: queryParameters.longitude}
+        )
             .then(result => {
                 const suggestedAddresses = result.suggestions.map(suggestion => {
                     const address = suggestion.address;
