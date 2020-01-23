@@ -24,6 +24,7 @@
     "db-migrate": "^0.11.6",
     "db-migrate-pg": "^1.0.0",
     "debug": "~2.6.9",
+    "deep-equal-in-any-order": "^1.0.21",
     "dotenv": "^8.1.0",
     "esm": "^3.2.25",
     "express": "~4.16.1",
