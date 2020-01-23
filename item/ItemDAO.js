@@ -1,6 +1,6 @@
 import ItemRepository from "./ItemRepository";
 import HereApiClient from "../location/HereApiClient";
-import {deleteItemIndex, indexItem, updateItemIndex} from "../search/Index";
+import Index from "../search/Index";
 
 export default class ItemDAO {
     constructor({
@@ -84,7 +84,7 @@ export default class ItemDAO {
         });
 
         if (savedItem[1].searchable) {
-            updateItemIndex({
+            Index.updateItemIndex({
                 id: savedItem[1].id,
                 title: savedItem[1].title,
                 description: savedItem[1].description,
@@ -93,7 +93,7 @@ export default class ItemDAO {
                 categories: savedItem[0]
             });
         } else {
-            deleteItemIndex(savedItem[1].id);
+            Index.deleteItemIndex(savedItem[1].id);
         }
     };
 
@@ -101,7 +101,7 @@ export default class ItemDAO {
         const itemSaved = await ItemRepository.save(this);
 
         try {
-            indexItem(itemSaved);
+            Index.indexItem(itemSaved);
         } catch (e) {
             console.error(e);
         }
@@ -112,7 +112,7 @@ export default class ItemDAO {
     archive = async (deleterEmail) => {
         if (deleterEmail === this.ownerEmail) {
             await ItemRepository.archive(this.id);
-            deleteItemIndex(this.id);
+            Index.deleteItemIndex(this.id);
         } else {
             throw new Error(`User ${deleterEmail} does not own the item.`)
         }

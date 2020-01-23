@@ -1,6 +1,6 @@
 import searchIndex from "./AlgoliaConfig";
 
-export const indexItem = (item) => {
+const indexItem = (item) => {
     const itemToBeIndexed = {
         objectID: item.id,
         title: item.title,
@@ -15,7 +15,7 @@ export const indexItem = (item) => {
     searchIndex.addObject(itemToBeIndexed);
 };
 
-export const searchByLocation = async (keyWord, {latitude, longitude}) => {
+const searchByLocation = async (keyWord, {latitude, longitude}) => {
     try {
         const response = await searchIndex.search({
             query: keyWord,
@@ -28,7 +28,7 @@ export const searchByLocation = async (keyWord, {latitude, longitude}) => {
     }
 };
 
-export const updateItemIndex = (item) => {
+const updateItemIndex = (item) => {
     searchIndex.partialUpdateObject({
         objectID: item.id,
         title: item.title,
@@ -41,6 +41,13 @@ export const updateItemIndex = (item) => {
     });
 };
 
-export const deleteItemIndex = (itemId) => {
+const deleteItemIndex = (itemId) => {
     searchIndex.deleteObject(itemId);
 };
+
+export default {
+    indexItem,
+    searchByLocation,
+    updateItemIndex,
+    deleteItemIndex
+}

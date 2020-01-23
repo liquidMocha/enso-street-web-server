@@ -1,12 +1,12 @@
 import express from "express";
 import HereApiClient from "../location/HereApiClient";
-import {searchByLocation} from "./Index";
+import Index from "./Index";
 import ItemRepository from "../item/ItemRepository";
 
 const router = express.Router();
 
 async function search(searchTerm, coordinates) {
-    const searchHits = await searchByLocation(searchTerm, coordinates);
+    const searchHits = await Index.searchByLocation(searchTerm, coordinates);
     const ids = searchHits.map(searchHit => {
         return searchHit.objectID
     });
