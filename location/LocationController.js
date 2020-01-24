@@ -6,19 +6,16 @@ import HereApiClient from "./HereApiClient";
 
 const router = express.Router();
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     if (req.session.email) {
-        UserRepository.findOne({email: req.session.email})
-            .then(user => {
-                if (user) {
-                    LocationRepository.getLocationsForUser(user.id)
-                        .then(locations => {
-                            res.status(200).json(locations);
-                        });
-                } else {
-                    res.status(404).send();
-                }
-            })
+        const user = await UserRepository.findOne({email: req.session.email});
+
+        if (user) {
+            const locations = await LocationRepository.getLocationsForUser(user.id);
+            res.status(200).json(locations);
+        } else {
+            res.status(404).send();
+        }
     } else {
         res.status(401).send();
     }
