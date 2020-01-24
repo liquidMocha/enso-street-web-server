@@ -29,7 +29,7 @@ router.put('/', (req, res, next) => {
                 if (user) {
                     return LocationRepository.createLocation(req.body.location, user.id);
                 } else {
-                    res.status(401).send();
+                    res.status(404).send();
                 }
             })
             .then(locationId => {
