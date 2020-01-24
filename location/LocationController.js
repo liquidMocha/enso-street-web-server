@@ -80,30 +80,24 @@ router.get('/autosuggest/:searchTerm', (req, res, next) => {
     const userEmail = req.session.email;
     const queryParameters = req.query;
 
-    if (userEmail) {
-        HereApiClient.autosuggest(req.params.searchTerm,
-            {latitude: queryParameters.latitude, longitude: queryParameters.longitude}
-        )
-            .then(result => {
-                const suggestedAddresses = result.suggestions.map(suggestion => {
-                    const address = suggestion.address;
-                    return {
-                        houseNumber: address.houseNumber,
-                        street: address.street,
-                        zipCode: address.postalCode,
-                        city: address.city,
-                        state: address.state
-                    }
-                });
-                res.status(200).json(suggestedAddresses);
-            })
-            .catch(error => {
-                console.error(error);
-                throw new Error(`Error when getting autosuggest location.`);
-            });
-    } else {
-        res.status(401).send();
-    }
+    HereApiClient.autosuggest(req.params.searchTerm,
+        {latitude: queryParameters.latitude, longitude: queryParameters.longitude}
+    ).then(result => {
+        const suggestedAddresses = result.suggestions.map(suggestion => {
+            const address = suggestion.address;
+            return {
+                houseNumber: address.houseNumber,
+                street: address.street,
+                zipCode: address.postalCode,
+                city: address.city,
+                state: address.state
+            }
+        });
+        res.status(200).json(suggestedAddresses);
+    }).catch(error => {
+        console.error(error);
+        throw new Error(`Error when getting autosuggest location.`);
+    });
 });
 
 router.get('/reverseGeocode', (req, res, next) => {

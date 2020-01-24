@@ -60,7 +60,7 @@ if (process.env.isLocal) {
 }
 
 axios.interceptors.request.use(config => {
-    console.log(`URL: ${config.url}; Method: ${config.method}`);
+    console.info(`URL: ${config.url}; Method: ${config.method}`);
     return config;
 }, error => {
     return Promise.reject(error);
