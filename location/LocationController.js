@@ -38,34 +38,29 @@ router.put('/', async (req, res, next) => {
     }
 });
 
-router.put('/:locationId', (req, res, next) => {
+router.put('/:locationId', async (req, res, next) => {
     const userEmail = req.session.email;
     const locationId = req.params.locationId;
     const location = req.body.location;
 
     if (userEmail) {
-        UserRepository.findOne({email: userEmail})
-            .then(user => {
-                if (user) {
-                    return LocationRepository.updateLocation(new Location(
-                        {
-                            id: locationId,
-                            street: location.street,
-                            city: location.city,
-                            state: location.state,
-                            zipCode: location.zipCode,
-                            nickname: location.nickname
-                        }
-                    ), user.id);
-                } else {
-                    res.status(401).send();
+        const user = await UserRepository.findOne({email: userEmail});
+        if (user) {
+            const updatedLocation = await LocationRepository.updateLocation(new Location(
+                {
+                    id: locationId,
+                    street: location.street,
+                    city: location.city,
+                    state: location.state,
+                    zipCode: location.zipCode,
+                    nickname: location.nickname
                 }
-            }).then(location => {
-            res.status(200).json(location);
-        }).catch(error => {
-            console.error(error);
-            res.status(500).send();
-        })
+            ), user.id);
+
+            res.status(200).json(updatedLocation);
+        } else {
+            res.status(401).send();
+        }
     } else {
         res.status(401).send();
     }

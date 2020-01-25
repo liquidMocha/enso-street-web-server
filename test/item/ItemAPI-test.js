@@ -11,18 +11,11 @@ describe('item API', () => {
         let geocodeStub;
 
         before(() => {
-            saveItemStub = sinon
-                .stub(ItemRepository, 'save')
-                .returns(new Promise(((resolve, reject) => {
-                    resolve('signed-request')
-                })));
+            saveItemStub = sinon.stub(ItemRepository, 'save')
+                .resolves('signed-request');
 
-            geocodeStub = sinon
-                .stub(HereApiClient, 'geocode')
-                .returns(new Promise(((resolve, reject) => {
-                        resolve({latitude: 12.34, longitude: 33.45})
-                    })
-                ));
+            geocodeStub = sinon.stub(HereApiClient, 'geocode')
+                .resolves({latitude: 12.34, longitude: 33.45});
         });
 
         beforeEach(() => {

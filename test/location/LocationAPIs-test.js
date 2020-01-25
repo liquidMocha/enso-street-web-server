@@ -13,22 +13,30 @@ describe('location', () => {
     let findOneUserStub;
     let getLocationForUserStub;
     let createLocationStub;
+    let updateLocationStub;
+
+    const authenticatedApp = getAuthenticatedApp();
+
+    function getAuthenticatedApp() {
+        const testApp = express();
+        const email = 'someemail';
+
+        testApp.use((req, res, next) => {
+            req.session = {email: email};
+            next();
+        });
+
+        testApp.use(app);
+        return testApp;
+    }
 
     beforeEach(() => {
         sinon.resetHistory();
         sinon.restore();
-        findOneUserStub = sinon.stub(UserRepository, 'findOne')
-            .returns(new Promise(((resolve, reject) => {
-                resolve({id: '123abc'});
-            })));
-        getLocationForUserStub = sinon.stub(LocationRepository, 'getLocationsForUser')
-            .returns(new Promise(((resolve, reject) => {
-                resolve(location);
-            })));
-        createLocationStub = sinon.stub(LocationRepository, 'createLocation')
-            .returns(new Promise(((resolve, reject) => {
-                resolve(locationId);
-            })))
+        findOneUserStub = sinon.stub(UserRepository, 'findOne').resolves({id: '123abc'});
+        getLocationForUserStub = sinon.stub(LocationRepository, 'getLocationsForUser').resolves(location);
+        createLocationStub = sinon.stub(LocationRepository, 'createLocation').resolves(locationId);
+        updateLocationStub = sinon.stub(LocationRepository, 'updateLocation');
     });
 
     after(() => {
@@ -46,21 +54,9 @@ describe('location', () => {
 
         it('should return 404 if the logged in user is not found', (done) => {
             UserRepository.findOne.restore();
-            findOneUserStub = sinon.stub(UserRepository, 'findOne')
-                .returns(new Promise(((resolve, reject) => {
-                    resolve(null);
-                })));
-            const testApp = express();
-            const email = 'someemail';
+            findOneUserStub = sinon.stub(UserRepository, 'findOne').resolves(null);
 
-            testApp.use((req, res, next) => {
-                req.session = {email: email};
-                next();
-            });
-
-            testApp.use(app);
-
-            request(testApp)
+            request(authenticatedApp)
                 .get(url)
                 .expect(404)
                 .end((error) => {
@@ -69,17 +65,7 @@ describe('location', () => {
         });
 
         it('should return locations', (done) => {
-            const testApp = express();
-            const email = 'someemail';
-
-            testApp.use((req, res, next) => {
-                req.session = {email: email};
-                next();
-            });
-
-            testApp.use(app);
-
-            request(testApp)
+            request(authenticatedApp)
                 .get(url)
                 .expect(200, (error, response) => {
                     assert.deepEqual(response.body, location);
@@ -99,21 +85,9 @@ describe('location', () => {
 
         it('should return 404 if the logged in user is not found', (done) => {
             UserRepository.findOne.restore();
-            findOneUserStub = sinon.stub(UserRepository, 'findOne')
-                .returns(new Promise(((resolve, reject) => {
-                    resolve(null);
-                })));
-            const testApp = express();
-            const email = 'someemail';
+            findOneUserStub = sinon.stub(UserRepository, 'findOne').resolves(null);
 
-            testApp.use((req, res, next) => {
-                req.session = {email: email};
-                next();
-            });
-
-            testApp.use(app);
-
-            request(testApp)
+            request(authenticatedApp)
                 .put(url)
                 .expect(404)
                 .end((error) => {
@@ -122,22 +96,54 @@ describe('location', () => {
         });
 
         it('should create location', (done) => {
-            const testApp = express();
-            const email = 'someemail';
-
-            testApp.use((req, res, next) => {
-                req.session = {email: email};
-                next();
-            });
-
-            testApp.use(app);
-
-            request(testApp)
+            request(authenticatedApp)
                 .put(url)
                 .expect(201, (error, response) => {
                     assert.deepEqual(response.body, locationId);
                     done(error);
                 })
         })
-    })
+    });
+
+    describe('update location', (done) => {
+        it('should bounce the user if come in without a session', (done) => {
+            request(app)
+                .put(url + '/' + locationId)
+                .expect(401, (error) => {
+                    return done(error);
+                })
+        });
+
+        it('should return 404 if the logged in user is not found', (done) => {
+            UserRepository.findOne.restore();
+            findOneUserStub = sinon.stub(UserRepository, 'findOne')
+                .resolves(null);
+
+            request(authenticatedApp)
+                .put(url + '/' + locationId)
+                .expect(401)
+                .end((error) => {
+                    done(error);
+                });
+        });
+
+        it('should update location', (done) => {
+            const locationPayload = {location: {id: 'some-id'}};
+
+            UserRepository.findOne.restore();
+            findOneUserStub = sinon.stub(UserRepository, 'findOne').resolves({id: '123abc'});
+
+            const updatedLocation = {street: 'some street'};
+            updateLocationStub.resolves(updatedLocation);
+
+            request(authenticatedApp)
+                .put(url + '/' + locationId)
+                .send(locationPayload)
+                .expect(200, (error, response) => {
+                    assert.deepEqual(response.body, updatedLocation);
+                    done(error);
+                })
+        })
+
+    });
 });
