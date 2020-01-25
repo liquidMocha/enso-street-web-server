@@ -14,4 +14,11 @@ router.get('/', (req, res, next) => {
         });
 });
 
+router.get('/:category/count', async (req, res, next) => {
+    const itemCountForCategory =
+        CategoryRepository.getItemCountForCategory(req.params.category);
+
+    res.status(200).json(await itemCountForCategory);
+});
+
 export default router;
