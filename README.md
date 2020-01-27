@@ -19,6 +19,16 @@ list all databases: \l
 list all tables: \dt
 switch database: \c ${database-name}
 
+To log queries from pg-promise:
+```
+const initOptions = {
+     query(e) {
+       console.log(e.query);
+     }
+   };
+   const pgp = require('pg-promise')(initOptions);
+```
+
 # Redis cache
 Start docker Redis:
 ```sudo docker run --name enso-redis -p 6379:6379 -d redis```
