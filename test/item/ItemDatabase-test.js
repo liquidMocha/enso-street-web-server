@@ -101,4 +101,57 @@ describe('item data', () => {
             expect(items[0].searchable).to.equal(true);
         })
     });
+
+    it('get items by IDs', async () => {
+        const aSavedItem = await setupItems();
+        const anotherSavedItem = await setupItems();
+
+        const items = await ItemRepository.getItemByIds([aSavedItem.id, anotherSavedItem.id]);
+
+        expect(items.length).to.equal(2);
+    });
+
+    const setupItems = async () => {
+        const title = "some title";
+        const rentalDailyPrice = 1.23;
+        const deposit = 50.23;
+        const condition = "like-new";
+        const categories = ['garden-and-patio', 'music-instruments'];
+        const description = "the item's description";
+        const canBeDelivered = true;
+        const deliveryStarting = 1.45;
+        const deliveryAdditional = 0.8;
+        const locationStreet = 'Clark';
+        const locationZipCode = '10101';
+        const locationCity = 'Chicago';
+        const locationState = 'IL';
+        const latitude = 41.90934;
+        const longitude = -87.62785;
+        const imageUrl = 'someurl.com';
+
+        const location = {
+            street: locationStreet,
+            zipCode: locationZipCode,
+            city: locationCity,
+            state: locationState,
+            userId: userId,
+            latitude: latitude,
+            longitude: longitude
+        };
+
+        return await new ItemDAO({
+            title: title,
+            rentalDailyPrice: rentalDailyPrice,
+            deposit: deposit,
+            condition: condition,
+            categories: categories,
+            description: description,
+            canBeDelivered: canBeDelivered,
+            deliveryStarting: deliveryStarting,
+            deliveryAdditional: deliveryAdditional,
+            location: location,
+            ownerEmail: userEmail,
+            imageUrl: imageUrl
+        }).save();
+    }
 });

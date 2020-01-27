@@ -88,7 +88,7 @@ const getItemByIds = (itemIds) => {
                                  rentaldailyprice,
                                  zipcode
                           FROM item
-                          WHERE id IN ($1:csv)`, itemIds);
+                          WHERE id IN ($1:csv)`, [itemIds]);
 };
 
 const getItemById = (itemId) => {
