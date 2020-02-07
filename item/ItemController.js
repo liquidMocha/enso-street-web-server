@@ -1,6 +1,6 @@
 import express from "express";
 import ItemDTO from "./ItemDTO";
-import ItemDAO from "./ItemDAO";
+import {ItemDAO} from "./ItemDAO";
 import ItemRepository from "./ItemRepository";
 
 const router = express.Router();
@@ -52,6 +52,15 @@ router.get('/', async (req, res, next) => {
         }
     } else {
         res.status(401).send();
+    }
+});
+
+router.get('/:itemId', async (req, res, next) => {
+    try {
+        const item = await ItemRepository.getItemById(req.params.itemId);
+        res.status(200).json(item);
+    } catch (e) {
+        res.status(500).send();
     }
 });
 

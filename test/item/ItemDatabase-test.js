@@ -1,6 +1,6 @@
 import database from "../../database";
 import ItemRepository from "../../item/ItemRepository";
-import ItemDAO from "../../item/ItemDAO";
+import {ItemDAO} from "../../item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
 import UserRepository from "../../user/UserRepository";
@@ -109,6 +109,22 @@ describe('item data', () => {
         const items = await ItemRepository.getItemByIds([aSavedItem.id, anotherSavedItem.id]);
 
         expect(items.length).to.equal(2);
+    });
+
+    it('get item by ID', async () => {
+        const aSavedItem = await setupItems();
+
+        const item = await ItemRepository.getItemById(aSavedItem.id);
+
+        expect(item).to.have.property('archive');
+        expect(item.id).to.equal(aSavedItem.id).but.not.be.undefined;
+        expect(item.title).to.equal(aSavedItem.title).but.not.be.undefined;
+        expect(item.deposit).to.equal(aSavedItem.deposit).but.not.be.undefined;
+        expect(item.rentalDailyPrice).to.equal(aSavedItem.rentaldailyprice).but.not.be.undefined;
+        expect(item.deliveryStarting).to.equal(aSavedItem.deliverystarting).but.not.be.undefined;
+        expect(item.deliveryAdditional).to.equal(aSavedItem.deliveryadditional).but.not.be.undefined;
+        expect(item.condition).to.equal(aSavedItem.condition).but.not.be.undefined;
+        expect(item.description).to.equal(aSavedItem.description).but.not.be.undefined;
     });
 
     const setupItems = async () => {

@@ -2,7 +2,7 @@ import ItemRepository from "./ItemRepository";
 import HereApiClient from "../location/HereApiClient";
 import Index from "../search/Index";
 
-export default class ItemDAO {
+export class ItemDAO {
     constructor({
                     id: id,
                     title: title,

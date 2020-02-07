@@ -1,7 +1,7 @@
 import database from '../database';
 import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
-import ItemDAO from "./ItemDAO";
+import {ItemDAO} from "./ItemDAO";
 
 const archive = (itemId) => {
     return database.none(`UPDATE public.item
@@ -91,22 +91,44 @@ const getItemByIds = (itemIds) => {
                           WHERE id IN ($1:csv)`, [itemIds]);
 };
 
-const getItemById = (itemId) => {
-    return database.one(`SELECT owner
-                         FROM public.item
-                         WHERE id = $1`, [itemId]
-    ).then(result => {
-        return result.owner;
-    }).then(ownerId => {
-        return UserRepository.getEmailById(ownerId);
-    }).then(ownerEmail => {
-        return new ItemDAO({
-            id: itemId,
-            ownerEmail: ownerEmail
-        })
-    }).catch(error => {
-        throw new Error(`Error when retrieving item information: ${error}`);
-    })
+const getItemById = async (itemId) => {
+    const itemEntity = await database.one(`SELECT owner,
+                                                  title,
+                                                  deposit,
+                                                  rentaldailyprice,
+                                                  deliverystarting,
+                                                  deliveryadditional,
+                                                  condition,
+                                                  description
+                                           FROM public.item
+                                           WHERE id = $1`,
+        [itemId],
+        result => {
+            return {
+                ownerId: result.owner,
+                title: result.title,
+                deposit: result.deposit,
+                rentalDailyPrice: result.rentaldailyprice,
+                deliveryAdditional: result.deliveryadditional,
+                deliveryStarting: result.deliverystarting,
+                condition: result.condition,
+                description: result.description
+            }
+        });
+
+    const ownerEmail = UserRepository.getEmailById(itemEntity.ownerId);
+
+    return new ItemDAO({
+        id: itemId,
+        title: await itemEntity.title,
+        ownerEmail: await ownerEmail,
+        deposit: itemEntity.deposit,
+        rentalDailyPrice: itemEntity.rentalDailyPrice,
+        deliveryAdditional: itemEntity.deliveryAdditional,
+        deliveryStarting: itemEntity.deliveryStarting,
+        condition: itemEntity.condition,
+        description: itemEntity.description
+    });
 };
 
 const save = async (itemDAO) => {
@@ -213,23 +235,25 @@ const saveItem = async (itemDAO) => {
 
         const savedItem = database.one(
             `INSERT INTO public.item(title,
-                                                 rentalDailyPrice,
-                                                 deposit,
-                                                 condition,
-                                                 description,
-                                                 canBeDelivered,
-                                                 deliveryStarting,
-                                                 deliveryAdditional,
-                                                 owner,
-                                                 searchable,
-                                                 geo_location,
-                                                 street,
-                                                 city,
-                                                 state,
-                                                 zipCode,
-                                                 image_url)
+                                         rentalDailyPrice,
+                                         deposit,
+                                         condition,
+                                         description,
+                                         canBeDelivered,
+                                         deliveryStarting,
+                                         deliveryAdditional,
+                                         owner,
+                                         searchable,
+                                         geo_location,
+                                         street,
+                                         city,
+                                         state,
+                                         zipCode,
+                                         image_url)
                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ${geographicLocation}, $11, $12, $13, $14, $15)
                          RETURNING id, title, description, 
+                             deposit, rentaldailyprice, deliveryadditional,
+                             deliverystarting, condition, description,
                              ST_X(item.geo_location::geometry) AS longitude,
                              ST_Y(item.geo_location::geometry) AS latitude`,
             [
