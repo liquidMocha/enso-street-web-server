@@ -125,6 +125,7 @@ describe('item data', () => {
         expect(item.deliveryAdditional).to.equal(aSavedItem.deliveryadditional).but.not.be.undefined;
         expect(item.condition).to.equal(aSavedItem.condition).but.not.be.undefined;
         expect(item.description).to.equal(aSavedItem.description).but.not.be.undefined;
+        expect(item.imageUrl).to.equal(aSavedItem.image_url).but.not.be.undefined;
     });
 
     const setupItems = async () => {
