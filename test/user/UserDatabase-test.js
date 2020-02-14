@@ -3,7 +3,7 @@ import UserRepository from "../../user/UserRepository";
 
 const {expect} = require('chai');
 
-describe('UserService', () => {
+describe('User data', () => {
     afterEach(() => {
         database.none('truncate public.user cascade;');
         database.none('truncate public.user_profile cascade;');
