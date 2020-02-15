@@ -1,4 +1,6 @@
 import database from "../database";
+import express from "express";
+import app from "../app";
 
 export async function setupUser({email: email, password: password, name: name}) {
     const data = await database.one(`
@@ -27,4 +29,17 @@ export async function setupCategories(categories) {
                        VALUES ($1)
                        ON CONFLICT DO NOTHING`, [category])
     });
+}
+
+export function getAuthenticatedApp() {
+    const testApp = express();
+    const email = 'someemail';
+
+    testApp.use((req, res, next) => {
+        req.session = {email: email};
+        next();
+    });
+
+    testApp.use(app);
+    return testApp;
 }
