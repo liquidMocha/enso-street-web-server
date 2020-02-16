@@ -2,6 +2,7 @@ import express from "express";
 import {addItemForUser, getCart} from "./CartRepository";
 import ItemRepository from "../../item/ItemRepository";
 import _ from "lodash";
+import UserRepository from "../UserRepository";
 
 const router = express.Router();
 
@@ -14,16 +15,11 @@ router.get('/', async (req, res, next) => {
                 return ItemRepository.getItemById(item.itemId)
             }));
             const ownerBatches = _.groupBy(itemDAOs, 'ownerEmail');
-            const cartDTO = _.mapValues(ownerBatches, (daos) => {
-                return daos.map(dao => {
-                    return {
-                        id: dao.id,
-                        title: dao.title,
-                        rentalDailyPrice: dao.rentalDailyPrice,
-                        imageUrl: dao.imageUrl
-                    }
-                });
-            });
+
+            const cartDTO = await Promise.all(
+                Object.entries(ownerBatches).map(toCartDTO)
+            );
+
             res.status(200).json(cartDTO);
         } catch (e) {
             console.error(`Error when retrieving cart for user ${userEmail}: ${e}`);
@@ -43,5 +39,24 @@ router.put('/', async (req, res, next) => {
         res.status(401).send();
     }
 });
+
+async function toCartDTO([email, itemDAOs]) {
+    const userName = (await UserRepository.findOne({email: email})).profile.name;
+
+    return {
+        owner: {
+            name: userName,
+            email: email
+        },
+        items: itemDAOs.map(dao => {
+            return {
+                id: dao.id,
+                title: dao.title,
+                rentalDailyPrice: dao.rentalDailyPrice,
+                imageUrl: dao.imageUrl
+            }
+        })
+    }
+}
 
 export default router;

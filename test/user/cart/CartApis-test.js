@@ -6,6 +6,9 @@ import * as CartRepository from "../../../user/cart/CartRepository";
 import {assert} from "chai";
 import ItemRepository from "../../../item/ItemRepository";
 import {ItemDAO} from "../../../item/ItemDAO";
+import UserRepository from "../../../user/UserRepository";
+import {UserProfile} from "../../../user/UserProfile";
+import {User} from "../../../user/User";
 
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";
@@ -13,12 +16,14 @@ describe('cart', () => {
     let getCartStub;
     let addToCartStub;
     let getItemByIdStub;
+    let findOneUserStub;
 
     beforeEach(() => {
         sinon.resetHistory();
         getCartStub = sinon.stub(CartRepository, 'getCart');
         addToCartStub = sinon.stub(CartRepository, 'addItemForUser');
         getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
+        findOneUserStub = sinon.stub(UserRepository, 'findOne');
     });
 
     afterEach(() => {
@@ -40,12 +45,14 @@ describe('cart', () => {
             const ownerEmail1 = "abc@enso.com";
             const rentalDailyPrice1 = 12.23;
             const imageUrl1 = "abc-123.jpg";
+            const ownerName1 = "Eleanor Shellstrop";
 
             const itemId2 = "cde456";
             const itemTitle2 = "big dog";
             const ownerEmail2 = "snoopy@enso.com";
             const rentalDailyPrice2 = 12.23;
             const imageUrl2 = "abc-613.jpg";
+            const ownerName2 = "Chidi Anagonye";
 
             getCartStub.resolves([{itemId: itemId1}, {itemId: itemId2}]);
 
@@ -74,6 +81,17 @@ describe('cart', () => {
                 imageUrl: imageUrl2
             }));
 
+            findOneUserStub.onCall(0).resolves(
+                new User({
+                    profile: new UserProfile({name: ownerName1})
+                })
+            );
+            findOneUserStub.onCall(1).resolves(
+                new User({
+                    profile: new UserProfile({name: ownerName2})
+                })
+            );
+
             const expectedOwnerBatch1 = [
                 {
                     title: itemTitle1,
@@ -97,10 +115,22 @@ describe('cart', () => {
                 .expect(200, (error, response) => {
                     sinon.assert.calledWith(getItemByIdStub, itemId1);
                     sinon.assert.calledWith(getItemByIdStub, itemId2);
-                    assert.deepEqual(response.body, {
-                        [ownerEmail1]: expectedOwnerBatch1,
-                        [ownerEmail2]: expectedOwnerBatch2
-                    });
+                    assert.deepEqual(response.body, [
+                        {
+                            owner: {
+                                name: ownerName1,
+                                email: ownerEmail1
+                            },
+                            items: expectedOwnerBatch1
+                        },
+                        {
+                            owner: {
+                                name: ownerName2,
+                                email: ownerEmail2
+                            },
+                            items: expectedOwnerBatch2
+                        }
+                    ]);
                     done(error);
                 })
         })
