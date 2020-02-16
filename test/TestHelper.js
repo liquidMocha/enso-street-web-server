@@ -31,9 +31,9 @@ export async function setupCategories(categories) {
     });
 }
 
-export function getAuthenticatedApp() {
+export function getAuthenticatedApp(loggedInUserEmail) {
     const testApp = express();
-    const email = 'someemail';
+    const email = loggedInUserEmail || 'someemail';
 
     testApp.use((req, res, next) => {
         req.session = {email: email};
