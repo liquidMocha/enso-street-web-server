@@ -1,5 +1,5 @@
 import express from "express";
-import {addItemForUser, getCart} from "./CartRepository";
+import {addItemForUser, getItemsInCart} from "./CartRepository";
 import ItemRepository from "../../item/ItemRepository";
 import _ from "lodash";
 import UserRepository from "../UserRepository";
@@ -10,7 +10,7 @@ router.get('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
         try {
-            const itemIds = await getCart(userEmail);
+            const itemIds = await getItemsInCart(userEmail);
             const itemDAOs = await Promise.all(itemIds.map(item => {
                 return ItemRepository.getItemById(item.itemId)
             }));

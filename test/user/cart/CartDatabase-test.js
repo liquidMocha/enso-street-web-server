@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {setupUser} from "../../TestHelper";
-import {addItemForUser, getCart} from '../../../user/cart/CartRepository';
+import {addItemForUser, getItemsInCart} from '../../../user/cart/CartRepository';
 import database from "../../../database";
 
 describe('cart', () => {
@@ -23,7 +23,7 @@ describe('cart', () => {
         await addItemForUser(item, email);
         await addItemForUser(secondItem, email);
 
-        const cart = await getCart(email);
+        const cart = await getItemsInCart(email);
 
         assert.deepEqual(cart, [item, secondItem]);
     });
@@ -35,7 +35,7 @@ describe('cart', () => {
         const item = {itemId};
         await addItemForUser(item, email);
 
-        const cart = await getCart(email);
+        const cart = await getItemsInCart(email);
 
         assert.deepEqual(cart, [item])
     });

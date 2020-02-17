@@ -6,7 +6,7 @@ export const addItemForUser = (item, userEmail) => {
                           WHERE email = $2`, [item, userEmail])
 };
 
-export const getCart = async (email) => {
+export const getItemsInCart = async (email) => {
     return (await database.one(`SELECT cart
                                 FROM public."user"
                                 WHERE email = $1`, [email])).cart

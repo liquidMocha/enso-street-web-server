@@ -20,7 +20,7 @@ describe('cart', () => {
 
     beforeEach(() => {
         sinon.resetHistory();
-        getCartStub = sinon.stub(CartRepository, 'getCart');
+        getCartStub = sinon.stub(CartRepository, 'getItemsInCart');
         addToCartStub = sinon.stub(CartRepository, 'addItemForUser');
         getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
         findOneUserStub = sinon.stub(UserRepository, 'findOne');
