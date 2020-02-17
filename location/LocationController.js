@@ -1,8 +1,8 @@
 import express from "express";
-import LocationRepository from "./LocationRepository";
 import UserRepository from "../user/UserRepository";
 import Location from './Location';
 import HereApiClient from "./HereApiClient";
+import {createLocation, getLocationsForUser, updateLocation} from "./LocationRepository";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
         const user = await UserRepository.findOne({email: userEmail});
 
         if (user) {
-            const locations = await LocationRepository.getLocationsForUser(user.id);
+            const locations = await getLocationsForUser(user.id);
             res.status(200).json(locations);
         } else {
             res.status(404).send();
@@ -28,7 +28,7 @@ router.put('/', async (req, res, next) => {
         const user = await UserRepository.findOne({email: userEmail});
 
         if (user) {
-            const newLocationId = await LocationRepository.createLocation(req.body.location, user.id);
+            const newLocationId = await createLocation(req.body.location, user.id);
             res.status(201).json(newLocationId);
         } else {
             res.status(404).send();
@@ -46,7 +46,7 @@ router.put('/:locationId', async (req, res, next) => {
     if (userEmail) {
         const user = await UserRepository.findOne({email: userEmail});
         if (user) {
-            const updatedLocation = await LocationRepository.updateLocation(new Location(
+            const updatedLocation = await updateLocation(new Location(
                 {
                     id: locationId,
                     street: location.street,

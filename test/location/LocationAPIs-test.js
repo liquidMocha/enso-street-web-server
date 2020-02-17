@@ -3,7 +3,7 @@ import request from "supertest";
 import sinon from "sinon";
 import express from "express";
 import UserRepository from "../../user/UserRepository";
-import LocationRepository from "../../location/LocationRepository";
+import * as LocationRepository from "../../location/LocationRepository";
 import {assert} from "chai";
 
 describe('location', () => {

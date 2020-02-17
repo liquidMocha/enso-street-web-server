@@ -1,7 +1,7 @@
 import database from '../database';
 import Location from './Location';
 
-const createLocation = (location, userId) => {
+export const createLocation = (location, userId) => {
     return database.one(
             `insert into public.location
                  (street, zipCode, city, state, nickname, "user")
@@ -15,7 +15,7 @@ const createLocation = (location, userId) => {
     })
 };
 
-const updateLocation = (location, userId) => {
+export const updateLocation = (location, userId) => {
     return database.one(
             `UPDATE public.location
              SET street   = $1,
@@ -40,7 +40,7 @@ const updateLocation = (location, userId) => {
     })
 };
 
-const getLocationsForUser = (userId) => {
+export const getLocationsForUser = (userId) => {
     return database.manyOrNone(
             `SELECT id, street, zipcode, city, state, nickname
              FROM public.location
@@ -61,9 +61,3 @@ const getLocationsForUser = (userId) => {
         throw new Error(`Error retrieving locations for user ${userId}.`);
     })
 };
-
-export default {
-    createLocation,
-    updateLocation,
-    getLocationsForUser
-}
