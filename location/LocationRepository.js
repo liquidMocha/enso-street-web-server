@@ -1,53 +1,62 @@
 import database from '../database';
 import Location from './Location';
 
-export const createLocation = (location, userId) => {
-    return database.one(
-            `insert into public.location
-                 (street, zipCode, city, state, nickname, "user")
-             VALUES ($1, $2, $3, $4, $5, $6)
-             returning id;`,
-        [location.street, location.zipCode, location.city, location.state, location.nickname, userId]
-    ).then(data => {
-        return data.id;
-    }).catch(error => {
-        throw new Error(`Error creating location: ${error}`);
-    })
+export const createLocation = async (location, userId) => {
+    try {
+        const locationId = database.one(
+                `insert into public.location
+                     (street, zipCode, city, state, nickname, "user")
+                 VALUES ($1, $2, $3, $4, $5, $6)
+                 returning id;`,
+            [location.street, location.zipCode, location.city, location.state, location.nickname, userId],
+            data => {
+                return data.id
+            }
+        );
+        return (await locationId);
+    } catch (e) {
+        throw new Error(`Error creating location: ${e}`);
+    }
 };
 
-export const updateLocation = (location, userId) => {
-    return database.one(
-            `UPDATE public.location
-             SET street   = $1,
-                 zipcode  = $2,
-                 city     = $3,
-                 state    = $4,
-                 nickname = $5
-             WHERE id = $6
-             RETURNING id, street, zipcode, city, state, nickname`,
-        [location.street, location.zipCode, location.city, location.state, location.nickname, location.id]
-    ).then(data => {
+export const updateLocation = async (location, userId) => {
+    try {
+        const updatedLocation = database.one(
+                `UPDATE public.location
+                 SET street   = $1,
+                     zipcode  = $2,
+                     city     = $3,
+                     state    = $4,
+                     nickname = $5
+                 WHERE id = $6
+                 RETURNING id, street, zipcode, city, state, nickname`,
+            [location.street, location.zipCode, location.city, location.state, location.nickname, location.id]
+        );
+
+        await updatedLocation;
         return new Location({
-            id: data.id,
-            street: data.street,
-            city: data.city,
-            state: data.state,
-            zipCode: data.zipcode,
-            nickname: data.nickname
+            id: updatedLocation.id,
+            street: updatedLocation.street,
+            city: updatedLocation.city,
+            state: updatedLocation.state,
+            zipCode: updatedLocation.zipcode,
+            nickname: updatedLocation.nickname
         })
-    }).catch(error => {
-        throw new Error(`Error updating location ${location.id}: ${error}`)
-    })
+    } catch (e) {
+        throw new Error(`Error updating location ${location.id}: ${e}`)
+    }
 };
 
-export const getLocationsForUser = (userId) => {
-    return database.manyOrNone(
-            `SELECT id, street, zipcode, city, state, nickname
-             FROM public.location
-             WHERE "user" = $1`,
-        [userId]
-    ).then(data => {
-        return data.map(location => {
+export const getLocationsForUser = async (userId) => {
+    try {
+        const locationEntity = database.manyOrNone(
+                `SELECT id, street, zipcode, city, state, nickname
+                 FROM public.location
+                 WHERE "user" = $1`,
+            [userId]
+        );
+
+        return (await locationEntity).map(location => {
             return new Location({
                 id: location.id,
                 street: location.street,
@@ -56,8 +65,8 @@ export const getLocationsForUser = (userId) => {
                 zipCode: location.zipcode,
                 nickname: location.nickname
             });
-        });
-    }).catch(error => {
-        throw new Error(`Error retrieving locations for user ${userId}.`);
-    })
+        })
+    } catch (e) {
+        throw new Error(`Error retrieving locations for user ${userId}: ${e}`);
+    }
 };

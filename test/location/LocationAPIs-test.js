@@ -1,10 +1,10 @@
 import app from "../../app";
 import request from "supertest";
 import sinon from "sinon";
-import express from "express";
 import UserRepository from "../../user/UserRepository";
 import * as LocationRepository from "../../location/LocationRepository";
 import {assert} from "chai";
+import {getAuthenticatedApp} from "../TestHelper";
 
 describe('location', () => {
     const url = '/api/locations';
@@ -16,19 +16,6 @@ describe('location', () => {
     let updateLocationStub;
 
     const authenticatedApp = getAuthenticatedApp();
-
-    function getAuthenticatedApp() {
-        const testApp = express();
-        const email = 'someemail';
-
-        testApp.use((req, res, next) => {
-            req.session = {email: email};
-            next();
-        });
-
-        testApp.use(app);
-        return testApp;
-    }
 
     beforeEach(() => {
         sinon.resetHistory();
