@@ -3,15 +3,14 @@ import {getAllCategories, getItemCountForCategory} from "./CategoryRepository";
 
 const router = express.Router();
 
-router.get('/', (req, res, next) => {
-    getAllCategories()
-        .then(data => {
-            res.status(200).json(data);
-        })
-        .catch(error => {
-            res.status(500).send();
-            console.error("Error when fetching all categories: " + error);
-        });
+router.get('/', async (req, res, next) => {
+    try {
+        const categories = await getAllCategories();
+        res.status(200).json(categories);
+    } catch (e) {
+        res.status(500).send();
+        console.error("Error when fetching all categories: " + e);
+    }
 });
 
 router.get('/:category/count', async (req, res, next) => {
