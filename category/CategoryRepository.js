@@ -1,11 +1,11 @@
 import database from '../database';
 
-const getAllCategories = () => {
+export const getAllCategories = () => {
     return database.many(`SELECT name
                           FROM public.category;`)
 };
 
-const getItemCountForCategory = (category) => {
+export const getItemCountForCategory = (category) => {
     return database
         .one(`SELECT count(item.id)
               FROM item
@@ -14,8 +14,3 @@ const getItemCountForCategory = (category) => {
               WHERE c.name = $1`, [category],
             result => Number(result.count));
 };
-
-export default {
-    getAllCategories,
-    getItemCountForCategory
-}

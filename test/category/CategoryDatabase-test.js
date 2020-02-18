@@ -1,5 +1,5 @@
 import database from '../../database';
-import CategoryRepository from "../../category/CategoryRepository";
+import {getAllCategories, getItemCountForCategory} from "../../category/CategoryRepository";
 import {expect} from 'chai';
 import ItemRepository from "../../item/ItemRepository";
 import {ItemDAO} from "../../item/ItemDAO";
@@ -18,7 +18,7 @@ describe('category database', () => {
 
     it('should return all category names', async () => {
         await createCategories();
-        const categories = await CategoryRepository.getAllCategories();
+        const categories = await getAllCategories();
 
         expect(categories).to.be.array();
         expect(categories.length).to.equal(2);
@@ -34,7 +34,7 @@ describe('category database', () => {
         await setupItem([electronics], userEmail);
         await setupItem([babyClothes], userEmail);
 
-        const count = await CategoryRepository.getItemCountForCategory(electronics);
+        const count = await getItemCountForCategory(electronics);
 
         expect(count).to.equal(2);
     });

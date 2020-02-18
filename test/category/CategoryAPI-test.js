@@ -2,7 +2,7 @@ import app from "../../app";
 import request from "supertest";
 import chai, {expect} from "chai";
 import sinon from "sinon";
-import CategoryRepository from "../../category/CategoryRepository";
+import * as CategoryRepository from "../../category/CategoryRepository";
 import deepEqualInAnyOrder from 'deep-equal-in-any-order';
 import assertArrays from 'chai-arrays';
 

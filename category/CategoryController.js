@@ -1,10 +1,10 @@
 import express from "express";
-import CategoryRepository from "./CategoryRepository";
+import {getAllCategories, getItemCountForCategory} from "./CategoryRepository";
 
 const router = express.Router();
 
 router.get('/', (req, res, next) => {
-    CategoryRepository.getAllCategories()
+    getAllCategories()
         .then(data => {
             res.status(200).json(data);
         })
@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
 
 router.get('/:category/count', async (req, res, next) => {
     const itemCountForCategory =
-        CategoryRepository.getItemCountForCategory(req.params.category);
+        getItemCountForCategory(req.params.category);
 
     res.status(200).json(await itemCountForCategory);
 });
