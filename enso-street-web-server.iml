@@ -6,5 +6,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.nyc_output" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="@types/mocha" level="application" />
   </component>
 </module>
