@@ -1,6 +1,6 @@
 import express from "express";
 import {addItemForUser, getItemsInCart} from "./CartRepository";
-import ItemRepository from "../../item/ItemRepository";
+import * as ItemRepository from "../../item/ItemRepository";
 import _ from "lodash";
 import UserRepository from "../UserRepository";
 

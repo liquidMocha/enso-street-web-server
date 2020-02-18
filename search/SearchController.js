@@ -1,7 +1,7 @@
 import express from "express";
 import HereApiClient from "../location/HereApiClient";
 import Index from "./Index";
-import ItemRepository from "../item/ItemRepository";
+import {getItemByIds} from "../item/ItemRepository";
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ async function search(searchTerm, coordinates) {
     if (ids.length === 0) {
         return [];
     }
-    return (await ItemRepository.getItemByIds(ids)).map(item => {
+    return (await getItemByIds(ids)).map(item => {
         return {
             id: item.id,
             city: item.city,

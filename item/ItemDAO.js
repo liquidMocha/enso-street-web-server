@@ -1,6 +1,6 @@
-import ItemRepository from "./ItemRepository";
 import HereApiClient from "../location/HereApiClient";
 import Index from "../search/Index";
+import {archive, save, updateItem} from "./ItemRepository";
 
 export class ItemDAO {
     constructor({
@@ -78,7 +78,7 @@ export class ItemDAO {
             };
         }
 
-        const savedItem = await ItemRepository.updateItem({
+        const savedItem = await updateItem({
             ...updatedItem,
             id: this.id,
         });
@@ -98,7 +98,7 @@ export class ItemDAO {
     };
 
     save = async () => {
-        const itemSaved = await ItemRepository.save(this);
+        const itemSaved = await save(this);
 
         try {
             Index.indexItem(itemSaved);
@@ -111,7 +111,7 @@ export class ItemDAO {
 
     archive = async (deleterEmail) => {
         if (deleterEmail === this.ownerEmail) {
-            await ItemRepository.archive(this.id);
+            await archive(this.id);
             Index.deleteItemIndex(this.id);
         } else {
             throw new Error(`User ${deleterEmail} does not own the item.`)

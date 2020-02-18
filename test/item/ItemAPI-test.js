@@ -1,9 +1,9 @@
 import app from "../../app";
 import request from "supertest";
-import express from "express";
 import sinon from "sinon";
-import ItemRepository from "../../item/ItemRepository";
+import * as ItemRepository from "../../item/ItemRepository";
 import HereApiClient from "../../location/HereApiClient";
+import {getAuthenticatedApp} from "../TestHelper";
 
 describe('item API', () => {
     describe('create new item', () => {
@@ -53,13 +53,7 @@ describe('item API', () => {
                 }
             };
 
-            const testApp = express();
-            testApp.use((req, res, next) => {
-                req.session = {email: "someemail@enso.com"};
-                next();
-            });
-
-            testApp.use(app);
+            const testApp = getAuthenticatedApp();
 
             request(testApp)
                 .post('/api/items')
@@ -69,7 +63,7 @@ describe('item API', () => {
                     sinon.assert.calledWithMatch(saveItemStub, sinon.match({
                         ...item
                     }));
-                    done();
+                    done(error);
                 });
         })
     });

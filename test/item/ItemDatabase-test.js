@@ -1,11 +1,11 @@
 import database from "../../database";
-import ItemRepository from "../../item/ItemRepository";
 import {ItemDAO} from "../../item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
 import UserRepository from "../../user/UserRepository";
 import chai from 'chai';
 import 'chai-as-promised';
+import {getItemById, getItemByIds, getItemsForUser, save} from "../../item/ItemRepository";
 
 const chaiAsPromised = require('chai-as-promised');
 const should = chai.should();
@@ -32,7 +32,7 @@ describe('item data', () => {
             })));
             sinon.replace(UserRepository, "findOne", fakeFindUser);
 
-            return ItemRepository.getItemsForUser(userEmail).should.eventually.be.rejected;
+            return getItemsForUser(userEmail).should.eventually.be.rejected;
         });
 
         it('should save an item and get it back for user', async () => {
@@ -63,7 +63,7 @@ describe('item data', () => {
                 longitude: longitude
             };
 
-            await ItemRepository.save(new ItemDAO({
+            await save(new ItemDAO({
                 title: title,
                 rentalDailyPrice: rentalDailyPrice,
                 deposit: deposit,
@@ -78,7 +78,7 @@ describe('item data', () => {
                 imageUrl: imageUrl
             }));
 
-            const items = await ItemRepository.getItemsForUser(userEmail);
+            const items = await getItemsForUser(userEmail);
 
             expect(items.length).to.equal(1);
             expect(items[0].title).to.equal(title);
@@ -106,7 +106,7 @@ describe('item data', () => {
         const aSavedItem = await setupItems();
         const anotherSavedItem = await setupItems();
 
-        const items = await ItemRepository.getItemByIds([aSavedItem.id, anotherSavedItem.id]);
+        const items = await getItemByIds([aSavedItem.id, anotherSavedItem.id]);
 
         expect(items.length).to.equal(2);
     });
@@ -114,7 +114,7 @@ describe('item data', () => {
     it('get item by ID', async () => {
         const aSavedItem = await setupItems();
 
-        const item = await ItemRepository.getItemById(aSavedItem.id);
+        const item = await getItemById(aSavedItem.id);
 
         expect(item).to.have.property('archive');
         expect(item.id).to.equal(aSavedItem.id).but.not.be.undefined;

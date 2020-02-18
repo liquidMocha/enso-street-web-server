@@ -1,7 +1,7 @@
 import database from '../../database';
 import {getAllCategories, getItemCountForCategory} from "../../category/CategoryRepository";
 import {expect} from 'chai';
-import ItemRepository from "../../item/ItemRepository";
+import * as ItemRepository from "../../item/ItemRepository";
 import {ItemDAO} from "../../item/ItemDAO";
 import UserRepository from "../../user/UserRepository";
 

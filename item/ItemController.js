@@ -1,7 +1,7 @@
 import express from "express";
 import ItemDTO from "./ItemDTO";
 import {ItemDAO} from "./ItemDAO";
-import ItemRepository from "./ItemRepository";
+import {getItemById, getItemsForUser} from "./ItemRepository";
 
 const router = express.Router();
 
@@ -25,7 +25,8 @@ const buildItemDTO = (itemPayload, userEmail) => {
 };
 
 router.post('/', async (req, res, next) => {
-    if (req.session.email) {
+    const userEmail = req.session.email;
+    if (userEmail) {
         const itemPayload = req.body;
         const itemDTO = buildItemDTO(itemPayload, req.session.email);
         const itemDAO = await ItemDAO.fromDTO(itemDTO);
@@ -35,6 +36,7 @@ router.post('/', async (req, res, next) => {
             res.status(201).send();
         } catch (e) {
             res.status(500).send();
+            console.error(`Error when saving item for user ${userEmail}: ${e}`)
         }
     } else {
         res.status(401).send();
@@ -45,7 +47,7 @@ router.get('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
         try {
-            const items = await ItemRepository.getItemsForUser(userEmail);
+            const items = await getItemsForUser(userEmail);
             res.status(200).json(items);
         } catch (e) {
             console.error(`Error when retrieving item for user ${userEmail}: ${e}`)
@@ -57,7 +59,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:itemId', async (req, res, next) => {
     try {
-        const item = await ItemRepository.getItemById(req.params.itemId);
+        const item = await getItemById(req.params.itemId);
         res.status(200).json(item);
     } catch (e) {
         res.status(500).send();
@@ -68,7 +70,7 @@ router.delete('/:itemId', (req, res, next) => {
     const params = req.params;
 
     if (req.session.email) {
-        ItemRepository.getItemById(params.itemId).then(itemDAO => {
+        getItemById(params.itemId).then(itemDAO => {
             return itemDAO.archive(req.session.email);
         }).then(() => {
             res.status(200).send();
@@ -87,7 +89,7 @@ router.put('/:itemId', async (req, res, next) => {
 
     if (userEmail) {
         try {
-            const itemDAO = await ItemRepository.getItemById(itemId);
+            const itemDAO = await getItemById(itemId);
             if (itemDAO.ownerEmail === userEmail) {
                 await itemDAO.update(req.body);
                 res.status(200).send();

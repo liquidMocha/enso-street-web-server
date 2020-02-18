@@ -3,13 +3,13 @@ import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
 import {ItemDAO} from "./ItemDAO";
 
-const archive = (itemId) => {
+export const archive = (itemId) => {
     return database.none(`UPDATE public.item
                           SET archived = true
                           where id = $1`, [itemId])
 };
 
-const updateItem = (updatedItem) => {
+export const updateItem = (updatedItem) => {
     let eventualConditionId;
     if (updatedItem.condition) {
         eventualConditionId = getConditionId(updatedItem.condition);
@@ -80,7 +80,7 @@ const updateItem = (updatedItem) => {
         });
 };
 
-const getItemByIds = (itemIds) => {
+export const getItemByIds = (itemIds) => {
     return database.many(`SELECT id,
                                  city,
                                  image_url,
@@ -91,7 +91,7 @@ const getItemByIds = (itemIds) => {
                           WHERE id IN ($1:csv)`, [itemIds]);
 };
 
-const getItemById = async (itemId) => {
+export const getItemById = async (itemId) => {
     const itemEntity = await database.one(`SELECT owner,
                                                   title,
                                                   deposit,
@@ -134,7 +134,7 @@ const getItemById = async (itemId) => {
     });
 };
 
-const save = async (itemDAO) => {
+export const save = async (itemDAO) => {
     try {
         return saveItem(itemDAO);
     } catch (error) {
@@ -143,7 +143,7 @@ const save = async (itemDAO) => {
     }
 };
 
-const getItemsForUser = async (userEmail) => {
+export const getItemsForUser = async (userEmail) => {
     const user = await UserRepository.findOne({email: userEmail});
 
     if (user) {
@@ -309,13 +309,3 @@ const saveCategories = (categories, itemId) => {
         return savedCategories.map(savedCategory => savedCategory.name);
     });
 };
-
-
-export default {
-    updateItem,
-    archive,
-    getItemByIds,
-    getItemById,
-    save,
-    getItemsForUser
-}

@@ -4,7 +4,7 @@ import app from "../../../app";
 import {getAuthenticatedApp} from "../../TestHelper";
 import * as CartRepository from "../../../user/cart/CartRepository";
 import {assert} from "chai";
-import ItemRepository from "../../../item/ItemRepository";
+import * as ItemRepository from "../../../item/ItemRepository";
 import {ItemDAO} from "../../../item/ItemDAO";
 import UserRepository from "../../../user/UserRepository";
 import {UserProfile} from "../../../user/UserProfile";
