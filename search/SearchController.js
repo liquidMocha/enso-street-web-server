@@ -1,5 +1,5 @@
 import express from "express";
-import HereApiClient from "../location/HereApiClient";
+import {geocode} from "../location/HereApiClient";
 import Index from "./Index";
 import {getItemByIds} from "../item/ItemRepository";
 
@@ -32,7 +32,7 @@ router.post('/', async (req, res, next) => {
 
     if (!coordinates) {
         const address = req.body.address;
-        const coordinates = await HereApiClient.geocode(address);
+        const coordinates = await geocode(address);
 
         const hitItems = await search(searchTerm, coordinates);
         res.status(200).json(hitItems);

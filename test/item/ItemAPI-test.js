@@ -3,7 +3,7 @@ import app from "../../app";
 import request from "supertest";
 import sinon from "sinon";
 import * as ItemRepository from "../../item/ItemRepository";
-import HereApiClient from "../../location/HereApiClient";
+import * as HereApiClient from "../../location/HereApiClient";
 import {getAuthenticatedApp} from "../TestHelper";
 import {ItemDAO} from "../../item/ItemDAO";
 

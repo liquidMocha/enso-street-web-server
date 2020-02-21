@@ -1,7 +1,7 @@
 import app from "../../app";
 import request from "supertest";
 import sinon from "sinon";
-import HereApiClient from "../../location/HereApiClient";
+import * as HereApiClient from "../../location/HereApiClient";
 import * as ItemRepository from "../../item/ItemRepository";
 import Index from '../../search/Index';
 import {assert} from "chai";

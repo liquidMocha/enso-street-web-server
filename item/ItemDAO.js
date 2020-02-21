@@ -1,4 +1,4 @@
-import HereApiClient from "../location/HereApiClient";
+import {geocode} from "../location/HereApiClient";
 import Index from "../search/Index";
 import {archive, save, updateItem} from "./ItemRepository";
 
@@ -65,7 +65,7 @@ export class ItemDAO {
         const state = `${location.state ? (location.state + ', ') : ''}`;
         const zipCode = `${location.zipCode ? (location.zipCode) : ''}`;
         const addressString = `${street}${city}${state}${zipCode}`;
-        return HereApiClient.geocode(addressString);
+        return geocode(addressString);
     };
 
     update = async (updatedItem) => {

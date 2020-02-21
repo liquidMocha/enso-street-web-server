@@ -1,8 +1,8 @@
 import express from "express";
 import UserRepository from "../user/UserRepository";
 import Location from './Location';
-import HereApiClient from "./HereApiClient";
 import {createLocation, getLocationsForUser, updateLocation} from "./LocationRepository";
+import {autosuggest, routeDistanceInMiles} from "./HereApiClient";
 
 const router = express.Router();
 
@@ -70,7 +70,7 @@ router.get('/autosuggest/:searchTerm', (req, res, next) => {
     const userEmail = req.session.email;
     const queryParameters = req.query;
 
-    HereApiClient.autosuggest(req.params.searchTerm,
+    autosuggest(req.params.searchTerm,
         {latitude: queryParameters.latitude, longitude: queryParameters.longitude}
     ).then(result => {
         const suggestedAddresses = result.suggestions.map(suggestion => {
@@ -90,16 +90,17 @@ router.get('/autosuggest/:searchTerm', (req, res, next) => {
     });
 });
 
-router.get('/reverseGeocode', (req, res, next) => {
-    const queryParameters = req.query;
-    HereApiClient.reverseGeocode({latitude: queryParameters.latitude, longitude: queryParameters.longitude})
-        .then(result => {
-            res.status(200).json(result);
-        }).catch(error => {
-            console.error(`Error when reverse geocoding: ${error}.`);
-            res.status(500).send();
-        }
-    );
+router.get('/distance', async (req, res, next) => {
+    const startLatitude = req.query.startLatitude;
+    const startLongitude = req.query.startLongitude;
+    const endLatitude = req.query.endLatitude;
+    const endLongitude = req.query.endLongitude;
+
+    const startCoordinates = {latitude: startLatitude, longitude: startLongitude};
+    const endCoordinates = {latitude: endLatitude, longitude: endLongitude};
+
+    const distance = (await routeDistanceInMiles(startCoordinates, endCoordinates));
+    res.status(200).json({distance})
 });
 
 export default router;
