@@ -50,6 +50,7 @@ router.get('/', async (req, res, next) => {
             const items = await getItemsForUser(userEmail);
             res.status(200).json(items);
         } catch (e) {
+            res.status(500).send();
             console.error(`Error when retrieving item for user ${userEmail}: ${e}`)
         }
     } else {
@@ -68,11 +69,12 @@ router.get('/:itemId', async (req, res, next) => {
 
 router.delete('/:itemId', (req, res, next) => {
     const params = req.params;
-
-    if (req.session.email) {
-        getItemById(params.itemId).then(itemDAO => {
-            return itemDAO.archive(req.session.email);
-        }).then(() => {
+    const userEmail = req.session.email;
+    if (userEmail) {
+        getItemById(params.itemId)
+            .then(itemDAO => {
+                return itemDAO.archive(userEmail);
+            }).then(() => {
             res.status(200).send();
         }).catch(error => {
             res.status(500).send();
