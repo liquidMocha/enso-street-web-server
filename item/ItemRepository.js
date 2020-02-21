@@ -100,7 +100,8 @@ export const getItemById = async (itemId) => {
                                                   deliveryadditional,
                                                   condition,
                                                   description,
-                                                  image_url
+                                                  image_url,
+                                                  canbedelivered
                                            FROM public.item
                                            WHERE id = $1`,
         [itemId],
@@ -114,7 +115,8 @@ export const getItemById = async (itemId) => {
                 deliveryStarting: result.deliverystarting,
                 condition: result.condition,
                 description: result.description,
-                imageUrl: result.image_url
+                imageUrl: result.image_url,
+                canBeDelivered: result.canbedelivered
             }
         });
 
@@ -130,7 +132,8 @@ export const getItemById = async (itemId) => {
         deliveryStarting: itemEntity.deliveryStarting,
         condition: itemEntity.condition,
         description: itemEntity.description,
-        imageUrl: itemEntity.imageUrl
+        imageUrl: itemEntity.imageUrl,
+        canBeDelivered: itemEntity.canBeDelivered
     });
 };
 
@@ -257,6 +260,7 @@ const saveItem = async (itemDAO) => {
                          RETURNING id, title, description, 
                              deposit, rentaldailyprice, deliveryadditional,
                              deliverystarting, condition, description, image_url,
+                             canbedelivered,
                              ST_X(item.geo_location::geometry) AS longitude,
                              ST_Y(item.geo_location::geometry) AS latitude`,
             [

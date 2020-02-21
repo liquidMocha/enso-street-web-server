@@ -161,7 +161,6 @@ describe('item API', () => {
                     })
             });
 
-
             it('should respond with 500 when user try to delete item that does not belong to them', (done) => {
                 const itemId = "123-abc";
                 const notLoggedInUser = "some@randome.user";
