@@ -18,14 +18,14 @@ export default class ItemDTO {
                 }) {
         this.id = id;
         this.title = title;
-        this.rentalDailyPrice = rentalDailyPrice;
-        this.deposit = deposit;
+        this.rentalDailyPrice = Number(rentalDailyPrice);
+        this.deposit = Number(deposit);
         this.condition = condition;
         this.categories = categories || [];
         this.description = description;
         this.canBeDelivered = canBeDelivered;
-        this.deliveryStarting = deliveryStarting;
-        this.deliveryAdditional = deliveryAdditional;
+        this.deliveryStarting = Number(deliveryStarting);
+        this.deliveryAdditional = Number(deliveryAdditional);
         this.location = location;
         this.userEmail = userEmail;
         this.imageUrl = imageUrl;
