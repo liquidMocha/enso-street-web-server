@@ -101,7 +101,9 @@ export const getItemById = async (itemId) => {
                                                   condition,
                                                   description,
                                                   image_url,
-                                                  canbedelivered
+                                                  canbedelivered,
+                                                  ST_X(item.geo_location::geometry) AS "longitude",
+                                                  ST_Y(item.geo_location::geometry) AS "latitude"
                                            FROM public.item
                                            WHERE id = $1`,
         [itemId],
@@ -116,7 +118,9 @@ export const getItemById = async (itemId) => {
                 condition: result.condition,
                 description: result.description,
                 imageUrl: result.image_url,
-                canBeDelivered: result.canbedelivered
+                canBeDelivered: result.canbedelivered,
+                latitude: result.latitude,
+                longitude: result.longitude
             }
         });
 
@@ -133,7 +137,11 @@ export const getItemById = async (itemId) => {
         condition: itemEntity.condition,
         description: itemEntity.description,
         imageUrl: itemEntity.imageUrl,
-        canBeDelivered: itemEntity.canBeDelivered
+        canBeDelivered: itemEntity.canBeDelivered,
+        location: {
+            latitude: itemEntity.latitude,
+            longitude: itemEntity.longitude
+        }
     });
 };
 

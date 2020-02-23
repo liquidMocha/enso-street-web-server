@@ -127,6 +127,8 @@ describe('item data', () => {
         expect(item.description).to.equal(aSavedItem.description).but.not.be.undefined;
         expect(item.imageUrl).to.equal(aSavedItem.image_url).but.not.be.undefined;
         expect(item.canBeDelivered).to.equal(aSavedItem.canbedelivered).but.not.be.undefined;
+        expect(item.location.latitude).to.equal(aSavedItem.latitude).but.not.be.undefined;
+        expect(item.location.longitude).to.equal(aSavedItem.longitude).but.not.be.undefined;
     });
 
     const setupItems = async () => {
