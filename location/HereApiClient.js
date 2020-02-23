@@ -47,5 +47,5 @@ export const routeDistanceInMiles = async (startCoordinates, endCoordinates) => 
             }
         });
 
-    return (((await response).data.response.route[0].summary.distance / 1000) * 0.621371).toFixed(1)
+    return ((await response).data.response.route[0].summary.distance / 1000) * 0.621371
 };
