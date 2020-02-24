@@ -18,10 +18,10 @@ async function search(searchTerm, coordinates) {
         return {
             id: item.id,
             city: item.city,
-            imageUrl: item.image_url,
+            imageUrl: item.imageUrl,
             title: item.title,
-            dailyRentalPrice: item.rentaldailyprice,
-            zipCode: item.zipcode
+            dailyRentalPrice: item.rentalDailyPrice,
+            zipCode: item.zipCode
         }
     });
 }
