@@ -88,7 +88,19 @@ export const getItemByIds = (itemIds) => {
                                  rentaldailyprice,
                                  zipcode
                           FROM item
-                          WHERE id IN ($1:csv)`, [itemIds]);
+                          WHERE id IN ($1:csv)`, [itemIds])
+        .then(results => {
+            return results.map(result => {
+                return {
+                    id: result.id,
+                    city: result.city,
+                    imageUrl: result.image_url,
+                    title: result.title,
+                    rentalDailyPrice: parseFloat(result.rentaldailyprice),
+                    zipCode: result.zipcode
+                }
+            });
+        });
 };
 
 export const getItemById = async (itemId) => {
@@ -295,6 +307,10 @@ const saveItem = async (itemDAO) => {
 
         return {
             ...(await savedItem),
+            rentalDailyPrice: parseFloat((await savedItem).rentaldailyprice),
+            deposit: parseFloat((await savedItem).deposit),
+            deliveryStarting: parseFloat((await savedItem).deliverystarting),
+            deliveryAdditional: parseFloat((await savedItem).deliveryadditional),
             categories: [...(await categoriesSaved)]
         };
     } catch (e) {

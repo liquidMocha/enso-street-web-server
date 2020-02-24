@@ -120,9 +120,9 @@ describe('item data', () => {
         expect(item.id).to.equal(aSavedItem.id).but.not.be.undefined;
         expect(item.title).to.equal(aSavedItem.title).but.not.be.undefined;
         expect(item.deposit).to.equal(aSavedItem.deposit).but.not.be.undefined;
-        expect(item.rentalDailyPrice).to.equal(aSavedItem.rentaldailyprice).but.not.be.undefined;
-        expect(item.deliveryStarting).to.equal(aSavedItem.deliverystarting).but.not.be.undefined;
-        expect(item.deliveryAdditional).to.equal(aSavedItem.deliveryadditional).but.not.be.undefined;
+        expect(item.rentalDailyPrice).to.equal(aSavedItem.rentalDailyPrice).but.not.be.undefined;
+        expect(item.deliveryStarting).to.equal(aSavedItem.deliveryStarting).but.not.be.undefined;
+        expect(item.deliveryAdditional).to.equal(aSavedItem.deliveryAdditional).but.not.be.undefined;
         expect(item.condition).to.equal(aSavedItem.condition).but.not.be.undefined;
         expect(item.description).to.equal(aSavedItem.description).but.not.be.undefined;
         expect(item.imageUrl).to.equal(aSavedItem.image_url).but.not.be.undefined;

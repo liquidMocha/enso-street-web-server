@@ -20,7 +20,7 @@ async function search(searchTerm, coordinates) {
             city: item.city,
             imageUrl: item.image_url,
             title: item.title,
-            dailyRentalPrice: Number(item.rentaldailyprice),
+            dailyRentalPrice: item.rentaldailyprice,
             zipCode: item.zipcode
         }
     });
