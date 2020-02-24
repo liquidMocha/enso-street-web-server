@@ -81,6 +81,10 @@ export const updateItem = (updatedItem) => {
 };
 
 export const getItemByIds = (itemIds) => {
+    if (itemIds.length === 0) {
+        return []
+    }
+
     return database.many(`SELECT id,
                                  city,
                                  image_url,
