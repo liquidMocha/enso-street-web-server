@@ -42,21 +42,30 @@ router.put('/', async (req, res, next) => {
 
 async function toCartDTO([email, itemDAOs]) {
     const userName = (await UserRepository.findOne({email: email})).profile.name;
+    const items = itemDAOs.map(dao => {
+        return dao.toDTO();
+    });
 
     return {
         owner: {
             name: userName,
             email: email
         },
-        items: itemDAOs.map(dao => {
-            return {
-                id: dao.id,
-                title: dao.title,
-                rentalDailyPrice: dao.rentalDailyPrice,
-                imageUrl: dao.imageUrl
-            }
-        })
+        items: dedupe(items)
     }
+}
+
+function dedupe(items) {
+    const deduplicatedItems = [];
+    items.forEach(item => {
+        const foundItem = deduplicatedItems.find((dedupedItem) => dedupedItem.id === item.id);
+        if (foundItem) {
+            foundItem.quantity++;
+        } else {
+            deduplicatedItems.push({...item, quantity: 1})
+        }
+    });
+    return deduplicatedItems;
 }
 
 export default router;

@@ -59,6 +59,15 @@ export class ItemDAO {
         });
     }
 
+    toDTO = () => {
+        return {
+            id: this.id,
+            title: this.title,
+            rentalDailyPrice: this.rentalDailyPrice,
+            imageUrl: this.imageUrl
+        }
+    };
+
     static lookupCoordinatesFrom = (location) => {
         const street = `${location.street ? (location.street + ', ') : ''}`;
         const city = `${location.city ? (location.city + ', ') : ''}`;
