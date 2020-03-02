@@ -13,14 +13,14 @@ import {User} from "../../../user/User";
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";
     const authenticatedApp = getAuthenticatedApp(loggedInUserEmail);
-    let getCartStub;
+    let getItemsInCartStub;
     let addToCartStub;
     let getItemByIdStub;
     let findOneUserStub;
 
     beforeEach(() => {
         sinon.resetHistory();
-        getCartStub = sinon.stub(CartRepository, 'getItemsInCart');
+        getItemsInCartStub = sinon.stub(CartRepository, 'getItemsInCart');
         addToCartStub = sinon.stub(CartRepository, 'addItemForUser');
         getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
         findOneUserStub = sinon.stub(UserRepository, 'findOne');
@@ -54,7 +54,7 @@ describe('cart', () => {
             const imageUrl2 = "abc-613.jpg";
             const ownerName2 = "Chidi Anagonye";
 
-            getCartStub.resolves([{itemId: itemId1}, {itemId: itemId2}]);
+            getItemsInCartStub.resolves([{id: itemId1, quantity: 1}, {id: itemId2, quantity: 2}]);
 
             getItemByIdStub.onCall(0).resolves(new ItemDAO({
                 id: itemId1,
@@ -83,10 +83,15 @@ describe('cart', () => {
 
             findOneUserStub.onCall(0).resolves(
                 new User({
-                    profile: new UserProfile({name: ownerName1})
+                    profile: new UserProfile({id: "some-id", name: "logged in user"})
                 })
             );
             findOneUserStub.onCall(1).resolves(
+                new User({
+                    profile: new UserProfile({name: ownerName1})
+                })
+            );
+            findOneUserStub.onCall(2).resolves(
                 new User({
                     profile: new UserProfile({name: ownerName2})
                 })
@@ -97,7 +102,8 @@ describe('cart', () => {
                     title: itemTitle1,
                     id: itemId1,
                     rentalDailyPrice: rentalDailyPrice1,
-                    imageUrl: imageUrl1
+                    imageUrl: imageUrl1,
+                    quantity: 1
                 }
             ];
 
@@ -106,13 +112,15 @@ describe('cart', () => {
                     title: itemTitle2,
                     id: itemId2,
                     rentalDailyPrice: rentalDailyPrice2,
-                    imageUrl: imageUrl2
+                    imageUrl: imageUrl2,
+                    quantity: 2
                 }
             ];
 
             request(authenticatedApp)
                 .get('/api/cart')
                 .expect(200, (error, response) => {
+                    sinon.assert.calledWith(findOneUserStub, {email: loggedInUserEmail});
                     sinon.assert.calledWith(getItemByIdStub, itemId1);
                     sinon.assert.calledWith(getItemByIdStub, itemId2);
                     assert.deepEqual(response.body, [
@@ -148,11 +156,14 @@ describe('cart', () => {
 
         it('should add item to cart for authenticated user', (done) => {
             const itemId = "abc-123";
+            const userId = "some-user-id";
+            findOneUserStub.resolves(new User({id: userId,}));
+
             request(authenticatedApp)
                 .put('/api/cart')
                 .send({itemId})
                 .expect(200, (error, response) => {
-                    sinon.assert.calledWith(addToCartStub, {itemId}, loggedInUserEmail);
+                    sinon.assert.calledWith(addToCartStub, {itemId}, userId);
                     done(error);
                 })
         })

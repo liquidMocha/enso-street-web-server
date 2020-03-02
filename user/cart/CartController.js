@@ -10,9 +10,13 @@ router.get('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
         try {
-            const itemIds = await getItemsInCart(userEmail);
-            const itemDAOs = await Promise.all(itemIds.map(item => {
-                return ItemRepository.getItemById(item.itemId)
+            const userId = (await UserRepository.findOne({email: userEmail})).id;
+            const cartItems = await getItemsInCart(userId);
+            const itemDAOs = await Promise.all(cartItems.map(async cartItem => {
+                return {
+                    ...(await ItemRepository.getItemById(cartItem.id)),
+                    quantity: cartItem.quantity
+                }
             }));
             const ownerBatches = _.groupBy(itemDAOs, 'ownerEmail');
 
@@ -33,7 +37,8 @@ router.get('/', async (req, res, next) => {
 router.put('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
-        await addItemForUser(req.body, userEmail);
+        const userId = UserRepository.findOne({email: userEmail});
+        await addItemForUser(req.body, (await userId).id);
         res.status(200).send();
     } else {
         res.status(401).send();
@@ -43,7 +48,7 @@ router.put('/', async (req, res, next) => {
 async function toCartDTO([email, itemDAOs]) {
     const userName = (await UserRepository.findOne({email: email})).profile.name;
     const items = itemDAOs.map(dao => {
-        return dao.toDTO();
+        return {...(dao.toDTO()), quantity: dao.quantity};
     });
 
     return {
@@ -51,21 +56,8 @@ async function toCartDTO([email, itemDAOs]) {
             name: userName,
             email: email
         },
-        items: dedupe(items)
+        items: items
     }
-}
-
-function dedupe(items) {
-    const deduplicatedItems = [];
-    items.forEach(item => {
-        const foundItem = deduplicatedItems.find((dedupedItem) => dedupedItem.id === item.id);
-        if (foundItem) {
-            foundItem.quantity++;
-        } else {
-            deduplicatedItems.push({...item, quantity: 1})
-        }
-    });
-    return deduplicatedItems;
 }
 
 export default router;

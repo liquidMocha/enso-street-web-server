@@ -2,6 +2,11 @@ import database from "../database";
 import express from "express";
 import app from "../app";
 
+export async function setupItem(itemId) {
+    return database.none(`INSERT INTO item(id)
+                          VALUES ($1)`, itemId);
+}
+
 export async function setupUser({email: email, password: password, name: name}) {
     const data = await database.one(`
                 INSERT INTO public.user(email, password)
