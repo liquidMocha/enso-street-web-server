@@ -68,7 +68,7 @@ router.post('/googleSignOn', async (req, res) => {
         req.session.email = user.email;
         res.status(200).send('Google signon successful');
     } catch (e) {
-        console.error(`Error when Google Signin`);
+        console.error(`Error when Google Signin: ${e}`);
         res.status(500).send();
     }
 });
