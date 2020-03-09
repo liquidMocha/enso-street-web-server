@@ -54,6 +54,8 @@ const googleOAuthClient = new OAuth2Client(CLIENT_ID);
 
 router.post('/googleSignOn', async (req, res) => {
     try {
+        console.log(`token: ${req.body.idToken}`);
+        console.log(`audience: ${CLIENT_ID}`);
         const ticket = await googleOAuthClient.verifyIdToken({
             idToken: req.body.idToken,
             audience: CLIENT_ID
