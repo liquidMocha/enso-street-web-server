@@ -36,12 +36,17 @@ router.get('/', async (req, res, next) => {
 
 router.put('/', async (req, res, next) => {
     const userEmail = req.session.email;
-    if (userEmail) {
-        const userId = UserRepository.findOne({email: userEmail});
-        await addItemForUser(req.body, (await userId).id);
-        res.status(200).send();
-    } else {
-        res.status(401).send();
+    try {
+        if (userEmail) {
+            const userId = UserRepository.findOne({email: userEmail});
+            await addItemForUser(req.body, (await userId).id);
+            res.status(200).send();
+        } else {
+            res.status(401).send();
+        }
+    } catch (e) {
+        console.error(`Error when adding item to cart for user ${userEmail}: ${e}`);
+        res.status(500).send();
     }
 });
 
