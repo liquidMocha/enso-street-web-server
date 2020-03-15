@@ -163,7 +163,7 @@ describe('cart', () => {
                 .put('/api/cart')
                 .send({itemId})
                 .expect(200, (error, response) => {
-                    sinon.assert.calledWith(addToCartStub, {itemId}, userId);
+                    sinon.assert.calledWith(addToCartStub, itemId, userId);
                     done(error);
                 })
         })

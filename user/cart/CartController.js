@@ -39,7 +39,7 @@ router.put('/', async (req, res, next) => {
     try {
         if (userEmail) {
             const userId = UserRepository.findOne({email: userEmail});
-            await addItemForUser(req.body, (await userId).id);
+            await addItemForUser(req.body.itemId, (await userId).id);
             res.status(200).send();
         } else {
             res.status(401).send();
