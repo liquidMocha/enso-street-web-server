@@ -1,5 +1,6 @@
 import {create} from "./UserFactory"
 import UserRepository from "./UserRepository";
+import {OAuth2Client} from "google-auth-library";
 
 export const createEnsoUser = (name, password, email) => {
     const user = create(name, password, email);
@@ -13,4 +14,20 @@ export const ensoLogin = async (email, password) => {
     } else {
         return false;
     }
+};
+
+const CLIENT_ID = process.env.googleClientId;
+const googleOAuthClient = new OAuth2Client(CLIENT_ID);
+
+export const googleSignOn = async (idToken) => {
+    const ticket = await googleOAuthClient.verifyIdToken({
+        idToken: idToken,
+        audience: CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const userEmail = payload.email;
+    const userName = payload.name;
+
+    return await UserRepository.findOrCreate({email: userEmail, name: userName});
 };

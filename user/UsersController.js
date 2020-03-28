@@ -1,5 +1,4 @@
-import UsersService from "./UserRepository";
-import {createEnsoUser, ensoLogin} from "./UserService";
+import {createEnsoUser, ensoLogin, googleSignOn} from "./UserService";
 import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
@@ -47,17 +46,7 @@ const googleOAuthClient = new OAuth2Client(CLIENT_ID);
 
 router.post('/googleSignOn', async (req, res) => {
     try {
-        const ticket = await googleOAuthClient.verifyIdToken({
-            idToken: req.body.idToken,
-            audience: CLIENT_ID
-        });
-
-        const payload = ticket.getPayload();
-        const userEmail = payload.email;
-        const userName = payload.name;
-
-        const user = await UsersService.findOrCreate({email: userEmail, name: userName});
-
+        const user = googleSignOn(req.body.idToken);
         req.session.email = user.email;
         res.status(200).send('Google signon successful');
     } catch (e) {
