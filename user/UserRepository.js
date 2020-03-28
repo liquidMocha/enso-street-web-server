@@ -28,7 +28,11 @@ const findOne = ({email: email}) => {
         });
 };
 
-const createEnsoUser = (name, password, email) => {
+const saveEnsoUser = (user) => {
+    const name = user.profile.name;
+    const password = user.password;
+    const email = user.email;
+
     return findOne({email: email})
         .then(user => {
             if (user) {
@@ -54,10 +58,6 @@ const createEnsoUser = (name, password, email) => {
         .catch((error) => {
             console.log('error creating user: ', error);
         });
-};
-
-const createEnsoUser1 = (user) => {
-    return createEnsoUser(user.profile.name, user.password, user.email)
 };
 
 const findOrCreate = async ({email: email, name: name}) => {
@@ -99,8 +99,7 @@ const update = (user) => {
 export default {
     getEmailById,
     findOne,
-    createEnsoUser,
-    createEnsoUser1,
+    saveEnsoUser,
     findOrCreate,
     update
 }

@@ -4,7 +4,7 @@ import {OAuth2Client} from "google-auth-library";
 
 export const createEnsoUser = (name, password, email) => {
     const user = create(name, password, email);
-    return UserRepository.createEnsoUser1(user)
+    return UserRepository.saveEnsoUser(user)
 };
 
 export const ensoLogin = async (email, password) => {

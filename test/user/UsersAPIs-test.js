@@ -9,15 +9,13 @@ import {assert} from "chai";
 import {getAuthenticatedApp} from "../TestHelper";
 
 describe('users', () => {
-    let createUserStub,
-        createUserStub1,
+    let saveEnsoUserStub,
         findUserStub,
         bcryptStub,
         userUpdateStub;
 
     before(() => {
-        createUserStub = sinon.stub(UserRepository, 'createEnsoUser');
-        createUserStub1 = sinon.stub(UserRepository, 'createEnsoUser1');
+        saveEnsoUserStub = sinon.stub(UserRepository, 'saveEnsoUser');
         findUserStub = sinon.stub(UserRepository, 'findOne');
         userUpdateStub = sinon.stub(UserRepository, 'update');
         bcryptStub = sinon.stub(bcrypt);
@@ -43,15 +41,15 @@ describe('users', () => {
         });
 
         it('should return 201 if successfully created user', (done) => {
-            createUserStub1.resolves();
+            saveEnsoUserStub.resolves();
 
             request(app)
                 .post('/api/users/createUser')
                 .send(userDto)
                 .expect(201, (error) => {
-                    sinon.assert.calledWith(createUserStub1, sinon.match.has("password", userDto.password));
-                    sinon.assert.calledWith(createUserStub1, sinon.match.has("email", userDto.email));
-                    sinon.assert.calledWith(createUserStub1, sinon.match({profile: {name: userDto.name}}));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("password", userDto.password));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("email", userDto.email));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match({profile: {name: userDto.name}}));
                     if (error) {
                         return done(error);
                     }
@@ -61,15 +59,15 @@ describe('users', () => {
         });
 
         it('should return 500 if failed to create user', (done) => {
-            createUserStub1.rejects();
+            saveEnsoUserStub.rejects();
 
             request(app)
                 .post('/api/users/createUser')
                 .send(userDto)
                 .expect(500, (error) => {
-                    sinon.assert.calledWith(createUserStub1, sinon.match.has("password", userDto.password));
-                    sinon.assert.calledWith(createUserStub1, sinon.match.has("email", userDto.email));
-                    sinon.assert.calledWith(createUserStub1, sinon.match({profile: {name: userDto.name}}));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("password", userDto.password));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("email", userDto.email));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match({profile: {name: userDto.name}}));
 
                     done(error);
                 });
@@ -81,7 +79,7 @@ describe('users', () => {
                     .post('/api/users/createUser')
                     .send({password: 'a'})
                     .expect(500, (error) => {
-                        sinon.assert.notCalled(createUserStub);
+                        sinon.assert.notCalled(saveEnsoUserStub);
 
                         done(error);
                     })

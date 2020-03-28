@@ -117,7 +117,9 @@ describe('User data', () => {
             const existingEmail = 'existing@email.com';
             await setupUser({email: existingEmail});
 
-            await UserRepository.createEnsoUser("someName", "pass", existingEmail)
+            const userToBeRejected = create("someName", "password", existingEmail);
+
+            await UserRepository.saveEnsoUser(userToBeRejected)
                 .catch(error => {
                     expect(error.message).to.contains('Account Exists')
                 })
@@ -127,7 +129,8 @@ describe('User data', () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            await UserRepository.createEnsoUser(expectedName, "pass", expectedEmail)
+            const userToBeSaved = create(expectedName, "password", expectedEmail);
+            await UserRepository.saveEnsoUser(userToBeSaved)
                 .then(() => {
                     return database.one('select * from public.user where email = $1', expectedEmail);
                 })
