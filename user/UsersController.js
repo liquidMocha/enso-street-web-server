@@ -1,28 +1,26 @@
 import UsersService from "./UserRepository";
+import {createEnsoUser} from "./UserService";
 import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
 
 const router = express.Router();
 
-router.post('/createUser', (req, res) => {
+router.post('/createUser', async (req, res) => {
     const schema = Joi.object({
         email: Joi.any(),
         name: Joi.any(),
         password: Joi.string().min(8)
     });
 
-    schema.validateAsync(req.body)
-        .then(value => {
-            return UsersService.createEnsoUser(value.name, value.password, value.email);
-        })
-        .then(() => {
-            res.status(201).send();
-        })
-        .catch((error) => {
-            console.log(error);
-            res.status(500).send();
-        });
+    try {
+        const validatedValue = await schema.validateAsync(req.body);
+        await createEnsoUser(validatedValue.name, validatedValue.password, validatedValue.email);
+        res.status(201).send();
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
 });
 
 router.post('/login', async (req, res) => {

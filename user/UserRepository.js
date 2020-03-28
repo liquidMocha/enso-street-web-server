@@ -61,6 +61,10 @@ const createEnsoUser = (name, password, email) => {
         });
 };
 
+const createEnsoUser1 = (user) => {
+    return createEnsoUser(user.profile.name, user.password, user.email)
+};
+
 const findOrCreate = async ({email: email, name: name}) => {
     try {
         const userEntity = await findOne({email: email});
@@ -101,6 +105,7 @@ export default {
     getEmailById,
     findOne,
     createEnsoUser,
+    createEnsoUser1,
     findOrCreate,
     incrementFailedAttempt,
     resetFailedAttempts
