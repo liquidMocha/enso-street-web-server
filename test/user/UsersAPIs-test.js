@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import {User} from "../../user/User";
 import express from "express";
 import {assert} from "chai";
+import {getAuthenticatedApp} from "../TestHelper";
 
 describe('users', () => {
     let createUserStub,
@@ -184,22 +185,33 @@ describe('users', () => {
     });
 
     describe('is requester logged in', () => {
-        it('should return true if user is logged in', (done) => {
+        it('should return true if user has cookie and exists', (done) => {
             const email = 'some@loggedin.email';
 
-            const testApp = express();
-            testApp.use((req, res, next) => {
-                req.session = {email: email};
-                next();
-            });
+            findUserStub.resolves(new User({email: email}));
 
-            testApp.use(app);
+            const testApp = getAuthenticatedApp(email);
 
             request(testApp)
                 .post('/api/users/isLoggedIn')
                 .expect(200, (error, response) => {
+                    sinon.assert.calledWithExactly(findUserStub, {email: email});
                     assert.equal(true, response.body.loggedIn);
-                    return done(error);
+                    done(error);
+                });
+        });
+
+        it('should return false if user has cookie but no longer exists', (done) => {
+            findUserStub.resolves(null);
+            const email = 'some@loggedin.email';
+
+            const testApp = getAuthenticatedApp(email);
+
+            request(testApp)
+                .post('/api/users/isLoggedIn')
+                .expect(200, (error, response) => {
+                    assert.equal(false, response.body.loggedIn);
+                    done(error);
                 });
         });
 
@@ -216,7 +228,8 @@ describe('users', () => {
                 .post('/api/users/isLoggedIn')
                 .expect(200, (error, response) => {
                     assert.equal(false, response.body.loggedIn);
-                    return done(error);
+                    sinon.assert.notCalled(findUserStub);
+                    done(error);
                 });
         })
 

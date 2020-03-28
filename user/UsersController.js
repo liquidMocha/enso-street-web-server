@@ -1,4 +1,4 @@
-import {createEnsoUser, ensoLogin, googleSignOn} from "./UserService";
+import {checkLoggedIn, createEnsoUser, ensoLogin, googleSignOn} from "./UserService";
 import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
@@ -46,20 +46,22 @@ const googleOAuthClient = new OAuth2Client(CLIENT_ID);
 
 router.post('/googleSignOn', async (req, res) => {
     try {
-        const user = googleSignOn(req.body.idToken);
+        const user = await googleSignOn(req.body.idToken);
         req.session.email = user.email;
-        res.status(200).send('Google signon successful');
+        res.status(200).send('Google sign on successful');
     } catch (e) {
-        console.error(`Error when Google Signon: ${e}`);
+        console.error(`Error when Google sign on: ${e}`);
         res.status(500).send();
     }
 });
 
-router.post('/isLoggedIn', (req, res) => {
+router.post('/isLoggedIn', async (req, res) => {
     res.setHeader('Last-Modified', (new Date()).toUTCString());
+    const userEmail = req.session.email;
 
-    if (req.session.email) {
-        res.status(200).json({loggedIn: true});
+    if (userEmail) {
+        const isLoggedIn = await checkLoggedIn(userEmail);
+        res.status(200).json({loggedIn: isLoggedIn});
     } else {
         res.status(200).json({loggedIn: false});
     }
