@@ -1,5 +1,5 @@
 import UsersService from "./UserRepository";
-import {createEnsoUser} from "./UserService";
+import {createEnsoUser, ensoLogin} from "./UserService";
 import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
@@ -28,16 +28,11 @@ router.post('/login', async (req, res) => {
     const password = req.body.password;
 
     try {
-        const user = await UsersService.findOne({email: email});
+        const loginSuccessful = await ensoLogin(email, password);
 
-        if (user) {
-            const passwordMatch = await user.login(password);
-            if (passwordMatch) {
-                req.session.email = email;
-                res.status(200).send('authentication successful');
-            } else {
-                res.status(401).send('authentication failed');
-            }
+        if (loginSuccessful) {
+            req.session.email = email;
+            res.status(200).send('authentication successful');
         } else {
             res.status(401).send('authentication failed');
         }
