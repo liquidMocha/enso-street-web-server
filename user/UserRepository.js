@@ -1,7 +1,6 @@
 import database from '../database';
 import * as bcrypt from "bcrypt";
-import {User} from "./User";
-import {UserProfile} from "./UserProfile";
+import {reconstitueFromDao} from "./UserFactory";
 
 const getEmailById = (userId) => {
     return database.one(
@@ -16,18 +15,13 @@ const getEmailById = (userId) => {
 const findOne = ({email: email}) => {
     return database.oneOrNone(
             `SELECT *, public.user.id as userId 
-                        FROM public.user LEFT JOIN public.user_profile profile    
+                        FROM public.user 
+                        LEFT JOIN public.user_profile profile 
                         ON public.user.id = profile.user_id 
                         WHERE lower(email) = lower($1)`, [email],
         userEntity => {
             if (userEntity) {
-                return new User({
-                    id: userEntity.userid,
-                    password: userEntity.password,
-                    email: userEntity.email,
-                    failedAttempts: userEntity.failed_login_attempts,
-                    profile: new UserProfile({name: userEntity.name})
-                })
+                return reconstitueFromDao(userEntity);
             } else {
                 return null;
             }

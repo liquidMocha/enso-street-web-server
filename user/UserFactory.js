@@ -8,3 +8,13 @@ export const create = (name, password, email) => {
         profile: new UserProfile({name})
     })
 };
+
+export const reconstitueFromDao = (userDao) => {
+    return new User({
+        id: userDao.userid,
+        password: userDao.password,
+        email: userDao.email,
+        failedAttempts: userDao.failed_login_attempts,
+        profile: new UserProfile({name: userDao.name})
+    });
+};
