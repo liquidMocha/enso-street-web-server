@@ -18,7 +18,7 @@ const findOne = ({email: email}) => {
             `SELECT *, public.user.id as userId 
                         FROM public.user LEFT JOIN public.user_profile profile    
                         ON public.user.id = profile.user_id 
-                        WHERE email = $1`, [email],
+                        WHERE lower(email) = lower($1)`, [email],
         userEntity => {
             if (userEntity) {
                 return new User({
@@ -61,20 +61,22 @@ const createEnsoUser = (name, password, email) => {
         });
 };
 
-const findOrCreate = ({email: email, name: name}) => {
-    return findOne({email: email})
-        .then(userEntity => {
-            if (userEntity) {
-                return Promise.resolve(userEntity);
-            } else {
-                return createOAuthUser(email, name)
-                    .then(_ => {
-                        return findOne({email: email});
-                    });
-            }
-        })
-        .catch(error => console.log('Error when findOrCreate user for email: ', email,
-            '\n Error: ', error));
+const findOrCreate = async ({email: email, name: name}) => {
+    try {
+        const userEntity = await findOne({email: email});
+
+        if (userEntity) {
+            return Promise.resolve(userEntity);
+        } else {
+            return createOAuthUser(email, name)
+                .then(_ => {
+                    return findOne({email: email});
+                });
+        }
+    } catch (e) {
+        console.log('Error when findOrCreate user for email: ', email,
+            '\n Error: ', error)
+    }
 };
 
 const createOAuthUser = (email, name) => {

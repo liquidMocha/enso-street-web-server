@@ -60,6 +60,16 @@ describe('User data', () => {
                     expect.fail(error);
                 });
         });
+
+        it('should look for user by case INSENSITIVE email', async () => {
+            const expectedEmail = 'abc@123.com';
+            const expectedPassword = 'some password';
+            await setupUser({email: expectedEmail, password: expectedPassword});
+
+            const userEntity = await UserRepository.findOne({email: expectedEmail.toUpperCase()});
+
+            expect(userEntity).not.to.be.null;
+        })
     });
 
     describe('findOrCreate', () => {

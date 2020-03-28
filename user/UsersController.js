@@ -54,8 +54,6 @@ const googleOAuthClient = new OAuth2Client(CLIENT_ID);
 
 router.post('/googleSignOn', async (req, res) => {
     try {
-        console.log(`token: ${req.body.idToken}`);
-        console.log(`audience: ${CLIENT_ID}`);
         const ticket = await googleOAuthClient.verifyIdToken({
             idToken: req.body.idToken,
             audience: CLIENT_ID
@@ -70,7 +68,7 @@ router.post('/googleSignOn', async (req, res) => {
         req.session.email = user.email;
         res.status(200).send('Google signon successful');
     } catch (e) {
-        console.error(`Error when Google Signin: ${e}`);
+        console.error(`Error when Google Signon: ${e}`);
         res.status(500).send();
     }
 });
@@ -86,6 +84,8 @@ router.post('/isLoggedIn', (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
+    console.log(`User ${req.session.email} logging out.`);
+
     req.session.destroy(error => {
         if (error) {
             console.log(error);
