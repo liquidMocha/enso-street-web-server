@@ -7,14 +7,16 @@ export async function setupItem(itemId) {
                           VALUES ($1)`, itemId);
 }
 
-export async function setupUser({email: email, password: password, name: name}) {
+export async function setupUser(
+    {email: email, password: password, name: name, failedLoginAttempts: failedLoginAttempts = 0}
+) {
     const data = await database.one(`
-                INSERT INTO public.user(email, password)
-                VALUES ($1, $2)
+                INSERT INTO public.user(email, password, failed_login_attempts)
+                VALUES ($1, $2, $3)
                 ON CONFLICT (email) DO UPDATE
                     SET password=$2
                 RETURNING id`,
-        [email, password]
+        [email, password, failedLoginAttempts]
     );
 
     if (name) {

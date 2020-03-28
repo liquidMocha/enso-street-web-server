@@ -10,7 +10,9 @@ export const createEnsoUser = (name, password, email) => {
 export const ensoLogin = async (email, password) => {
     const user = await UserRepository.findOne({email});
     if (user) {
-        return user.login(password);
+        const loginSuccessful = await user.login(password);
+        await UserRepository.update(user);
+        return loginSuccessful;
     } else {
         return false;
     }

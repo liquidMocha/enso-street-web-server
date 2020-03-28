@@ -1,5 +1,7 @@
 import database from "../../database";
 import UserRepository from "../../user/UserRepository";
+import {create} from "../../user/UserFactory";
+import {setupUser} from "../TestHelper";
 
 const {expect} = require('chai');
 
@@ -9,29 +11,25 @@ describe('User data', () => {
         database.none('truncate public.user_profile cascade;');
     });
 
-    async function setupUser({email: email, password: password, name: name}) {
-        const data = await database.one('insert into public.user(email, password) values($1, $2) returning id', [email, password]);
-        if (name) {
-            await database.none('insert into public.user_profile(name, user_id) values($1, $2)', [name, data.id]);
-        }
-    }
-
     describe('findOne', () => {
         it('should return user entity if found a user', async () => {
             const expectedEmail = 'abc@123.com';
             const expectedPassword = 'some password';
             const expectedName = 'Pam Helpert';
-            await setupUser({email: expectedEmail, password: expectedPassword, name: expectedName});
+            const expectedFailedLoginAttempts = 1;
+            await setupUser({
+                email: expectedEmail,
+                password: expectedPassword,
+                name: expectedName,
+                failedLoginAttempts: expectedFailedLoginAttempts
+            });
 
-            await UserRepository.findOne({email: expectedEmail})
-                .then(userEntity => {
-                    expect(userEntity.email).to.equal(expectedEmail);
-                    expect(userEntity.password).to.equal(expectedPassword);
-                    expect(userEntity.profile.name).to.equal(expectedName);
-                })
-                .catch(error => {
-                    expect.fail(error);
-                });
+            const actual = await UserRepository.findOne({email: expectedEmail});
+
+            expect(actual.email).to.equal(expectedEmail);
+            expect(actual.password).to.equal(expectedPassword);
+            expect(actual.failedAttempts).to.equal(expectedFailedLoginAttempts);
+            expect(actual.profile.name).to.equal(expectedName);
         });
 
         it('should return user if found by email; but profile doesn\'t exist', async () => {
@@ -48,7 +46,7 @@ describe('User data', () => {
                 });
         });
 
-        it('should return null if none user found using email', async () => {
+        it('should return null if no user found using email', async () => {
             const existingEmail = 'abc@123.com';
             await setupUser({email: existingEmail});
 
@@ -145,48 +143,22 @@ describe('User data', () => {
 
     describe('track failed login attempts', () => {
         const email = 'some@email.com';
+        const failedLoginAttempts = 3;
 
-        const shouldFailedOnce = async () => {
-            await setupUser({email: email});
+        it('should update user', async () => {
+            await setupUser({email});
 
-            await UserRepository.incrementFailedAttempt(email)
-                .then(() => {
-                    return database.one('select failed_login_attempts from public.user where email = $1;', email);
-                })
-                .then(data => {
-                    expect(data.failed_login_attempts).to.equal(1);
-                })
-                .catch(error => expect.fail(error));
-        };
+            const user = create("", "", email);
+            user.failedAttempts = failedLoginAttempts;
 
-        it('should increment failed sign in attempt', shouldFailedOnce);
+            await UserRepository.update(user);
 
-        it('should not increment failed sign in attempt for other user', async () => {
-            const failedUser = 'failed@email.com';
-            await setupUser({email: failedUser});
-            const irrelavantUser = 'notFailed@email.com';
-            await setupUser({email: irrelavantUser});
+            const data = await database.one(`
+                SELECT failed_login_attempts
+                FROM public.user
+                WHERE email = $1;`, email);
 
-            await UserRepository.incrementFailedAttempt(email)
-                .then(() => {
-                    return database.one('select failed_login_attempts from public.user where email = $1;', irrelavantUser);
-                })
-                .then(data => {
-                    expect(data.failed_login_attempts).to.equal(0);
-                })
-                .catch(error => expect.fail(error));
-        });
-
-        it('should reset failed sign in attempt', async () => {
-            await shouldFailedOnce();
-
-            await UserRepository.resetFailedAttempts(email)
-                .then(() => {
-                    return database.one('select failed_login_attempts from public.user where email = $1;', email);
-                })
-                .then(data => {
-                    expect(data.failed_login_attempts).to.equal(0);
-                })
+            expect(data.failed_login_attempts).to.equal(failedLoginAttempts);
         });
     });
 

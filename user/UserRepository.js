@@ -25,6 +25,7 @@ const findOne = ({email: email}) => {
                     id: userEntity.userid,
                     password: userEntity.password,
                     email: userEntity.email,
+                    failedAttempts: userEntity.failed_login_attempts,
                     profile: new UserProfile({name: userEntity.name})
                 })
             } else {
@@ -93,12 +94,12 @@ const createOAuthUser = (email, name) => {
         });
 };
 
-const incrementFailedAttempt = (email) => {
-    return database.none("update public.user SET failed_login_attempts = failed_login_attempts + 1 where email = $1;", email);
-};
-
-const resetFailedAttempts = (email) => {
-    return database.none("update public.user SET failed_login_attempts = 0 where email = $1;", email);
+const update = (user) => {
+    return database.none(`
+    UPDATE public.user
+    SET failed_login_attempts = $1
+    WHERE email = $2;
+    `, [user.failedAttempts, user.email])
 };
 
 export default {
@@ -107,6 +108,5 @@ export default {
     createEnsoUser,
     createEnsoUser1,
     findOrCreate,
-    incrementFailedAttempt,
-    resetFailedAttempts
+    update
 }

@@ -16,8 +16,8 @@ router.post('/createUser', async (req, res) => {
         const validatedValue = await schema.validateAsync(req.body);
         await createEnsoUser(validatedValue.name, validatedValue.password, validatedValue.email);
         res.status(201).send();
-    } catch (e) {
-        console.log(e);
+    } catch (error) {
+        console.error(error);
         res.status(500).send();
     }
 });
@@ -72,7 +72,7 @@ router.get('/logout', (req, res) => {
 
     req.session.destroy(error => {
         if (error) {
-            console.log(error);
+            console.error(error);
         }
     });
     res.status(200).send();

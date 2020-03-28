@@ -13,15 +13,13 @@ describe('users', () => {
         createUserStub1,
         findUserStub,
         bcryptStub,
-        incrementFailedAttemptStub,
-        resetFailedAttemptStub;
+        userUpdateStub;
 
     before(() => {
         createUserStub = sinon.stub(UserRepository, 'createEnsoUser');
         createUserStub1 = sinon.stub(UserRepository, 'createEnsoUser1');
         findUserStub = sinon.stub(UserRepository, 'findOne');
-        incrementFailedAttemptStub = sinon.stub(UserRepository, 'incrementFailedAttempt');
-        resetFailedAttemptStub = sinon.stub(UserRepository, 'resetFailedAttempts');
+        userUpdateStub = sinon.stub(UserRepository, 'update');
         bcryptStub = sinon.stub(bcrypt);
     });
 
@@ -114,7 +112,7 @@ describe('users', () => {
 
         it('should reset failed sign in attempts when login successful', (done) => {
             const expectedEmail = "some@email.org";
-
+            userUpdateStub.resolves();
             findUserStub.resolves(new User({email: expectedEmail, password: 'abc'}));
             bcryptStub.compare.resolves(true);
 
@@ -122,7 +120,10 @@ describe('users', () => {
                 .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(200, (error) => {
-                    sinon.assert.calledWithExactly(resetFailedAttemptStub, expectedEmail);
+                    sinon.assert.calledWithExactly(userUpdateStub, sinon.match({
+                        email: expectedEmail,
+                        failedAttempts: 0
+                    }));
 
                     if (error) {
                         return done(error);
@@ -170,14 +171,17 @@ describe('users', () => {
 
         it('should increment failed login attempts when password unmatched', (done) => {
             const expectedEmail = 'some@email.com';
-            findUserStub.resolves(new User({email: expectedEmail, password: 'password'}));
+            findUserStub.resolves(new User({email: expectedEmail, password: 'password', failedAttempts: 1}));
             bcryptStub.compare.resolves(false);
 
             request(app)
                 .post('/api/users/login')
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(401, (error) => {
-                    sinon.assert.calledWithExactly(incrementFailedAttemptStub, expectedEmail);
+                    sinon.assert.calledWithExactly(userUpdateStub, sinon.match({
+                        email: expectedEmail,
+                        failedAttempts: 2
+                    }));
 
                     done(error);
                 })
