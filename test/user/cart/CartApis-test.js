@@ -9,6 +9,8 @@ import {ItemDAO} from "../../../item/ItemDAO";
 import UserRepository from "../../../user/UserRepository";
 import {UserProfile} from "../../../user/UserProfile";
 import {User} from "../../../user/User";
+import {CartItem} from "../../../user/cart/CartItem";
+import {Cart} from "../../../user/cart/Cart";
 
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";
@@ -54,7 +56,13 @@ describe('cart', () => {
             const imageUrl2 = "abc-613.jpg";
             const ownerName2 = "Chidi Anagonye";
 
-            getItemsInCartStub.resolves([{id: itemId1, quantity: 1}, {id: itemId2, quantity: 2}]);
+            const fakeCart = new Cart({
+                cartItems:
+                    [
+                        new CartItem({itemId: itemId1, quantity: 1}),
+                        new CartItem({itemId: itemId2, quantity: 2})
+                    ]
+            });
 
             getItemByIdStub.onCall(0).resolves(new ItemDAO({
                 id: itemId1,
@@ -83,7 +91,10 @@ describe('cart', () => {
 
             findOneUserStub.onCall(0).resolves(
                 new User({
-                    profile: new UserProfile({id: "some-id", name: "logged in user"})
+                    profile: new UserProfile(
+                        {id: "some-id", name: "logged in user"}
+                    ),
+                    cart: fakeCart
                 })
             );
             findOneUserStub.onCall(1).resolves(

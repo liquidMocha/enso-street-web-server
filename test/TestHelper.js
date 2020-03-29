@@ -10,7 +10,7 @@ export async function setupItem(itemId) {
 export async function setupUser(
     {email: email, password: password, name: name = "", failedLoginAttempts: failedLoginAttempts = 0}
 ) {
-    const data = await database.one(`
+    const createdUser = await database.one(`
                 INSERT INTO public.user(email, password, failed_login_attempts)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (email) DO UPDATE
@@ -23,11 +23,11 @@ export async function setupUser(
         await database.none(`
                     insert into public.user_profile(name, user_id)
                     values ($1, $2)`,
-            [name, data.id]
+            [name, createdUser.id]
         );
     }
 
-    return data.id;
+    return createdUser.id;
 }
 
 export async function setupCategories(categories) {

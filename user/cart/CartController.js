@@ -1,8 +1,7 @@
 import express from "express";
-import {addItemForUser, getItemsInCart} from "./CartRepository";
-import * as ItemRepository from "../../item/ItemRepository";
-import _ from "lodash";
+import {addItemForUser} from "./CartRepository";
 import UserRepository from "../UserRepository";
+import {getCartForUser} from "./CartService";
 
 const router = express.Router();
 
@@ -10,20 +9,7 @@ router.get('/', async (req, res, next) => {
     const userEmail = req.session.email;
     if (userEmail) {
         try {
-            const userId = (await UserRepository.findOne({email: userEmail})).id;
-            const cartItems = await getItemsInCart(userId);
-            const itemDAOs = await Promise.all(cartItems.map(async cartItem => {
-                return {
-                    ...(await ItemRepository.getItemById(cartItem.id)),
-                    quantity: cartItem.quantity
-                }
-            }));
-            const ownerBatches = _.groupBy(itemDAOs, 'ownerEmail');
-
-            const cartDTO = await Promise.all(
-                Object.entries(ownerBatches).map(toCartDTO)
-            );
-
+            const cartDTO = await getCartForUser(userEmail);
             res.status(200).json(cartDTO);
         } catch (e) {
             console.error(`Error when retrieving cart for user ${userEmail}: ${e}`);
@@ -49,20 +35,5 @@ router.put('/', async (req, res, next) => {
         res.status(500).send();
     }
 });
-
-async function toCartDTO([email, itemDAOs]) {
-    const userName = (await UserRepository.findOne({email: email})).profile.name;
-    const items = itemDAOs.map(dao => {
-        return {...(dao.toDTO()), quantity: dao.quantity};
-    });
-
-    return {
-        owner: {
-            name: userName,
-            email: email
-        },
-        items: items
-    }
-}
 
 export default router;

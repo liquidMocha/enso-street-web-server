@@ -7,7 +7,8 @@ export class User {
                     email: email,
                     createdOn: createdOn,
                     failedAttempts: failedAttempts,
-                    profile: profile
+                    profile: profile,
+                    cart: cart
                 }) {
         this.password = password;
         this.email = email;
@@ -15,6 +16,7 @@ export class User {
         this.profile = profile;
         this.id = id;
         this.failedAttempts = failedAttempts;
+        this.cart = cart;
     }
 
     login = async (password) => {

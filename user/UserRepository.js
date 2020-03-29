@@ -12,20 +12,34 @@ const getEmailById = (userId) => {
     });
 };
 
-const findOne = ({email: email}) => {
+const findOne = async ({email: email}) => {
     return database.oneOrNone(
             `SELECT *, public.user.id as userId 
                         FROM public.user 
                         LEFT JOIN public.user_profile profile 
                         ON public.user.id = profile.user_id 
                         WHERE lower(email) = lower($1)`, [email],
-        userEntity => {
+        async userEntity => {
             if (userEntity) {
-                return reconstitueFromDao(userEntity);
+                //TODO: missing test for the cart this function returns
+                const cartDao = await getItemsInCart(userEntity.userid);
+                return reconstitueFromDao({userDao: userEntity, cartDao: cartDao});
             } else {
                 return null;
             }
         });
+};
+
+const getItemsInCart = async (renterId) => {
+    return (await database.manyOrNone(`
+        SELECT item, quantity
+        FROM cart
+        WHERE renter = $1`, [renterId])).map(data => {
+        return {
+            id: data.item,
+            quantity: data.quantity
+        }
+    })
 };
 
 const saveEnsoUser = (user) => {
