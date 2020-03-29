@@ -60,7 +60,9 @@ const saveEnsoUser = (user) => {
         });
 };
 
-const findOrCreate = async ({email: email, name: name}) => {
+const findOrCreate = async (user) => {
+    const email = user.email;
+    const name = user.profile.name;
     try {
         const userEntity = await findOne({email: email});
 

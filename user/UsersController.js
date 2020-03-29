@@ -14,7 +14,11 @@ router.post('/createUser', async (req, res) => {
 
     try {
         const validatedValue = await schema.validateAsync(req.body);
-        await createEnsoUser(validatedValue.name, validatedValue.password, validatedValue.email);
+        await createEnsoUser(
+            validatedValue.name,
+            validatedValue.password,
+            validatedValue.email
+        );
         res.status(201).send();
     } catch (error) {
         console.error(error);

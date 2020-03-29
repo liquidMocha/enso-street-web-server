@@ -8,7 +8,7 @@ export async function setupItem(itemId) {
 }
 
 export async function setupUser(
-    {email: email, password: password, name: name, failedLoginAttempts: failedLoginAttempts = 0}
+    {email: email, password: password, name: name = "", failedLoginAttempts: failedLoginAttempts = 0}
 ) {
     const data = await database.one(`
                 INSERT INTO public.user(email, password, failed_login_attempts)

@@ -48,7 +48,7 @@ describe('User data', () => {
 
         it('should return null if no user found using email', async () => {
             const existingEmail = 'abc@123.com';
-            await setupUser({email: existingEmail});
+            await setupUser({email: existingEmail, password: "expectedPassword"});
 
             await UserRepository.findOne({email: 'wrong email'})
                 .then(user => {
@@ -70,43 +70,39 @@ describe('User data', () => {
         })
     });
 
+    //TODO: bug here. If user sign up through Enso street first and then google, they will be
+    //logged into google sign up user's account
     describe('findOrCreate', () => {
         it('should return user when found by email', async () => {
             const expectedEmail = 'email@123.org';
             const expectedName = 'Jim Helpert';
             await setupUser({email: expectedEmail, name: expectedName});
 
-            await UserRepository.findOrCreate({email: expectedEmail})
-                .then(user => {
-                    expect(user.email).to.equal(expectedEmail);
-                    expect(user.profile.name).to.equal(expectedName);
-                })
-                .catch(error => {
-                    expect.fail(error);
-                });
+            const user = create(expectedName, "", expectedEmail);
+            const actualUser = await UserRepository.findOrCreate(user);
+
+            expect(actualUser.email).to.equal(expectedEmail);
+            expect(actualUser.profile.name).to.equal(expectedName);
         });
 
         it('should create new user if not found', async () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            await UserRepository.findOrCreate({email: expectedEmail, name: expectedName})
-                .then(() => {
-                    return database.one('select * from public.user where email = $1', expectedEmail)
-                })
-                .then(user => {
-                    expect(user.email).to.equal(expectedEmail);
-                })
-                .catch(error => {
-                    expect.fail(error);
-                });
+            const user = create(expectedName, null, expectedEmail);
+            await UserRepository.findOrCreate(user);
+
+            const createdUser = await database.one('select * from public.user where email = $1', expectedEmail);
+            expect(createdUser.email).to.equal(expectedEmail);
         });
 
         it('should return created user if no user found', async () => {
             const expectedEmail = 'abc@dundermifflin.com';
             const expectedName = 'Erin Hannen';
 
-            const user = await UserRepository.findOrCreate({email: expectedEmail, name: expectedName});
+            const userToBeSaved = create(expectedName, null, expectedEmail);
+            const user = await UserRepository.findOrCreate(userToBeSaved);
+
             expect(user.email).to.equal(expectedEmail);
             expect(user.profile.name).to.equal(expectedName);
         })

@@ -3,7 +3,7 @@ import {getAllCategories, getItemCountForCategory} from "../../category/Category
 import {expect} from 'chai';
 import * as ItemRepository from "../../item/ItemRepository";
 import {ItemDAO} from "../../item/ItemDAO";
-import UserRepository from "../../user/UserRepository";
+import {setupUser} from "../TestHelper";
 
 const chai = require('chai');
 const assertArrays = require('chai-arrays');
@@ -29,7 +29,7 @@ describe('category database', () => {
         const babyClothes = 'baby-clothes';
         const userEmail = 'someemail';
         await createCategories();
-        await setupUser(userEmail);
+        await setupUser({email: userEmail});
         await setupItem([electronics], userEmail);
         await setupItem([electronics], userEmail);
         await setupItem([babyClothes], userEmail);
@@ -43,10 +43,6 @@ describe('category database', () => {
         await database.none(`INSERT INTO public.category (name)
                              VALUES ('electronics'),
                                     ('baby-clothes')`);
-    };
-
-    const setupUser = async (userEmail) => {
-        await UserRepository.findOrCreate({email: userEmail, name: 'some name'});
     };
 
     const setupItem = async (categories, userEmail) => {

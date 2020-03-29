@@ -31,7 +31,9 @@ export const googleSignOn = async (idToken) => {
     const userEmail = payload.email;
     const userName = payload.name;
 
-    return await UserRepository.findOrCreate({email: userEmail, name: userName});
+    const user = create(userName, null, userEmail);
+
+    return await UserRepository.findOrCreate(user);
 };
 
 export const checkLoggedIn = async (email) => {
