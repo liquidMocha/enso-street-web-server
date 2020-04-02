@@ -7,11 +7,11 @@ import {CartItem} from "../../../user/cart/CartItem";
 import {Cart} from "../../../user/cart/Cart";
 
 describe('cart database', () => {
-    afterEach(() => {
-        database.none('truncate public.user cascade;');
-        database.none('truncate public.user_profile cascade;');
-        database.none('truncate public.itemtocategory cascade;');
-        database.none('truncate public.item cascade;');
+    afterEach(async () => {
+        await database.none('truncate public.user cascade;');
+        await database.none('truncate public.user_profile cascade;');
+        await database.none('truncate public.itemtocategory cascade;');
+        await database.none('truncate public.item cascade;');
     });
 
     const email = "some@email.com";

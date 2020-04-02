@@ -175,15 +175,6 @@ describe('cart', () => {
             const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
             getCartStub.resolves(existingCart);
 
-            const cartItems = [
-                new CartItem({itemId: itemId, quantity: 2}),
-                new CartItem({itemId: itemId2, quantity: 1})
-            ];
-            const expectedCart =
-                new Cart({
-                    cartItems: cartItems
-                });
-
             request(authenticatedApp)
                 .put('/api/cart')
                 .send({itemId: itemId2})
@@ -191,7 +182,42 @@ describe('cart', () => {
                     sinon.assert.calledWith(
                         updateCartStub,
                         userId,
-                        sinon.match.hasNested("items[1].id", itemId2)
+                        sinon.match.hasNested("items[1].id", itemId2).and(
+                            sinon.match.hasNested("items[1].quantity", 1)
+                        )
+                    );
+                    done(error);
+                })
+        })
+    });
+
+    describe('remove one for an item', () => {
+        it('should respond 401 when user is not authenticated', (done) => {
+            const itemId = "abc-123";
+            request(app)
+                .delete('/api/cart')
+                .expect(401, (error, response) => {
+                    done(error);
+                })
+        });
+
+        it('should remove item from cart for user', (done) => {
+            const itemId = "abc-123";
+            const userId = "some-user-id";
+            findOneUserStub.resolves(new User({id: userId}));
+            const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
+            getCartStub.resolves(existingCart);
+
+            request(authenticatedApp)
+                .delete('/api/cart')
+                .send({itemId: itemId})
+                .expect(200, (error, response) => {
+                    sinon.assert.calledWith(
+                        updateCartStub,
+                        userId,
+                        sinon.match.hasNested("items[0].id", itemId).and(
+                            sinon.match.hasNested("items[0].quantity", 1)
+                        )
                     );
                     done(error);
                 })

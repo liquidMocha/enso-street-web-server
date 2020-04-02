@@ -1,5 +1,5 @@
 import express from "express";
-import {addItemToCartForUser, getCartForUser} from "./CartService";
+import {addItemToCartForUser, getCartForUser, removeSingleItemFromCart} from "./CartService";
 
 const router = express.Router();
 
@@ -31,6 +31,23 @@ router.put('/', async (req, res, next) => {
         }
     } catch (e) {
         console.error(`Error when adding item to cart for user ${userEmail}: ${e}`);
+        res.status(500).send();
+    }
+});
+
+router.delete('/', async (req, res, next) => {
+    const userEmail = req.session.email;
+    const itemId = req.body.itemId;
+
+    try {
+        if (userEmail) {
+            await removeSingleItemFromCart(userEmail, itemId);
+            res.status(200).send();
+        } else {
+            res.status(401).send();
+        }
+    } catch (e) {
+        console.error(`Error when removing item from cart for user ${userEmail}: ${e}`);
         res.status(500).send();
     }
 });
