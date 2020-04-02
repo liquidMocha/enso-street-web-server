@@ -23,7 +23,7 @@ export const getCartForUser = async (email) => {
 };
 
 export const addItemToCartForUser = async (email, itemId) => {
-    const user = UserRepository.findOne({email});
+    const user = await UserRepository.findOne({email});
     const cart = await getCartItemsFor(user.id);
 
     cart.addItem(itemId);
@@ -32,7 +32,7 @@ export const addItemToCartForUser = async (email, itemId) => {
 };
 
 export const removeSingleItemFromCart = async (email, itemId) => {
-    const user = UserRepository.findOne({email});
+    const user = await UserRepository.findOne({email});
     const cart = await getCartItemsFor(user.id);
 
     cart.removeItem(itemId);
@@ -41,7 +41,7 @@ export const removeSingleItemFromCart = async (email, itemId) => {
 };
 
 export const removeAllInstanceOfItemFromCart = async (email, itemId) => {
-    const user = UserRepository.findOne({email});
+    const user = await UserRepository.findOne({email});
     const cart = await getCartItemsFor(user.id);
 
     cart.removeAllInstanceOfItem(itemId);
