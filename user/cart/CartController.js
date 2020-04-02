@@ -1,5 +1,10 @@
 import express from "express";
-import {addItemToCartForUser, getCartForUser, removeSingleItemFromCart} from "./CartService";
+import {
+    addItemToCartForUser,
+    getCartForUser,
+    removeAllInstanceOfItemFromCart,
+    removeSingleItemFromCart
+} from "./CartService";
 
 const router = express.Router();
 
@@ -38,10 +43,15 @@ router.put('/', async (req, res, next) => {
 router.delete('/', async (req, res, next) => {
     const userEmail = req.session.email;
     const itemId = req.body.itemId;
+    const deleteAll = req.query.all;
 
     try {
         if (userEmail) {
-            await removeSingleItemFromCart(userEmail, itemId);
+            if (deleteAll) {
+                await removeAllInstanceOfItemFromCart(userEmail, itemId);
+            } else {
+                await removeSingleItemFromCart(userEmail, itemId);
+            }
             res.status(200).send();
         } else {
             res.status(401).send();

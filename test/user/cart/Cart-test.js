@@ -53,6 +53,18 @@ describe('cart', () => {
             expect(cart.items).to.have.property('length', 1);
             expect(cart.items[0]).to.have.property("quantity", 0);
         })
-    })
+    });
 
+    describe('remove all instance of item', () => {
+        it('should set quantity of the item to 0', () => {
+            const itemId = 'abc-123';
+            const cart = new Cart({cartItems: [new CartItem({itemId, quantity: 4})]});
+
+            cart.removeAllInstanceOfItem(itemId);
+
+            expect(cart.items).to.have.property('length', 1);
+            expect(cart.items[0]).to.have.property("id", itemId);
+            expect(cart.items[0]).to.have.property("quantity", 0);
+        })
+    })
 });

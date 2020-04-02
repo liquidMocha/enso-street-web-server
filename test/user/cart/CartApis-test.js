@@ -221,6 +221,29 @@ describe('cart', () => {
                     );
                     done(error);
                 })
+        });
+
+        it('should remove all instances of an item from cart for user when delete all is true', (done) => {
+            const itemId = "abc-123";
+            const userId = "some-user-id";
+            findOneUserStub.resolves(new User({id: userId}));
+            const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
+            getCartStub.resolves(existingCart);
+
+            request(authenticatedApp)
+                .delete('/api/cart')
+                .query({all: true})
+                .send({itemId: itemId})
+                .expect(200, (error, response) => {
+                    sinon.assert.calledWith(
+                        updateCartStub,
+                        userId,
+                        sinon.match.hasNested("items[0].id", itemId).and(
+                            sinon.match.hasNested("items[0].quantity", 0)
+                        )
+                    );
+                    done(error);
+                })
         })
     })
 });

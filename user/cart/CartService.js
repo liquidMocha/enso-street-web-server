@@ -40,6 +40,15 @@ export const removeSingleItemFromCart = async (email, itemId) => {
     return updateCart((await user).id, cart);
 };
 
+export const removeAllInstanceOfItemFromCart = async (email, itemId) => {
+    const user = UserRepository.findOne({email});
+    const cart = await getCartItemsFor(user.id);
+
+    cart.removeAllInstanceOfItem(itemId);
+
+    return updateCart((await user).id, cart);
+};
+
 async function toCartDTO([email, itemDAOs]) {
     const userName = (await UserRepository.findOne({email: email})).profile.name;
     const items = itemDAOs.map(dao => {

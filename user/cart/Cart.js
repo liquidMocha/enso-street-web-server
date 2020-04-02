@@ -21,5 +21,11 @@ export class Cart {
         const existingItem = this.items.find(cartItem => cartItem.id === itemId);
 
         existingItem.decrement();
+    };
+
+    removeAllInstanceOfItem = (itemId) => {
+        const existingItem = this.items.find(cartItem => cartItem.id === itemId);
+
+        existingItem.remove();
     }
 }

@@ -12,5 +12,9 @@ export class CartItem {
         if (this.quantity > 0) {
             this.quantity--
         }
+    };
+
+    remove = () => {
+        this.quantity = 0;
     }
 }
