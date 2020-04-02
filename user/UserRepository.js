@@ -21,25 +21,11 @@ const findOne = async ({email: email}) => {
                         WHERE lower(email) = lower($1)`, [email],
         async userEntity => {
             if (userEntity) {
-                //TODO: missing test for the cart this function returns
-                const cartDao = await getItemsInCart(userEntity.userid);
-                return reconstitueFromDao({userDao: userEntity, cartDao: cartDao});
+                return reconstitueFromDao({userDao: userEntity});
             } else {
                 return null;
             }
         });
-};
-
-const getItemsInCart = async (renterId) => {
-    return (await database.manyOrNone(`
-        SELECT item, quantity
-        FROM cart
-        WHERE renter = $1`, [renterId])).map(data => {
-        return {
-            id: data.item,
-            quantity: data.quantity
-        }
-    })
 };
 
 const saveEnsoUser = (user) => {

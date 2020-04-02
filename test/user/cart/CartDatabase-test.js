@@ -1,59 +1,93 @@
-import {assert} from "chai";
+import {expect} from "chai";
 import {setupItem, setupUser} from "../../TestHelper";
-import {addItemForUser, getItemsInCart} from '../../../user/cart/CartRepository';
+import {getCartItemsFor, update} from '../../../user/cart/CartRepository';
 import uuidv4 from 'uuid/v4';
 import database from "../../../database";
+import {CartItem} from "../../../user/cart/CartItem";
+import {Cart} from "../../../user/cart/Cart";
 
-describe('cart', () => {
+describe('cart database', () => {
     afterEach(() => {
         database.none('truncate public.user cascade;');
         database.none('truncate public.user_profile cascade;');
+        database.none('truncate public.itemtocategory cascade;');
+        database.none('truncate public.item cascade;');
     });
 
     const email = "some@email.com";
     const name = "jon doe";
+    let userId;
+    let itemId1, itemId2;
 
-    it('should add to item\'s quantity when adding duplicate items', async () => {
-        const userId = await setupUser({email, name});
+    beforeEach(async () => {
+        userId = await setupUser({email, name});
 
-        const itemId = uuidv4();
-        await setupItem(itemId);
-
-        await addItemForUser(itemId, userId);
-        await addItemForUser(itemId, userId);
-
-        const cart = await getItemsInCart(userId);
-
-        assert.deepEqual(cart, [{id: itemId, quantity: 2}]);
+        itemId1 = uuidv4();
+        itemId2 = uuidv4();
+        await setupItem(itemId1);
+        await setupItem(itemId2);
     });
 
-    it('should add item to cart for user', async () => {
-        const userId = await setupUser({email, name});
+    describe('update cart', () => {
+        it('should update items with non-zero quantity', async () => {
+            const cart = new Cart({
+                cartItems:
+                    [
+                        new CartItem({itemId: itemId1, quantity: 5}),
+                        new CartItem({itemId: itemId2, quantity: 3})
+                    ]
+            });
 
-        const itemId = uuidv4();
-        const secondItemId = uuidv4();
+            await update(userId, cart);
 
-        await setupItem(itemId);
-        await setupItem(secondItemId);
+            const updatedCart = await getCartItemsFor(userId);
+            expect(updatedCart.items).to.have.property('length', 2);
+            expect(updatedCart.items[0]).to.have.property("id", itemId1);
+            expect(updatedCart.items[0]).to.have.property("quantity", 5);
+            expect(updatedCart.items[1]).to.have.property("id", itemId2);
+            expect(updatedCart.items[1]).to.have.property("quantity", 3);
+        });
 
-        await addItemForUser(itemId, userId);
-        await addItemForUser(secondItemId, userId);
 
-        const cart = await getItemsInCart(userId);
+        it('should remove items with zero quantity', async () => {
+            const originalCart = new Cart({
+                cartItems: [
+                    new CartItem({itemId: itemId1, quantity: 5})
+                ]
+            });
 
-        assert.deepEqual(cart, [{id: itemId, quantity: 1}, {id: secondItemId, quantity: 1}]);
+            await update(userId, originalCart);
+
+            const cartUpdate = new Cart({
+                cartItems: [
+                    new CartItem({itemId: itemId1, quantity: 0}),
+                    new CartItem({itemId: itemId2, quantity: 3})
+                ]
+            });
+            await update(userId, cartUpdate);
+
+            const updatedCart = await getCartItemsFor(userId);
+            expect(updatedCart.items).to.have.property('length', 1);
+            expect(updatedCart.items[0]).to.have.property("id", itemId2);
+            expect(updatedCart.items[0]).to.have.property("quantity", 3);
+
+        })
     });
 
-    it('should retrieve cart for user', async () => {
-        const userId = await setupUser({email, name});
+    describe('get cart', () => {
+        it('should retrieve cart for user', async () => {
+            const cartUpdate = new Cart({
+                cartItems: [
+                    new CartItem({itemId: itemId1, quantity: 1}),
+                ]
+            });
+            await update(userId, cartUpdate);
 
-        const itemId = uuidv4();
-        await setupItem(itemId);
+            const cart = await getCartItemsFor(userId);
 
-        await addItemForUser(itemId, userId);
-
-        const cart = await getItemsInCart(userId);
-
-        assert.deepEqual(cart, [{id: itemId, quantity: 1}])
+            expect(cart.items).to.have.property('length', 1);
+            expect(cart.items[0]).to.have.property("id", itemId1);
+            expect(cart.items[0]).to.have.property("quantity", 1);
+        });
     });
 });

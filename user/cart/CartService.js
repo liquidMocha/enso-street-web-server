@@ -1,10 +1,11 @@
 import UserRepository from "../UserRepository";
 import * as ItemRepository from "../../item/ItemRepository";
 import _ from "lodash";
+import {getCartItemsFor, update as updateCart} from "./CartRepository";
 
 export const getCartForUser = async (email) => {
     const user = await UserRepository.findOne({email});
-    const cart = user.cart;
+    const cart = await getCartItemsFor(user.id);
 
     const itemDAOs = await Promise.all(
         cart.items.map(async cartItem => {
@@ -19,6 +20,15 @@ export const getCartForUser = async (email) => {
     return await Promise.all(
         Object.entries(ownerBatches).map(toCartDTO)
     );
+};
+
+export const addItemToCartForUser = async (email, itemId) => {
+    const user = UserRepository.findOne({email});
+    const cart = await getCartItemsFor(user.id);
+
+    cart.addItem(itemId);
+
+    return updateCart((await user).id, cart);
 };
 
 async function toCartDTO([email, itemDAOs]) {

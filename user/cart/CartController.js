@@ -1,7 +1,5 @@
 import express from "express";
-import {addItemForUser} from "./CartRepository";
-import UserRepository from "../UserRepository";
-import {getCartForUser} from "./CartService";
+import {addItemToCartForUser, getCartForUser} from "./CartService";
 
 const router = express.Router();
 
@@ -22,10 +20,11 @@ router.get('/', async (req, res, next) => {
 
 router.put('/', async (req, res, next) => {
     const userEmail = req.session.email;
+    const itemId = req.body.itemId;
+
     try {
         if (userEmail) {
-            const userId = UserRepository.findOne({email: userEmail});
-            await addItemForUser(req.body.itemId, (await userId).id);
+            await addItemToCartForUser(userEmail, itemId);
             res.status(200).send();
         } else {
             res.status(401).send();

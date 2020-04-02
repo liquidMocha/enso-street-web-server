@@ -3,4 +3,14 @@ export class CartItem {
         this.id = itemId;
         this.quantity = quantity;
     }
+
+    increment = () => {
+        this.quantity++
+    };
+
+    decrement = () => {
+        if (this.quantity > 0) {
+            this.quantity--
+        }
+    }
 }

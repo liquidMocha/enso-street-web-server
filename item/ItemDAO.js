@@ -99,7 +99,7 @@ export class ItemDAO {
                 description: savedItem[1].description,
                 latitude: savedItem[1].latitude,
                 longitude: savedItem[1].longitude,
-                categories: savedItem[0]
+                categories: await savedItem[0]
             });
         } else {
             Index.deleteItemIndex(savedItem[1].id);
@@ -112,7 +112,7 @@ export class ItemDAO {
         try {
             Index.indexItem(itemSaved);
         } catch (e) {
-            console.error(e);
+            console.error(`Error when indexing item: ${e}`);
         }
 
         return itemSaved;

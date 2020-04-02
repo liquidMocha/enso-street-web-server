@@ -15,15 +15,15 @@ import {Cart} from "../../../user/cart/Cart";
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";
     const authenticatedApp = getAuthenticatedApp(loggedInUserEmail);
-    let getItemsInCartStub;
-    let addToCartStub;
+    let updateCartStub;
+    let getCartStub;
     let getItemByIdStub;
     let findOneUserStub;
 
     beforeEach(() => {
         sinon.resetHistory();
-        getItemsInCartStub = sinon.stub(CartRepository, 'getItemsInCart');
-        addToCartStub = sinon.stub(CartRepository, 'addItemForUser');
+        updateCartStub = sinon.stub(CartRepository, 'update');
+        getCartStub = sinon.stub(CartRepository, 'getCartItemsFor');
         getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
         findOneUserStub = sinon.stub(UserRepository, 'findOne');
     });
@@ -93,10 +93,12 @@ describe('cart', () => {
                 new User({
                     profile: new UserProfile(
                         {id: "some-id", name: "logged in user"}
-                    ),
-                    cart: fakeCart
+                    )
                 })
             );
+
+            getCartStub.resolves(fakeCart);
+
             findOneUserStub.onCall(1).resolves(
                 new User({
                     profile: new UserProfile({name: ownerName1})
@@ -167,14 +169,30 @@ describe('cart', () => {
 
         it('should add item to cart for authenticated user', (done) => {
             const itemId = "abc-123";
+            const itemId2 = "def-123";
             const userId = "some-user-id";
-            findOneUserStub.resolves(new User({id: userId,}));
+            findOneUserStub.resolves(new User({id: userId}));
+            const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
+            getCartStub.resolves(existingCart);
+
+            const cartItems = [
+                new CartItem({itemId: itemId, quantity: 2}),
+                new CartItem({itemId: itemId2, quantity: 1})
+            ];
+            const expectedCart =
+                new Cart({
+                    cartItems: cartItems
+                });
 
             request(authenticatedApp)
                 .put('/api/cart')
-                .send({itemId})
+                .send({itemId: itemId2})
                 .expect(200, (error, response) => {
-                    sinon.assert.calledWith(addToCartStub, itemId, userId);
+                    sinon.assert.calledWith(
+                        updateCartStub,
+                        userId,
+                        sinon.match.hasNested("items[1].id", itemId2)
+                    );
                     done(error);
                 })
         })
