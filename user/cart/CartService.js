@@ -28,7 +28,7 @@ export const addItemToCartForUser = async (email, itemId) => {
 
     cart.addItem(itemId);
 
-    return updateCart((await user).id, cart);
+    return await updateCart((await user).id, cart);
 };
 
 export const removeSingleItemFromCart = async (email, itemId) => {
@@ -37,7 +37,7 @@ export const removeSingleItemFromCart = async (email, itemId) => {
 
     cart.removeItem(itemId);
 
-    return updateCart((await user).id, cart);
+    return await updateCart((await user).id, cart);
 };
 
 export const removeAllInstanceOfItemFromCart = async (email, itemId) => {
@@ -46,7 +46,7 @@ export const removeAllInstanceOfItemFromCart = async (email, itemId) => {
 
     cart.removeAllInstanceOfItem(itemId);
 
-    return updateCart((await user).id, cart);
+    return await updateCart((await user).id, cart);
 };
 
 async function toCartDTO([email, itemDAOs]) {

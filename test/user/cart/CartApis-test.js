@@ -188,6 +188,26 @@ describe('cart', () => {
                     );
                     done(error);
                 })
+        });
+
+        it('should return updated cart', (done) => {
+            const itemId = "abc-123";
+            const itemId2 = "def-123";
+            const userId = "some-user-id";
+            findOneUserStub.resolves(new User({id: userId}));
+            const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
+            getCartStub.resolves(existingCart);
+            const mockUpdatedCart = {"some-object": "returned from update cart"};
+            updateCartStub.resolves(mockUpdatedCart);
+
+            request(authenticatedApp)
+                .put('/api/cart')
+                .send({itemId: itemId2})
+                .expect(200, (error, response) => {
+                    assert.deepEqual(response.body, mockUpdatedCart);
+
+                    done(error);
+                })
         })
     });
 
@@ -242,6 +262,26 @@ describe('cart', () => {
                             sinon.match.hasNested("items[0].quantity", 0)
                         )
                     );
+                    done(error);
+                })
+        });
+
+        it('should return updated cart', (done) => {
+            const itemId = "abc-123";
+            const itemId2 = "def-123";
+            const userId = "some-user-id";
+            findOneUserStub.resolves(new User({id: userId}));
+            const existingCart = new Cart({cartItems: [new CartItem({itemId: itemId, quantity: 2})]});
+            getCartStub.resolves(existingCart);
+            const mockUpdatedCart = {"some-object": "returned from update cart"};
+            updateCartStub.resolves(mockUpdatedCart);
+
+            request(authenticatedApp)
+                .delete('/api/cart')
+                .send({itemId: itemId})
+                .expect(200, (error, response) => {
+                    assert.deepEqual(response.body, mockUpdatedCart);
+
                     done(error);
                 })
         })

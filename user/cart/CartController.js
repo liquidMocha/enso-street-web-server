@@ -29,8 +29,8 @@ router.put('/', async (req, res, next) => {
 
     try {
         if (userEmail) {
-            await addItemToCartForUser(userEmail, itemId);
-            res.status(200).send();
+            const updatedCart = await addItemToCartForUser(userEmail, itemId);
+            res.status(200).json(updatedCart).send();
         } else {
             res.status(401).send();
         }
@@ -47,12 +47,13 @@ router.delete('/', async (req, res, next) => {
 
     try {
         if (userEmail) {
+            let updatedCart;
             if (deleteAll) {
-                await removeAllInstanceOfItemFromCart(userEmail, itemId);
+                updatedCart = await removeAllInstanceOfItemFromCart(userEmail, itemId);
             } else {
-                await removeSingleItemFromCart(userEmail, itemId);
+                updatedCart = await removeSingleItemFromCart(userEmail, itemId);
             }
-            res.status(200).send();
+            res.status(200).json(updatedCart).send();
         } else {
             res.status(401).send();
         }
