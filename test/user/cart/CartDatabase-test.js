@@ -71,24 +71,6 @@ describe('cart database', () => {
             expect(updatedCart.items[0]).to.have.property("id", itemId2);
             expect(updatedCart.items[0]).to.have.property("quantity", 3);
         });
-
-        it('should return updated cart', async () => {
-            const cart = new Cart({
-                cartItems:
-                    [
-                        new CartItem({itemId: itemId1, quantity: 5}),
-                        new CartItem({itemId: itemId2, quantity: 3})
-                    ]
-            });
-
-            const updatedCart = await update(userId, cart);
-
-            expect(updatedCart.items).to.have.property('length', 2);
-            expect(updatedCart.items[0]).to.have.property("id", itemId1);
-            expect(updatedCart.items[0]).to.have.property("quantity", 5);
-            expect(updatedCart.items[1]).to.have.property("id", itemId2);
-            expect(updatedCart.items[1]).to.have.property("quantity", 3);
-        })
     });
 
     describe('get cart', () => {

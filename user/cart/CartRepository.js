@@ -42,8 +42,6 @@ export const update = async (renterId, cart) => {
 
             return transaction.batch(upsertCartItems.concat(deleteCartItems));
         });
-
-        return await getCartItemsFor(renterId);
     } catch (e) {
         console.error(`Error when updating cart: ${e}`)
     }

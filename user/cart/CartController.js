@@ -43,7 +43,7 @@ router.put('/', async (req, res, next) => {
 router.delete('/', async (req, res, next) => {
     const userEmail = req.session.email;
     const itemId = req.body.itemId;
-    const deleteAll = req.query.all;
+    const deleteAll = req.body.all;
 
     try {
         if (userEmail) {
