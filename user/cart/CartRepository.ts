@@ -1,24 +1,24 @@
+// @ts-ignore
 import database from "../../database";
 import {reconstitueFromDao} from "./CartFactory";
+import {CartItemDao} from "./CartItemDao";
 
-export const getCartItemsFor = async (renterId) => {
+export const getCartItemsFor = async (renterId: string) => {
     const cartDao = (await database.manyOrNone(`
-        SELECT item, quantity
+        SELECT item, quantity, owner
         FROM cart
-        WHERE renter = $1`, [renterId])).map(data => {
-        return {
-            id: data.item,
-            quantity: data.quantity
-        }
+                 JOIN item i on cart.item = i.id
+        WHERE renter = $1`, [renterId])).map((data: any) => {
+        return new CartItemDao(data.item, data.quantity, data.owner)
     });
 
     return reconstitueFromDao(cartDao);
 };
 
-export const update = async (renterId, cart) => {
+export const update = async (renterId: string, cart: CartItemDao[]) => {
     try {
-        await database.tx(transaction => {
-            const upsertCartItems = cart.items
+        await database.tx((transaction: any) => {
+            const upsertCartItems = cart
                 .filter(cartItem => cartItem.quantity !== 0)
                 .map(cartItem => {
                     transaction.none(`
@@ -29,7 +29,7 @@ export const update = async (renterId, cart) => {
                     `, [renterId, cartItem.id, cartItem.quantity])
                 });
 
-            const deleteCartItems = cart.items
+            const deleteCartItems = cart
                 .filter(cartItem => cartItem.quantity === 0)
                 .map(cartItem => {
                     transaction.none(`

@@ -40,3 +40,7 @@ export const checkLoggedIn = async (email) => {
     const user = await UserRepository.findOne({email});
     return !!user;
 };
+
+export const getUser = async (userId) => {
+    return UserRepository.getUser(userId);
+};

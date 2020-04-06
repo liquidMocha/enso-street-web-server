@@ -98,10 +98,19 @@ const update = (user) => {
     `, [user.failedAttempts, user.email])
 };
 
+const getUser = (userId) => {
+    return database.one(`
+    SELECT up.name, u.email
+    FROM PUBLIC.user u
+    JOIN user_profile up on u.id = up.user_id 
+    WHERE u.id = $1`, [userId])
+};
+
 export default {
     getEmailById,
     findOne,
     saveEnsoUser,
     findOrCreate,
-    update
+    update,
+    getUser
 }

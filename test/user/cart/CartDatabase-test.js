@@ -3,8 +3,7 @@ import {setupItem, setupUser} from "../../TestHelper";
 import {getCartItemsFor, update} from '../../../user/cart/CartRepository';
 import uuidv4 from 'uuid/v4';
 import database from "../../../database";
-import {CartItem} from "../../../user/cart/CartItem";
-import {Cart} from "../../../user/cart/Cart";
+import {CartItemDao} from "../../../user/cart/CartItemDao";
 
 describe('cart database', () => {
     afterEach(async () => {
@@ -30,63 +29,52 @@ describe('cart database', () => {
 
     describe('update cart', () => {
         it('should update items with non-zero quantity', async () => {
-            const cart = new Cart({
-                cartItems:
-                    [
-                        new CartItem({itemId: itemId1, quantity: 5}),
-                        new CartItem({itemId: itemId2, quantity: 3})
-                    ]
-            });
+            const cart = [
+                new CartItemDao(itemId1, 5, 'some owner'),
+                new CartItemDao(itemId2, 3, 'some owner')
+            ];
 
             await update(userId, cart);
 
             const updatedCart = await getCartItemsFor(userId);
-            expect(updatedCart.items).to.have.property('length', 2);
-            expect(updatedCart.items[0]).to.have.property("id", itemId1);
-            expect(updatedCart.items[0]).to.have.property("quantity", 5);
-            expect(updatedCart.items[1]).to.have.property("id", itemId2);
-            expect(updatedCart.items[1]).to.have.property("quantity", 3);
+            expect(updatedCart.ownerBatches).to.have.property('length', 1);
+            expect(updatedCart.ownerBatches[0].cartItems).to.have.property('length', 2);
+            expect(updatedCart.ownerBatches[0].cartItems[0]).to.have.property("id", itemId1);
+            expect(updatedCart.ownerBatches[0].cartItems[0]).to.have.property("quantity", 5);
+            expect(updatedCart.ownerBatches[0].cartItems[1]).to.have.property("id", itemId2);
+            expect(updatedCart.ownerBatches[0].cartItems[1]).to.have.property("quantity", 3);
         });
 
 
         it('should remove items with zero quantity', async () => {
-            const originalCart = new Cart({
-                cartItems: [
-                    new CartItem({itemId: itemId1, quantity: 5})
-                ]
-            });
+            await update(userId, [new CartItemDao(itemId1, 5, 'some owner')]);
 
-            await update(userId, originalCart);
+            const cartUpdate = [
+                new CartItemDao(itemId1, 0, 'some owner'),
+                new CartItemDao(itemId2, 3, 'some owner'),
+            ];
 
-            const cartUpdate = new Cart({
-                cartItems: [
-                    new CartItem({itemId: itemId1, quantity: 0}),
-                    new CartItem({itemId: itemId2, quantity: 3})
-                ]
-            });
             await update(userId, cartUpdate);
 
             const updatedCart = await getCartItemsFor(userId);
-            expect(updatedCart.items).to.have.property('length', 1);
-            expect(updatedCart.items[0]).to.have.property("id", itemId2);
-            expect(updatedCart.items[0]).to.have.property("quantity", 3);
+            expect(updatedCart.ownerBatches).to.have.property('length', 1);
+            expect(updatedCart.ownerBatches[0].cartItems).to.have.property('length', 1);
+            expect(updatedCart.ownerBatches[0].cartItems[0]).to.have.property("id", itemId2);
+            expect(updatedCart.ownerBatches[0].cartItems[0]).to.have.property("quantity", 3);
         });
     });
 
     describe('get cart', () => {
         it('should retrieve cart for user', async () => {
-            const cartUpdate = new Cart({
-                cartItems: [
-                    new CartItem({itemId: itemId1, quantity: 1}),
-                ]
-            });
+            const cartUpdate = [new CartItemDao(itemId1, 1, 'some owner'),];
             await update(userId, cartUpdate);
 
             const cart = await getCartItemsFor(userId);
 
-            expect(cart.items).to.have.property('length', 1);
-            expect(cart.items[0]).to.have.property("id", itemId1);
-            expect(cart.items[0]).to.have.property("quantity", 1);
+            expect(cart.ownerBatches).to.have.property('length', 1);
+            expect(cart.ownerBatches[0].cartItems).to.have.property('length', 1);
+            expect(cart.ownerBatches[0].cartItems[0]).to.have.property("id", itemId1);
+            expect(cart.ownerBatches[0].cartItems[0]).to.have.property("quantity", 1);
         });
     });
 });

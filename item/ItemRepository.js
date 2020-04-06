@@ -239,6 +239,15 @@ export const getItemsForUser = async (userEmail) => {
     }
 };
 
+export const findOwnerForItem = (itemId) => {
+    return database.one(
+            `SELECT owner
+             FROM item
+             WHERE id = $1`,
+        [itemId],
+        result => result.owner);
+};
+
 const getConditionId = (condition) => {
     return database.one(`SELECT id
                          FROM public.condition
