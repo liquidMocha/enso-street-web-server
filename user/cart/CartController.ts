@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import {
     addItemToCartForUser,
     getCartForUser,
@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     if (userEmail) {
         try {
             const cartDTO = await getCartForUser(userEmail);
@@ -24,7 +24,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.put('/', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     const itemId = req.body.itemId;
 
     try {
@@ -41,7 +41,7 @@ router.put('/', async (req, res, next) => {
 });
 
 router.delete('/', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     const itemId = req.body.itemId;
     const deleteAll = req.body.all;
 
