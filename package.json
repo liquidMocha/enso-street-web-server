@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "./node_modules/db-migrate/bin/db-migrate up -e local && node -r esm src/app.js",
-    "startLocal": "./node_modules/db-migrate/bin/db-migrate up -e local --config ./src/database.json && node -r dotenv/config -r esm src/app.js dotenv_config_path=./src/.env",
+    "local": "./node_modules/db-migrate/bin/db-migrate up -e local --config ./src/database.json && node -r dotenv/config -r esm src/app.js dotenv_config_path=./src/.env",
     "test": "tsc && DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && ALGOLIA_ITEM_INDEX=test-enso-street-items DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
@@ -46,7 +46,8 @@
     "redis": "^2.8.0",
     "sinon": "^7.4.2",
     "snyk": "^1.290.1",
-    "uuid": "^3.3.3"
+    "uuid": "^3.3.3",
+    "uuidv4": "^6.0.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

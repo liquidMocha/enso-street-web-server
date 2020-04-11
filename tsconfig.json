@@ -5,7 +5,8 @@
     "jsx": "react",
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "target": "ES5"
+    "target": "ES5",
+    "esModuleInterop": true
   },
   "exclude": [
     "node_modules"

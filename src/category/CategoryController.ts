@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import {getAllCategories, getItemCountForCategory} from "./CategoryRepository";
 
 const router = express.Router();
