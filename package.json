@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "start": "./node_modules/db-migrate/bin/db-migrate up -e local && node -r esm src/app.js",
+    "startLocal": "./node_modules/db-migrate/bin/db-migrate up -e local --config ./src/database.json && node -r dotenv/config -r esm src/app.js dotenv_config_path=./src/.env",
     "test": "tsc && DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && ALGOLIA_ITEM_INDEX=test-enso-street-items DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",

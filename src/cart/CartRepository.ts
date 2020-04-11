@@ -1,4 +1,3 @@
-// @ts-ignore
 import database from "../database";
 import {reconstitueFromDao} from "./CartFactory";
 import {CartItemDao} from "./CartItemDao";

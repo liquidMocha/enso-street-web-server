@@ -5,12 +5,12 @@ export const getAllCategories = () => {
                           FROM public.category;`)
 };
 
-export const getItemCountForCategory = (category) => {
+export const getItemCountForCategory = (categoryName: string) => {
     return database
         .one(`SELECT count(item.id)
               FROM item
                        JOIN itemtocategory i ON item.id = i.itemid
                        JOIN category c on i.categoryid = c.id
-              WHERE c.name = $1`, [category],
+              WHERE c.name = $1`, [categoryName],
             result => Number(result.count));
 };

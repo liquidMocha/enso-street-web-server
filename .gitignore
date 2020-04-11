@@ -1,6 +1,6 @@
 /node_modules/
 /src/certs/
-/.env
+/src/.env
 /.nyc_output/
 /.idea/dataSources.xml
 /newrelic_agent.log
