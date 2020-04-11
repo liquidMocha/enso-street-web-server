@@ -1,5 +1,5 @@
 /node_modules/
-/certs/
+/src/certs/
 /.env
 /.nyc_output/
 /.idea/dataSources.xml

@@ -8,7 +8,7 @@ import itemRouter from "./item/ItemController";
 import categoryRouter from "./category/CategoryController";
 import searchRouter from "./search/SearchController";
 import imageRouter from "./image/ImageController";
-import cartRouter from "./user/cart/CartController";
+import cartRouter from "./cart/CartController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";

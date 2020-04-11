@@ -1,9 +1,9 @@
-import app from "../../app";
+import app from "../../src/app";
 import request from "supertest";
 import sinon from "sinon";
-import * as HereApiClient from "../../location/HereApiClient";
-import * as ItemRepository from "../../item/ItemRepository";
-import Index from '../../search/Index';
+import * as HereApiClient from "../../src/location/HereApiClient";
+import * as ItemRepository from "../../src/item/ItemRepository";
+import Index from '../../src/search/Index';
 import {assert} from "chai";
 
 describe('search API', () => {

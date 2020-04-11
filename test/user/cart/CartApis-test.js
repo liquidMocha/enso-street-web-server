@@ -1,18 +1,18 @@
 import sinon from "sinon";
 import request from "supertest";
-import app from "../../../app";
+import app from "../../../src/app";
 import {getAuthenticatedApp} from "../../TestHelper";
-import * as CartRepository from "../../../user/cart/CartRepository";
+import * as CartRepository from "../../../src/cart/CartRepository";
 import {assert} from "chai";
-import * as ItemRepository from "../../../item/ItemRepository";
-import {ItemDAO} from "../../../item/ItemDAO";
-import UserRepository from "../../../user/UserRepository";
-import {UserProfile} from "../../../user/UserProfile";
-import {User} from "../../../user/User";
-import {CartItem} from "../../../user/cart/CartItem";
-import {Cart} from "../../../user/cart/Cart";
-import {CartOwnerBatch} from "../../../user/cart/CartOwnerBatch";
-import {CartItemDao} from "../../../user/cart/CartItemDao";
+import * as ItemRepository from "../../../src/item/ItemRepository";
+import {ItemDAO} from "../../../src/item/ItemDAO";
+import UserRepository from "../../../src/user/UserRepository";
+import {UserProfile} from "../../../src/user/UserProfile";
+import {User} from "../../../src/user/User";
+import {CartItem} from "../../../src/cart/domain/CartItem";
+import {Cart} from "../../../src/cart/domain/Cart";
+import {CartOwnerBatch} from "../../../src/cart/domain/CartOwnerBatch";
+import {CartItemDao} from "../../../src/cart/CartItemDao";
 
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";

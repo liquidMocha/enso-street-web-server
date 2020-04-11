@@ -1,6 +1,6 @@
-import database from "../../database";
-import UserRepository from "../../user/UserRepository";
-import {create} from "../../user/UserFactory";
+import database from "../../src/database.js";
+import UserRepository from "../../src/user/UserRepository";
+import {create} from "../../src/user/UserFactory";
 import {setupUser} from "../TestHelper";
 
 const {expect} = require('chai');

@@ -1,6 +1,6 @@
-import database from "../database";
+import database from "../src/database.js";
 import express from "express";
-import app from "../app";
+import app from "../src/app";
 
 export async function setupItem(itemId) {
     return database.none(`INSERT INTO item(id)

@@ -1,11 +1,11 @@
-import database from "../../database";
-import {ItemDAO} from "../../item/ItemDAO";
+import database from "../../src/database.js";
+import {ItemDAO} from "../../src/item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
-import UserRepository from "../../user/UserRepository";
+import UserRepository from "../../src/user/UserRepository";
 import chai from 'chai';
 import 'chai-as-promised';
-import {getItemById, getItemByIds, getItemsForUser, save} from "../../item/ItemRepository";
+import {getItemById, getItemByIds, getItemsForUser, save} from "../../src/item/ItemRepository";
 
 const chaiAsPromised = require('chai-as-promised');
 const should = chai.should();

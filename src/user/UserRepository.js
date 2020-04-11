@@ -1,10 +1,12 @@
-import database from '../database';
+import database from '../database.js';
 import * as bcrypt from "bcrypt";
 import {reconstitueFromDao} from "./UserFactory";
 
 const getEmailById = (userId) => {
     return database.one(
-            `SELECT email FROM public."user" WHERE id = $1`, [userId]
+            `SELECT email
+             FROM public."user"
+             WHERE id = $1`, [userId]
     ).then(result => {
         return result.email;
     }).catch(error => {
@@ -14,11 +16,11 @@ const getEmailById = (userId) => {
 
 const findOne = async ({email: email}) => {
     return database.oneOrNone(
-            `SELECT *, public.user.id as userId 
-                        FROM public.user 
-                        LEFT JOIN public.user_profile profile 
-                        ON public.user.id = profile.user_id 
-                        WHERE lower(email) = lower($1)`, [email],
+            `SELECT *, public.user.id as userId
+             FROM public.user
+                      LEFT JOIN public.user_profile profile
+                                ON public.user.id = profile.user_id
+             WHERE lower(email) = lower($1)`, [email],
         async userEntity => {
             if (userEntity) {
                 return reconstitueFromDao({userDao: userEntity});
@@ -42,15 +44,15 @@ const saveEnsoUser = (user) => {
                 return bcrypt.hash(password, saltRounds)
                     .then(hashedPassword => {
                         return database.one(
-                            "insert into public.user(password, email) " +
-                            "values ($1, $2) returning id",
+                                `INSERT INTO public."user"(password, email)
+                                 VALUES ($1, $2)
+                                 RETURNING id`,
                             [hashedPassword, email], user => user.id)
                     })
                     .then(id => {
-                        return database.none(
-                            "insert into public.user_profile(name, user_id) " +
-                            "values ($1, $2)",
-                            [name, id])
+                        return database.one(`
+                            INSERT INTO public.user_profile(name, user_id)
+                            VALUES ($1, $2)`, [name, id])
                     })
                     .catch(error => console.log('error hashing password: ', error));
             }
@@ -92,18 +94,18 @@ const createOAuthUser = (email, name) => {
 
 const update = (user) => {
     return database.none(`
-    UPDATE public.user
-    SET failed_login_attempts = $1
-    WHERE email = $2;
+        UPDATE public.user
+        SET failed_login_attempts = $1
+        WHERE email = $2;
     `, [user.failedAttempts, user.email])
 };
 
 const getUser = (userId) => {
     return database.one(`
-    SELECT up.name, u.email
-    FROM PUBLIC.user u
-    JOIN user_profile up on u.id = up.user_id 
-    WHERE u.id = $1`, [userId])
+        SELECT up.name, u.email
+        FROM PUBLIC.user u
+                 JOIN user_profile up on u.id = up.user_id
+        WHERE u.id = $1`, [userId])
 };
 
 export default {

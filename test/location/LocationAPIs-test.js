@@ -1,8 +1,8 @@
-import app from "../../app";
+import app from "../../src/app";
 import request from "supertest";
 import sinon from "sinon";
-import UserRepository from "../../user/UserRepository";
-import * as LocationRepository from "../../location/LocationRepository";
+import UserRepository from "../../src/user/UserRepository";
+import * as LocationRepository from "../../src/location/LocationRepository";
 import {assert} from "chai";
 import {getAuthenticatedApp} from "../TestHelper";
 

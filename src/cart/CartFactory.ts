@@ -1,7 +1,7 @@
-import {Cart} from "./Cart";
-import {CartItem} from "./CartItem";
+import {Cart} from "./domain/Cart";
+import {CartItem} from "./domain/CartItem";
 import {CartItemDao} from "./CartItemDao";
-import {CartOwnerBatch} from "./CartOwnerBatch";
+import {CartOwnerBatch} from "./domain/CartOwnerBatch";
 
 export const reconstitueFromDao = (cartDaos: CartItemDao[]): Cart => {
     const ownerBatches: CartOwnerBatch[] = [];

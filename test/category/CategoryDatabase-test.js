@@ -1,8 +1,8 @@
-import database from '../../database';
-import {getAllCategories, getItemCountForCategory} from "../../category/CategoryRepository";
+import database from '../../src/database.js';
+import {getAllCategories, getItemCountForCategory} from "../../src/category/CategoryRepository";
 import {expect} from 'chai';
-import * as ItemRepository from "../../item/ItemRepository";
-import {ItemDAO} from "../../item/ItemDAO";
+import * as ItemRepository from "../../src/item/ItemRepository";
+import {ItemDAO} from "../../src/item/ItemDAO";
 import {setupUser} from "../TestHelper";
 
 const chai = require('chai');

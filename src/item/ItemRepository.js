@@ -1,4 +1,4 @@
-import database from '../database';
+import database from '../database.js';
 import UserRepository from "../user/UserRepository";
 import ItemDTO from "./ItemDTO";
 import {ItemDAO} from "./ItemDAO";

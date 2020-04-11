@@ -1,13 +1,13 @@
 // @ts-ignore
-import UserRepository from "../UserRepository";
+import UserRepository from "../user/UserRepository";
 // @ts-ignore
-import * as ItemRepository from "../../item/ItemRepository";
+import * as ItemRepository from "../item/ItemRepository";
 import {getCartItemsFor, update as updateCart} from "./CartRepository";
 import {CartMapper} from "./CartMapper";
-import {ItemDto, OwnerBatchDto} from "./OwnerBatchDto";
+import {ItemDto, OwnerBatchDto} from "./DTO/OwnerBatchDto";
 // @ts-ignore
-import {getUser} from "../UserService";
-import {CartDto} from "./CartDto";
+import {getUser} from "../user/UserService";
+import {CartDto} from "./DTO/CartDto";
 
 export const getCartForUser = async (email: string): Promise<CartDto> => {
     const user = await UserRepository.findOne({email});

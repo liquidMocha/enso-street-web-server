@@ -1,4 +1,4 @@
-import database from '../database';
+import database from '../database.js';
 import Location from './Location';
 
 export const createLocation = async (location, userId) => {

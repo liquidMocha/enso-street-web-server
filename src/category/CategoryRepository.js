@@ -1,4 +1,4 @@
-import database from '../database';
+import database from '../database.js';
 
 export const getAllCategories = () => {
     return database.many(`SELECT name

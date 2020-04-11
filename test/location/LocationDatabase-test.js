@@ -1,6 +1,6 @@
-import database from '../../database';
+import database from '../../src/database.js';
 import {assert} from "chai";
-import {createLocation, getLocationsForUser, updateLocation} from "../../location/LocationRepository";
+import {createLocation, getLocationsForUser, updateLocation} from "../../src/location/LocationRepository";
 import {setupUser} from "../TestHelper";
 
 function assertSameLocationWithUserId(actualLocation, location, userId) {

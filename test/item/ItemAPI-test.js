@@ -1,11 +1,11 @@
 import {assert} from "chai";
-import app from "../../app";
+import app from "../../src/app";
 import request from "supertest";
 import sinon from "sinon";
-import * as ItemRepository from "../../item/ItemRepository";
-import * as HereApiClient from "../../location/HereApiClient";
+import * as ItemRepository from "../../src/item/ItemRepository";
+import * as HereApiClient from "../../src/location/HereApiClient";
 import {getAuthenticatedApp} from "../TestHelper";
-import {ItemDAO} from "../../item/ItemDAO";
+import {ItemDAO} from "../../src/item/ItemDAO";
 
 describe('item API', () => {
     describe('create new item', () => {

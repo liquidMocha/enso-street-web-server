@@ -1,8 +1,8 @@
-import app from "../../app";
+import app from "../../src/app";
 import request from "supertest";
 import chai, {expect} from "chai";
 import sinon from "sinon";
-import * as CategoryRepository from "../../category/CategoryRepository";
+import * as CategoryRepository from "../../src/category/CategoryRepository";
 import deepEqualInAnyOrder from 'deep-equal-in-any-order';
 import assertArrays from 'chai-arrays';
 

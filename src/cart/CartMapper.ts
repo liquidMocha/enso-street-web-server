@@ -1,5 +1,5 @@
 import {CartItemDao} from "./CartItemDao";
-import {Cart} from "./Cart";
+import {Cart} from "./domain/Cart";
 
 export class CartMapper {
     static toDao(cart: Cart): CartItemDao[] {

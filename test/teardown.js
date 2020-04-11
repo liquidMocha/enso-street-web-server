@@ -1,4 +1,4 @@
-import database from "../database";
+import database from "../src/database.js";
 
 after(async () => {
     await database.none(`DROP SCHEMA public CASCADE;`);
