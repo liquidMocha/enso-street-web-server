@@ -1,11 +1,16 @@
+import {uuid} from "uuidv4";
 import database from "../../src/database.js";
-import {ItemDAO} from "../../src/item/ItemDAO";
 import {setupCategories, setupUser} from "../TestHelper";
 import sinon from "sinon";
 import UserRepository from "../../src/user/UserRepository";
 import chai from 'chai';
 import 'chai-as-promised';
 import {getItemById, getItemByIds, getItemsForUser, save} from "../../src/item/ItemRepository";
+import {Item} from "../../src/item/Item";
+import ItemLocation from "../../src/item/ItemLocation";
+import Address from "../../src/location/Address";
+import {Coordinates} from "../../src/location/Coordinates";
+import Index from "../../src/search/Index";
 
 const chaiAsPromised = require('chai-as-promised');
 const should = chai.should();
@@ -16,6 +21,8 @@ describe('item data', () => {
     const userEmail = 'some@email.com';
     let userId;
     beforeEach(async () => {
+        sinon.restore();
+        sinon.stub(Index);
         userId = await setupUser({email: userEmail});
         await setupCategories(['garden-and-patio', 'music-instruments']);
     });
@@ -53,30 +60,33 @@ describe('item data', () => {
             const longitude = -87.62785;
             const imageUrl = 'someurl.com';
 
-            const location = {
-                street: locationStreet,
-                zipCode: locationZipCode,
-                city: locationCity,
-                state: locationState,
-                userId: userId,
-                latitude: latitude,
-                longitude: longitude
-            };
+            const location = new ItemLocation(
+                new Address({
+                    street: locationStreet,
+                    zipCode: locationZipCode,
+                    city: locationCity,
+                    state: locationState,
+                }),
+                new Coordinates(latitude, longitude)
+            );
 
-            await save(new ItemDAO({
-                title: title,
-                rentalDailyPrice: rentalDailyPrice,
-                deposit: deposit,
-                condition: condition,
-                categories: categories,
-                description: description,
-                canBeDelivered: canBeDelivered,
-                deliveryStarting: deliveryStarting,
-                deliveryAdditional: deliveryAdditional,
-                location: location,
-                ownerEmail: userEmail,
-                imageUrl: imageUrl
-            }));
+            await save(new Item(
+                {
+                    id: uuid(),
+                    title: title,
+                    rentalDailyPrice: rentalDailyPrice,
+                    deposit: deposit,
+                    condition: condition,
+                    categories: categories,
+                    description: description,
+                    canBeDelivered: canBeDelivered,
+                    deliveryStarting: deliveryStarting,
+                    deliveryAdditional: deliveryAdditional,
+                    location: location,
+                    ownerEmail: userEmail,
+                    imageUrl: imageUrl
+                }
+            ));
 
             const items = await getItemsForUser(userEmail);
 
@@ -91,30 +101,33 @@ describe('item data', () => {
             expect(items[0].canBeDelivered).to.equal(canBeDelivered);
             expect(Number(items[0].deliveryStarting)).to.equal(deliveryStarting);
             expect(Number(items[0].deliveryAdditional)).to.equal(deliveryAdditional);
-            expect(items[0].location.street).to.equal(locationStreet);
-            expect(items[0].location.zipCode).to.equal(locationZipCode);
-            expect(items[0].location.city).to.equal(locationCity);
-            expect(items[0].location.state).to.equal(locationState);
-            expect(items[0].location.latitude).to.equal(latitude);
-            expect(items[0].location.longitude).to.equal(longitude);
+            expect(items[0].location.address.street).to.equal(locationStreet);
+            expect(items[0].location.address.zipCode).to.equal(locationZipCode);
+            expect(items[0].location.address.city).to.equal(locationCity);
+            expect(items[0].location.address.state).to.equal(locationState);
+            expect(items[0].location.coordinates.latitude).to.equal(latitude);
+            expect(items[0].location.coordinates.longitude).to.equal(longitude);
             expect(items[0].imageUrl).to.equal(imageUrl);
             expect(items[0].searchable).to.equal(true);
         })
     });
 
     it('get items by IDs', async () => {
-        const aSavedItem = await setupItems();
-        const anotherSavedItem = await setupItems();
+        const id1 = uuid();
+        const id2 = uuid();
+        const aSavedItem = await setupItems({itemId: id1});
+        const anotherSavedItem = await setupItems({itemId: id2});
 
-        const items = await getItemByIds([aSavedItem.id, anotherSavedItem.id]);
+        const items = await getItemByIds([id1, id2]);
 
         expect(items.length).to.equal(2);
     });
 
     it('get item by ID', async () => {
-        const aSavedItem = await setupItems();
+        const itemId = uuid();
+        const aSavedItem = await setupItems({itemId: itemId});
 
-        const item = await getItemById(aSavedItem.id);
+        const item = await getItemById(itemId);
 
         expect(item).to.have.property('archive');
         expect(item.id).to.equal(aSavedItem.id).but.not.be.undefined;
@@ -125,13 +138,13 @@ describe('item data', () => {
         expect(item.deliveryAdditional).to.equal(aSavedItem.deliveryAdditional).but.not.be.undefined;
         expect(item.condition).to.equal(aSavedItem.condition).but.not.be.undefined;
         expect(item.description).to.equal(aSavedItem.description).but.not.be.undefined;
-        expect(item.imageUrl).to.equal(aSavedItem.image_url).but.not.be.undefined;
-        expect(item.canBeDelivered).to.equal(aSavedItem.canbedelivered).but.not.be.undefined;
-        expect(item.location.latitude).to.equal(aSavedItem.latitude).but.not.be.undefined;
-        expect(item.location.longitude).to.equal(aSavedItem.longitude).but.not.be.undefined;
+        expect(item.imageUrl).to.equal(aSavedItem.imageUrl).but.not.be.undefined;
+        expect(item.canBeDelivered).to.equal(aSavedItem.canBeDelivered).but.not.be.undefined;
+        expect(item.location.coordinates.latitude).to.equal(aSavedItem.location.coordinates.latitude).but.not.be.undefined;
+        expect(item.location.coordinates.longitude).to.equal(aSavedItem.location.coordinates.longitude).but.not.be.undefined;
     });
 
-    const setupItems = async () => {
+    const setupItems = async ({itemId}) => {
         const title = "some title";
         const rentalDailyPrice = 1.23;
         const deposit = 50.23;
@@ -149,29 +162,35 @@ describe('item data', () => {
         const longitude = -87.62785;
         const imageUrl = 'someurl.com';
 
-        const location = {
-            street: locationStreet,
-            zipCode: locationZipCode,
-            city: locationCity,
-            state: locationState,
-            userId: userId,
-            latitude: latitude,
-            longitude: longitude
-        };
+        const location = new ItemLocation(
+            new Address({
+                street: locationStreet,
+                zipCode: locationZipCode,
+                city: locationCity,
+                state: locationState,
+            }),
+            new Coordinates(latitude, longitude)
+        );
 
-        return await new ItemDAO({
-            title: title,
-            rentalDailyPrice: rentalDailyPrice,
-            deposit: deposit,
-            condition: condition,
-            categories: categories,
-            description: description,
-            canBeDelivered: canBeDelivered,
-            deliveryStarting: deliveryStarting,
-            deliveryAdditional: deliveryAdditional,
-            location: location,
-            ownerEmail: userEmail,
-            imageUrl: imageUrl
-        }).save();
+        const savedItem = new Item(
+            {
+                id: itemId,
+                title: title,
+                rentalDailyPrice: rentalDailyPrice,
+                deposit: deposit,
+                condition: condition,
+                categories: categories,
+                description: description,
+                canBeDelivered: canBeDelivered,
+                deliveryStarting: deliveryStarting,
+                deliveryAdditional: deliveryAdditional,
+                location: location,
+                ownerEmail: userEmail,
+                imageUrl: imageUrl
+            }
+        );
+
+        await save(savedItem)
+        return savedItem;
     }
 });

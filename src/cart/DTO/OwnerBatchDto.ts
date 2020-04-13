@@ -1,4 +1,4 @@
-export class ItemDto {
+export class CartItemDto {
     private id: string;
     private quantity: number;
     private title: string;
@@ -23,9 +23,9 @@ export class ItemDto {
 export class OwnerBatchDto {
     private ownerName: string;
     private ownerEmail: string;
-    private items: ItemDto[];
+    private items: CartItemDto[];
 
-    constructor(ownerName: string, ownerEmail: string, items: ItemDto[]) {
+    constructor(ownerName: string, ownerEmail: string, items: CartItemDto[]) {
         this.ownerName = ownerName;
         this.ownerEmail = ownerEmail;
         this.items = items;

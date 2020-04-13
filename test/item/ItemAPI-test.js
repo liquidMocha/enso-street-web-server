@@ -5,7 +5,10 @@ import sinon from "sinon";
 import * as ItemRepository from "../../src/item/ItemRepository";
 import * as HereApiClient from "../../src/location/HereApiClient";
 import {getAuthenticatedApp} from "../TestHelper";
-import {ItemDAO} from "../../src/item/ItemDAO";
+import {Item} from "../../src/item/Item";
+import BorrowerItem from "../../src/item/BorrowerItem";
+import {Coordinates} from "../../src/location/Coordinates";
+import ItemLocation from "../../src/item/ItemLocation";
 
 describe('item API', () => {
     describe('create new item', () => {
@@ -13,7 +16,7 @@ describe('item API', () => {
         let geocodeStub;
         let getItemsForUserStub;
         let getItemByIdStub;
-        let deleteItemStub;
+        let updateItemStub;
         const loggedInUser = 'mschoot@dundler.com';
 
         const authenticatedApp = getAuthenticatedApp(loggedInUser);
@@ -26,7 +29,7 @@ describe('item API', () => {
 
             getItemsForUserStub = sinon.stub(ItemRepository, 'getItemsForUser');
             getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
-            deleteItemStub = sinon.stub(ItemRepository, 'archive');
+            updateItemStub = sinon.stub(ItemRepository, 'update');
         });
 
         beforeEach(() => {
@@ -47,21 +50,27 @@ describe('item API', () => {
             });
 
             it('should save item', (done) => {
+                const street = '1725 Slough Avenue';
+                const city = 'scranton';
+                const state = 'PA';
+                const zipCode = '17870';
                 const item = {
                     title: 'item title',
                     rentalDailyPrice: 20.61,
                     deposit: 60.12,
                     condition: 'like-new',
-                    categories: 'games-and-toys',
+                    categories: ['games-and-toys'],
                     description: 'this is a test item',
                     canBeDelivered: true,
                     deliveryStarting: 2.29,
                     deliveryAdditional: 0.69,
                     location: {
-                        street: '1725 Slough Avenue',
-                        city: 'scranton',
-                        state: 'PA',
-                        zipCode: 17870
+                        address: {
+                            street: street,
+                            city: city,
+                            state: state,
+                            zipCode: zipCode
+                        }
                     }
                 };
 
@@ -69,7 +78,9 @@ describe('item API', () => {
                     .post('/api/items')
                     .send(item)
                     .expect(201, (error, response) => {
-                        sinon.assert.calledWith(geocodeStub, '1725 Slough Avenue, scranton, PA, 17870');
+                        sinon.assert.calledWith(geocodeStub, sinon.match({
+                            street, city, state, zipCode
+                        }));
                         sinon.assert.calledWithMatch(saveItemStub, sinon.match({
                             ...item
                         }));
@@ -115,14 +126,56 @@ describe('item API', () => {
         describe('get item by ID', () => {
             it('should return item of given ID', (done) => {
                 const itemId = "abc-123";
-                const item = {title: 'small cat'};
+                const title = "smelly cat";
+                const description = "not favourite cat";
+                const ownerEmail = "abc@phalange";
+                const deposit = 2.1;
+                const rentalDailyPrice = 5.2;
+                const deliveryAdditional = 1.2;
+                const deliveryStarting = 2.3;
+                const condition = 'like-new';
+                const imageUrl = '1doga.com';
+                const canBeDelivered = true;
+                const location = new ItemLocation(null, new Coordinates(12, 23));
+                const createdOn = new Date();
+
+                const item = new Item({
+                    id: itemId,
+                    title: title,
+                    description: description,
+                    ownerEmail: ownerEmail,
+                    deposit: deposit,
+                    rentalDailyPrice: rentalDailyPrice,
+                    deliveryAdditional: deliveryAdditional,
+                    deliveryStarting: deliveryStarting,
+                    condition: condition,
+                    imageUrl: imageUrl,
+                    canBeDelivered: canBeDelivered,
+                    location: location,
+                    createdOn: createdOn
+                });
                 getItemByIdStub.resolves(item);
+                const expectedBorrowerItem = new BorrowerItem({
+                    itemId: itemId,
+                    title: title,
+                    description: description,
+                    ownerEmail: ownerEmail,
+                    deposit: deposit,
+                    rentalDailyPrice: rentalDailyPrice,
+                    deliveryAdditional: deliveryAdditional,
+                    deliveryStarting: deliveryStarting,
+                    condition: condition,
+                    imageUrl: imageUrl,
+                    canBeDelivered: canBeDelivered,
+                    coordinates: location.coordinates,
+                    createdOn: createdOn.toISOString()
+                })
 
                 request(app)
                     .get(`/api/items/${itemId}`)
                     .expect(200, (error, response) => {
                         sinon.assert.calledWith(getItemByIdStub, itemId);
-                        assert.deepEqual(response.body, item);
+                        assert.deepEqual(response.body, expectedBorrowerItem);
                         done(error);
                     })
             });
@@ -150,13 +203,16 @@ describe('item API', () => {
             it('should archive item by ID', (done) => {
                 const itemId = "74219fabc";
 
-                getItemByIdStub.resolves(new ItemDAO({id: itemId, ownerEmail: loggedInUser}));
+                const itemToBeDeleted = new Item(
+                    {id: itemId, ownerEmail: loggedInUser}
+                );
+                getItemsForUserStub.resolves([itemToBeDeleted]);
 
                 request(authenticatedApp)
                     .delete(`/api/items/${itemId}`)
                     .expect(200, (error, response) => {
 
-                        sinon.assert.calledWith(deleteItemStub, itemId);
+                        sinon.assert.calledWith(updateItemStub, itemToBeDeleted);
                         done(error);
                     })
             });
@@ -164,12 +220,12 @@ describe('item API', () => {
             it('should respond with 500 when user try to delete item that does not belong to them', (done) => {
                 const itemId = "123-abc";
                 const notLoggedInUser = "some@randome.user";
-                getItemByIdStub.resolves(new ItemDAO({id: itemId, ownerEmail: notLoggedInUser}));
+                getItemsForUserStub.resolves([new Item({id: 'not-item-id', ownerEmail: notLoggedInUser})]);
 
                 request(authenticatedApp)
                     .delete(`/api/items/${itemId}`)
-                    .expect(500, (error, response) => {
-                        sinon.assert.notCalled(deleteItemStub);
+                    .expect(204, (error, response) => {
+                        sinon.assert.notCalled(updateItemStub);
                         done(error);
                     })
             })

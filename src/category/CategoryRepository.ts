@@ -11,6 +11,8 @@ export const getItemCountForCategory = (categoryName: string) => {
               FROM item
                        JOIN itemtocategory i ON item.id = i.itemid
                        JOIN category c on i.categoryid = c.id
-              WHERE c.name = $1`, [categoryName],
+              WHERE c.name = $1
+                AND item.archived != TRUE
+                AND item.searchable = TRUE`, [categoryName],
             result => Number(result.count));
 };

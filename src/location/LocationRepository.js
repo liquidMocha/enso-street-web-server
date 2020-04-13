@@ -34,14 +34,14 @@ export const updateLocation = async (location, userId) => {
         );
 
         await updatedLocation;
-        return new Location({
-            id: updatedLocation.id,
-            street: updatedLocation.street,
-            city: updatedLocation.city,
-            state: updatedLocation.state,
-            zipCode: updatedLocation.zipcode,
-            nickname: updatedLocation.nickname
-        })
+        return new Location(
+            updatedLocation.id,
+            updatedLocation.street,
+            updatedLocation.city,
+            updatedLocation.state,
+            updatedLocation.zipcode,
+            updatedLocation.nickname
+        )
     } catch (e) {
         throw new Error(`Error updating location ${location.id}: ${e}`)
     }
@@ -57,14 +57,14 @@ export const getLocationsForUser = async (userId) => {
         );
 
         return (await locationEntity).map(location => {
-            return new Location({
-                id: location.id,
-                street: location.street,
-                city: location.city,
-                state: location.state,
-                zipCode: location.zipcode,
-                nickname: location.nickname
-            });
+            return new Location(
+                location.id,
+                location.street,
+                location.city,
+                location.state,
+                location.zipcode,
+                location.nickname
+            );
         })
     } catch (e) {
         throw new Error(`Error retrieving locations for user ${userId}: ${e}`);

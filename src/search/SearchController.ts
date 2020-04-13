@@ -2,25 +2,27 @@ import express from "express";
 import {geocode} from "../location/HereApiClient";
 import Index from "./Index";
 import {getItemByIds} from "../item/ItemRepository";
+import {Coordinates} from "../location/Coordinates";
+import SearchResultItem from "../item/SearchResultItem";
 
 const router = express.Router();
 
-async function search(searchTerm, coordinates) {
+async function search(searchTerm: string, coordinates: Coordinates) {
     const searchHits = await Index.searchByLocation(searchTerm, coordinates);
     const ids = searchHits.map(searchHit => {
         return searchHit.objectID
     });
 
-    return (await getItemByIds(ids)).map(item => {
-        return {
+    return (await getItemByIds(ids)).map(item => new SearchResultItem(
+        {
             id: item.id,
-            city: item.city,
+            city: item.location.address.city,
             imageUrl: item.imageUrl,
             title: item.title,
             dailyRentalPrice: item.rentalDailyPrice,
-            zipCode: item.zipCode
+            zipCode: item.location.address.zipCode
         }
-    });
+    ))
 }
 
 router.post('/', async (req, res, next) => {

@@ -5,13 +5,66 @@ import * as HereApiClient from "../../src/location/HereApiClient";
 import * as ItemRepository from "../../src/item/ItemRepository";
 import Index from '../../src/search/Index';
 import {assert} from "chai";
+import {Coordinates} from "../../src/location/Coordinates";
+import {SearchItemHit} from "../../src/search/SearchItemHit";
+import {Item} from "../../src/item/Item";
+import SearchResultItem from "../../src/item/SearchResultItem";
 
 describe('search API', () => {
     let geocodeStub;
     let searchByLocation;
     let getItemByIdsStub;
-    const coordinatesForAddress = {latitude: 12.34, longitude: 33.45};
-    const searchResults = [{id: 'some-id'}, {id: 'some-other-id'}];
+    const coordinatesForAddress = new Coordinates(12.34, 33.45);
+
+    const itemId1 = 'some-id';
+    const itemCity1 = 'Chicago';
+    const itemImageUrl1 = 'abc.com';
+    const itemTitle1 = 'some thing';
+    const itemDailyRentalPrice1 = 1.2;
+    const itemZipCode1 = '123-345';
+
+    const itemId2 = 'some-other-id';
+    const itemCity2 = 'Cincinnati';
+    const itemImageUrl2 = 'def.com';
+    const itemTitle2 = 'some other thing';
+    const itemDailyRentalPrice2 = 2.2;
+    const itemZipCode2 = '111-333';
+
+    const hitItems = [
+        new Item({
+            id: itemId1,
+            imageUrl: itemImageUrl1,
+            title: itemTitle1,
+            rentalDailyPrice: itemDailyRentalPrice1,
+            location: {address: {city: itemCity1, zipCode: itemZipCode1}}
+        }),
+        new Item({
+            id: itemId2,
+            imageUrl: itemImageUrl2,
+            title: itemTitle2,
+            rentalDailyPrice: itemDailyRentalPrice2,
+            location: {address: {city: itemCity2, zipCode: itemZipCode2}}
+        })
+    ];
+
+    const searchResultItems = [
+        new SearchResultItem({
+            id: itemId1,
+            city: itemCity1,
+            imageUrl: itemImageUrl1,
+            title: itemTitle1,
+            dailyRentalPrice: itemDailyRentalPrice1,
+            zipCode: itemZipCode1
+        }),
+        new SearchResultItem({
+            id: itemId2,
+            city: itemCity2,
+            imageUrl: itemImageUrl2,
+            title: itemTitle2,
+            dailyRentalPrice: itemDailyRentalPrice2,
+            zipCode: itemZipCode2
+        })
+    ]
 
     before(() => {
         geocodeStub = sinon
@@ -20,11 +73,11 @@ describe('search API', () => {
 
         searchByLocation = sinon
             .stub(Index, 'searchByLocation')
-            .resolves([{id: 'some-id'}]);
+            .resolves([new SearchItemHit('some-id')]);
 
         getItemByIdsStub = sinon
             .stub(ItemRepository, 'getItemByIds')
-            .resolves(searchResults);
+            .resolves(hitItems);
     });
 
     beforeEach(() => {
@@ -81,7 +134,7 @@ describe('search API', () => {
                 coordinates: coordinates,
             })
             .expect(200, (error, response) => {
-                assert.deepEqual(response.body, searchResults);
+                assert.deepEqual(response.body, searchResultItems);
 
                 done(error);
             })

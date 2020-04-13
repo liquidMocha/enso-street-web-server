@@ -4,7 +4,7 @@ import UserRepository from "../user/UserRepository";
 import * as ItemRepository from "../item/ItemRepository";
 import {getCartItemsFor, update as updateCart} from "./CartRepository";
 import {CartMapper} from "./CartMapper";
-import {ItemDto, OwnerBatchDto} from "./DTO/OwnerBatchDto";
+import {CartItemDto, OwnerBatchDto} from "./DTO/OwnerBatchDto";
 // @ts-ignore
 import {getUser} from "../user/UserService";
 import {CartDto} from "./DTO/CartDto";
@@ -17,12 +17,12 @@ export const getCartForUser = async (email: string): Promise<CartDto> => {
         const user = await getUser(ownerBatch.ownerId);
 
         const cartItemDtos = ownerBatch.cartItems.map(async cartItem => {
-            const itemDao = await ItemRepository.getItemById(cartItem.id);
-            return new ItemDto(
+            const borrowerItem = await ItemRepository.getItemById(cartItem.id);
+            return new CartItemDto(
                 cartItem.id,
-                itemDao.title,
-                itemDao.rentalDailyPrice,
-                itemDao.imageUrl,
+                borrowerItem.title,
+                borrowerItem.rentalDailyPrice,
+                borrowerItem.imageUrl,
                 cartItem.quantity
             )
         });

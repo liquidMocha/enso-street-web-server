@@ -46,16 +46,16 @@ router.put('/:locationId', async (req, res, next) => {
     if (userEmail) {
         const user = await UserRepository.findOne({email: userEmail});
         if (user) {
-            const updatedLocation = await updateLocation(new Location(
-                {
-                    id: locationId,
-                    street: location.street,
-                    city: location.city,
-                    state: location.state,
-                    zipCode: location.zipCode,
-                    nickname: location.nickname
-                }
-            ), user.id);
+            const updatedLocation = await updateLocation(
+                new Location(
+                    locationId,
+                    location.street,
+                    location.city,
+                    location.state,
+                    location.zipCode,
+                    location.nickname
+                ), user.id
+            );
 
             res.status(200).json(updatedLocation);
         } else {

@@ -5,7 +5,6 @@ import {getAuthenticatedApp} from "../../TestHelper";
 import * as CartRepository from "../../../src/cart/CartRepository";
 import {assert} from "chai";
 import * as ItemRepository from "../../../src/item/ItemRepository";
-import {ItemDAO} from "../../../src/item/ItemDAO";
 import UserRepository from "../../../src/user/UserRepository";
 import {UserProfile} from "../../../src/user/UserProfile";
 import {User} from "../../../src/user/User";
@@ -13,6 +12,7 @@ import {CartItem} from "../../../src/cart/domain/CartItem";
 import {Cart} from "../../../src/cart/domain/Cart";
 import {CartOwnerBatch} from "../../../src/cart/domain/CartOwnerBatch";
 import {CartItemDao} from "../../../src/cart/CartItemDao";
+import {Item} from "../../../src/item/Item";
 
 describe('cart', () => {
     const loggedInUserEmail = "abc@enso.com";
@@ -82,30 +82,34 @@ describe('cart', () => {
             getUserStub.onCall(0).resolves({name: ownerName1, email: ownerEmail1});
             getUserStub.onCall(1).resolves({name: ownerName2, email: ownerEmail2});
 
-            getItemByIdStub.onCall(0).resolves(new ItemDAO({
-                id: itemId1,
-                title: itemTitle1,
-                ownerEmail: ownerEmail1,
-                deposit: 123,
-                rentalDailyPrice: rentalDailyPrice1,
-                deliveryAdditional: 2,
-                deliveryStarting: 10,
-                condition: "Like new",
-                description: "something something something vicky",
-                imageUrl: imageUrl1
-            }));
-            getItemByIdStub.onCall(1).resolves(new ItemDAO({
-                id: itemId2,
-                title: itemTitle2,
-                ownerEmail: ownerEmail2,
-                deposit: 123,
-                rentalDailyPrice: rentalDailyPrice2,
-                deliveryAdditional: 2,
-                deliveryStarting: 10,
-                condition: "Like new",
-                description: "something something something vicky",
-                imageUrl: imageUrl2
-            }));
+            getItemByIdStub.onCall(0).resolves(new Item(
+                {
+                    id: itemId1,
+                    title: itemTitle1,
+                    ownerEmail: ownerEmail1,
+                    deposit: 123,
+                    rentalDailyPrice: rentalDailyPrice1,
+                    deliveryAdditional: 2,
+                    deliveryStarting: 10,
+                    condition: "Like new",
+                    description: "something something something vicky",
+                    imageUrl: imageUrl1
+                }
+            ));
+            getItemByIdStub.onCall(1).resolves(new Item(
+                {
+                    id: itemId2,
+                    title: itemTitle2,
+                    ownerEmail: ownerEmail2,
+                    deposit: 123,
+                    rentalDailyPrice: rentalDailyPrice2,
+                    deliveryAdditional: 2,
+                    deliveryStarting: 10,
+                    condition: "Like new",
+                    description: "something something something vicky",
+                    imageUrl: imageUrl2
+                }
+            ));
 
             const expectedOwnerBatch1 = [
                 {
