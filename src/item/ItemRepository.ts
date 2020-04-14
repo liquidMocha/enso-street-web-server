@@ -139,16 +139,6 @@ export const getItemById = async (itemId: string): Promise<Item> => {
     })
 };
 
-export const save = async (item: Item) => {
-    try {
-        await saveItem(item);
-        await Index.indexItem(item);
-    } catch (error) {
-        console.error(`Error when creating item: ${error}`);
-        throw new Error('Error when creating item.');
-    }
-};
-
 export const getItemsForUser = async (userEmail: string): Promise<Item[]> => {
     const user = await UserRepository.findOne({email: userEmail});
 
@@ -222,6 +212,16 @@ export const getItemsForUser = async (userEmail: string): Promise<Item[]> => {
         });
     } else {
         throw new Error(`User not found.`);
+    }
+};
+
+export const save = async (item: Item) => {
+    try {
+        await saveItem(item);
+        await Index.indexItem(item);
+    } catch (error) {
+        console.error(`Error when creating item: ${error}`);
+        throw new Error('Error when creating item.');
     }
 };
 

@@ -1,13 +1,15 @@
 import express from "express";
-import UserRepository from "../user/UserRepository";
+// @ts-ignore
+import UserRepository from '../user/UserRepository';
 import Location from './Location';
 import {createLocation, getLocationsForUser, updateLocation} from "./LocationRepository";
 import {autosuggest, routeDistanceInMiles} from "./HereApiClient";
+import {Coordinates} from "./Coordinates";
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     if (userEmail) {
         const user = await UserRepository.findOne({email: userEmail});
 
@@ -23,7 +25,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.put('/', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     if (userEmail) {
         const user = await UserRepository.findOne({email: userEmail});
 
@@ -39,7 +41,7 @@ router.put('/', async (req, res, next) => {
 });
 
 router.put('/:locationId', async (req, res, next) => {
-    const userEmail = req.session.email;
+    const userEmail = req.session?.email;
     const locationId = req.params.locationId;
     const location = req.body.location;
 
@@ -66,38 +68,28 @@ router.put('/:locationId', async (req, res, next) => {
     }
 });
 
-router.get('/autosuggest/:searchTerm', (req, res, next) => {
-    const userEmail = req.session.email;
-    const queryParameters = req.query;
+router.get('/autosuggest/:searchTerm', async (req, res, next) => {
+    const userEmail = req.session?.email;
+    const latitude = Number(req.query.latitude);
+    const longitude = Number(req.query.longitude);
 
-    autosuggest(req.params.searchTerm,
-        {latitude: queryParameters.latitude, longitude: queryParameters.longitude}
-    ).then(result => {
-        const suggestedAddresses = result.suggestions.map(suggestion => {
-            const address = suggestion.address;
-            return {
-                houseNumber: address.houseNumber,
-                street: address.street,
-                zipCode: address.postalCode,
-                city: address.city,
-                state: address.state
-            }
-        });
-        res.status(200).json(suggestedAddresses);
-    }).catch(error => {
-        console.error(error);
-        throw new Error(`Error when getting autosuggest location.`);
-    });
+    const hereAutoSuggestions = await autosuggest(
+        req.params.searchTerm,
+        new Coordinates(latitude, longitude)
+    )
+
+
+    res.status(200).json(hereAutoSuggestions);
 });
 
 router.get('/distance', async (req, res, next) => {
-    const startLatitude = req.query.startLatitude;
-    const startLongitude = req.query.startLongitude;
-    const endLatitude = req.query.endLatitude;
-    const endLongitude = req.query.endLongitude;
+    const startLatitude = Number(req.query.startLatitude);
+    const startLongitude = Number(req.query.startLongitude);
+    const endLatitude = Number(req.query.endLatitude);
+    const endLongitude = Number(req.query.endLongitude);
 
-    const startCoordinates = {latitude: startLatitude, longitude: startLongitude};
-    const endCoordinates = {latitude: endLatitude, longitude: endLongitude};
+    const startCoordinates = new Coordinates(startLatitude, startLongitude);
+    const endCoordinates = new Coordinates(endLatitude, endLongitude);
 
     const distance = (await routeDistanceInMiles(startCoordinates, endCoordinates));
     res.status(200).json({distance})

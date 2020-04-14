@@ -1,9 +1,10 @@
 import axios from "axios";
 import {Coordinates} from "./Coordinates";
 import Address from "./Address";
+import HereAutoSuggestion from "./HereAutoSuggestion";
 
-export const autosuggest = (searchTerm: string, coordinates: Coordinates) => {
-    return axios.get('https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json',
+export const autosuggest = async (searchTerm: string, coordinates: Coordinates): Promise<HereAutoSuggestion[]> => {
+    const response = axios.get<HereAutoSuggestionResponse>('https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json',
         {
             params: {
                 query: searchTerm,
@@ -12,9 +13,20 @@ export const autosuggest = (searchTerm: string, coordinates: Coordinates) => {
                 apiKey: process.env.HERE_API_KEY
             }
         }
-    ).then(response => {
-        return response.data;
-    })
+    )
+
+    return (await response).data.suggestions.map(suggestion => {
+        const address = suggestion.address;
+        return new HereAutoSuggestion(
+            {
+                houseNumber: address.houseNumber,
+                street: address.street,
+                city: address.postalCode,
+                state: address.city,
+                zipCode: address.state
+            }
+        )
+    });
 };
 
 export const geocode = async (location: Address): Promise<Coordinates> => {
@@ -54,3 +66,19 @@ export const routeDistanceInMiles = async (startCoordinates: Coordinates, endCoo
 
     return ((await response).data.response.route[0].summary.distance / 1000) * 0.621371
 };
+
+class HereAutoSuggestionAddress {
+    readonly houseNumber: string;
+    readonly street: string;
+    readonly postalCode: string;
+    readonly city: string;
+    readonly state: string;
+}
+
+class HereAutoSuggestionDTO {
+    readonly address: HereAutoSuggestionAddress
+}
+
+class HereAutoSuggestionResponse {
+    readonly suggestions: HereAutoSuggestionDTO[];
+}
