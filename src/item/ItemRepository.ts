@@ -1,5 +1,4 @@
 import database from '../database.js';
-// @ts-ignore
 import UserRepository from "../user/UserRepository";
 import {Condition} from "./Condition";
 import {Item} from "./Item";
@@ -60,12 +59,12 @@ export const update = async (item: Item): Promise<void> => {
     }
 }
 
-export const getItemByIds = (itemIds: string[]): Promise<Item[]> => {
+export const getItemByIds = async (itemIds: string[]): Promise<(Item)[]> => {
     if (itemIds.length === 0) {
-        return Promise.resolve([]);
+        return [];
     }
 
-    return Promise.all(itemIds.map(async id => await getItemById(id)))
+    return await Promise.all(itemIds.map(async id => await getItemById(id)))
 };
 
 export const getItemById = async (itemId: string): Promise<Item> => {
@@ -139,80 +138,74 @@ export const getItemById = async (itemId: string): Promise<Item> => {
     })
 };
 
-export const getItemsForUser = async (userEmail: string): Promise<Item[]> => {
-    const user = await UserRepository.findOne({email: userEmail});
-
-    if (user) {
-        return await database.task(t => {
-            return t.map(`SELECT item.id,
-                                 item.title,
-                                 item.rentaldailyprice,
-                                 item.deposit,
-                                 condition.condition,
-                                 item.description,
-                                 item.canbedelivered,
-                                 item.deliverystarting,
-                                 item.deliveryadditional,
-                                 item.street,
-                                 item.zipcode,
-                                 item.city,
-                                 item.state,
-                                 item.image_url,
-                                 item.created_on,
-                                 item.searchable,
-                                 item.archived,
-                                 ST_X(item.geo_location::geometry) AS longitude,
-                                 ST_Y(item.geo_location::geometry) AS latitude
-                          FROM item
-                                   JOIN condition ON item.condition = condition.id
-                          WHERE item.owner = $1`,
-                [user.id], item => {
-                    return t.any(`SELECT name
-                                  FROM itemtocategory
-                                           JOIN category c ON itemtocategory.categoryid = c.id
-                                  WHERE itemid = $1`, [item.id])
-                        .then(categories => {
-                            item.categories = categories.map(category => category.name);
-                            return item;
-                        })
-                }).then(t.batch);
-        }).then(itemEntities => {
-            return itemEntities.map(itemEntity => {
-                return new Item(
-                    {
-                        id: itemEntity.id,
-                        title: itemEntity.title,
-                        description: itemEntity.description,
-                        categories: itemEntity.categories,
-                        imageUrl: itemEntity.image_url,
-                        rentalDailyPrice: itemEntity.rentaldailyprice,
-                        deposit: itemEntity.deposit,
-                        condition: itemEntity.condition,
-                        canBeDelivered: itemEntity.canbedelivered,
-                        deliveryStarting: itemEntity.deliverystarting,
-                        deliveryAdditional: itemEntity.deliveryadditional,
-                        location: new ItemLocation(
-                            new Address(
-                                {
-                                    street: itemEntity.street,
-                                    city: itemEntity.city,
-                                    state: itemEntity.state,
-                                    zipCode: itemEntity.zipcode
-                                }
-                            ),
-                            new Coordinates(itemEntity.latitude, itemEntity.longitude)
+export const getItemsForUser = async (userId: string): Promise<Item[]> => {
+    return await database.task(t => {
+        return t.map(`SELECT item.id,
+                             item.title,
+                             item.rentaldailyprice,
+                             item.deposit,
+                             condition.condition,
+                             item.description,
+                             item.canbedelivered,
+                             item.deliverystarting,
+                             item.deliveryadditional,
+                             item.street,
+                             item.zipcode,
+                             item.city,
+                             item.state,
+                             item.image_url,
+                             item.created_on,
+                             item.searchable,
+                             item.archived,
+                             ST_X(item.geo_location::geometry) AS longitude,
+                             ST_Y(item.geo_location::geometry) AS latitude
+                      FROM item
+                               JOIN condition ON item.condition = condition.id
+                      WHERE item.owner = $1`,
+            [userId], item => {
+                return t.any(`SELECT name
+                              FROM itemtocategory
+                                       JOIN category c ON itemtocategory.categoryid = c.id
+                              WHERE itemid = $1`, [item.id])
+                    .then(categories => {
+                        item.categories = categories.map(category => category.name);
+                        return item;
+                    })
+            }).then(t.batch);
+    }).then(itemEntities => {
+        return itemEntities.map(itemEntity => {
+            return new Item(
+                {
+                    id: itemEntity.id,
+                    title: itemEntity.title,
+                    description: itemEntity.description,
+                    categories: itemEntity.categories,
+                    imageUrl: itemEntity.image_url,
+                    rentalDailyPrice: itemEntity.rentaldailyprice,
+                    deposit: itemEntity.deposit,
+                    condition: itemEntity.condition,
+                    canBeDelivered: itemEntity.canbedelivered,
+                    deliveryStarting: itemEntity.deliverystarting,
+                    deliveryAdditional: itemEntity.deliveryadditional,
+                    location: new ItemLocation(
+                        new Address(
+                            {
+                                street: itemEntity.street,
+                                city: itemEntity.city,
+                                state: itemEntity.state,
+                                zipCode: itemEntity.zipcode
+                            }
                         ),
-                        ownerEmail: itemEntity.email,
-                        searchable: itemEntity.searchable,
-                        archived: itemEntity.archived,
-                        createdOn: itemEntity.created_on
-                    }
-                )
-            });
+                        new Coordinates(itemEntity.latitude, itemEntity.longitude)
+                    ),
+                    ownerEmail: itemEntity.email,
+                    searchable: itemEntity.searchable,
+                    archived: itemEntity.archived,
+                    createdOn: itemEntity.created_on
+                }
+            )
         });
-    } else {
-        throw new Error(`User not found.`);
-    }
+    });
 };
 
 export const save = async (item: Item) => {
@@ -250,12 +243,12 @@ const getGeographicLocationFrom = (coordinates: Coordinates) => {
 const saveItem = async (item: Item) => {
     try {
         const conditionId = getConditionId(item.condition);
-        const ownerUserId = UserRepository.findOne({email: item.ownerEmail});
+        const ownerUser = UserRepository.findOneUser({email: item.ownerEmail});
 
         const geographicLocation = getGeographicLocationFrom(item.location.coordinates);
 
         const [resolvedConditionId, resolvedOwner] =
-            await Promise.all([conditionId, ownerUserId]);
+            await Promise.all([conditionId, ownerUser]);
 
         const savedItem = database.one(
             `INSERT INTO public.item(

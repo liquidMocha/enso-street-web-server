@@ -1,14 +1,14 @@
 import database from '../database.js';
 import Location from './Location';
 
-export const createLocation = async (location, userId) => {
+export const createLocation = async (location: Location, userId: string) => {
     try {
         const locationId = database.one(
                 `insert into public.location
-                     (street, zipCode, city, state, nickname, "user")
-                 VALUES ($1, $2, $3, $4, $5, $6)
+                     (id, street, zipCode, city, state, nickname, "user")
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)
                  returning id;`,
-            [location.street, location.zipCode, location.city, location.state, location.nickname, userId],
+            [location.id, location.street, location.zipCode, location.city, location.state, location.nickname, userId],
             data => {
                 return data.id
             }
@@ -19,35 +19,24 @@ export const createLocation = async (location, userId) => {
     }
 };
 
-export const updateLocation = async (location, userId) => {
+export const updateLocation = async (location: Location) => {
     try {
-        const updatedLocation = database.one(
+        return database.none(
                 `UPDATE public.location
                  SET street   = $1,
                      zipcode  = $2,
                      city     = $3,
                      state    = $4,
                      nickname = $5
-                 WHERE id = $6
-                 RETURNING id, street, zipcode, city, state, nickname`,
+                 WHERE id = $6`,
             [location.street, location.zipCode, location.city, location.state, location.nickname, location.id]
         );
-
-        await updatedLocation;
-        return new Location(
-            updatedLocation.id,
-            updatedLocation.street,
-            updatedLocation.city,
-            updatedLocation.state,
-            updatedLocation.zipcode,
-            updatedLocation.nickname
-        )
     } catch (e) {
         throw new Error(`Error updating location ${location.id}: ${e}`)
     }
 };
 
-export const getLocationsForUser = async (userId) => {
+export const getLocationsForUser = async (userId: string): Promise<Location[]> => {
     try {
         const locationEntity = database.manyOrNone(
                 `SELECT id, street, zipcode, city, state, nickname
@@ -70,3 +59,12 @@ export const getLocationsForUser = async (userId) => {
         throw new Error(`Error retrieving locations for user ${userId}: ${e}`);
     }
 };
+
+export const getLocationById = async (locationId: string): Promise<Location> => {
+    return database.one(`SELECT id, street, zipcode, city, state, nickname
+                         FROM public.location
+                         WHERE id = $1`, [locationId],
+        data => {
+            return new Location(data.id, data.street, data.city, data.state, data.zipcode, data.nickname)
+        })
+}

@@ -13,7 +13,8 @@ async function search(searchTerm: string, coordinates: Coordinates) {
         return searchHit.objectID
     });
 
-    return (await getItemByIds(ids)).map(item => new SearchResultItem(
+    const items = await getItemByIds(ids);
+    return items.map(item => new SearchResultItem(
         {
             id: item.id,
             city: item.location.address.city,

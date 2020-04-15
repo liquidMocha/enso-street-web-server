@@ -1,22 +1,20 @@
 import sinon from "sinon";
 import request from "supertest";
-import app from "../../../src/app";
-import {getAuthenticatedApp} from "../../TestHelper";
-import * as CartRepository from "../../../src/cart/CartRepository";
+import app from "../../src/app";
+import {getAuthenticatedApp} from "../TestHelper";
+import * as CartRepository from "../../src/cart/CartRepository";
 import {assert} from "chai";
-import * as ItemRepository from "../../../src/item/ItemRepository";
-import UserRepository from "../../../src/user/UserRepository";
-import {UserProfile} from "../../../src/user/UserProfile";
-import {User} from "../../../src/user/User";
-import {CartItem} from "../../../src/cart/domain/CartItem";
-import {Cart} from "../../../src/cart/domain/Cart";
-import {CartOwnerBatch} from "../../../src/cart/domain/CartOwnerBatch";
-import {CartItemDao} from "../../../src/cart/CartItemDao";
-import {Item} from "../../../src/item/Item";
+import * as ItemRepository from "../../src/item/ItemRepository";
+import UserRepository from "../../src/user/UserRepository";
+import {CartItem} from "../../src/cart/domain/CartItem";
+import {Cart} from "../../src/cart/domain/Cart";
+import {CartOwnerBatch} from "../../src/cart/domain/CartOwnerBatch";
+import {CartItemDao} from "../../src/cart/CartItemDao";
+import {Item} from "../../src/item/Item";
 
 describe('cart', () => {
-    const loggedInUserEmail = "abc@enso.com";
-    const authenticatedApp = getAuthenticatedApp(loggedInUserEmail);
+    const loggedInUserId = "abcajsfd-123-143n1f";
+    const authenticatedApp = getAuthenticatedApp(loggedInUserId);
     let updateCartStub;
     let getCartStub;
     let getItemByIdStub;
@@ -29,7 +27,7 @@ describe('cart', () => {
         updateCartStub = sinon.stub(CartRepository, 'update');
         getCartStub = sinon.stub(CartRepository, 'getCartItemsFor');
         getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
-        findOneUserStub = sinon.stub(UserRepository, 'findOne');
+        findOneUserStub = sinon.stub(UserRepository, 'findOneUser');
         getUserStub = sinon.stub(UserRepository, 'getUser');
         findOwnerForItemStub = sinon.stub(ItemRepository, 'findOwnerForItem');
     });
@@ -68,14 +66,6 @@ describe('cart', () => {
                 new CartOwnerBatch(ownerId1, new CartItem(itemId1, 1)),
                 new CartOwnerBatch(ownerId2, new CartItem(itemId2, 2)),
             ]);
-
-            findOneUserStub.onCall(0).resolves(
-                new User({
-                    profile: new UserProfile(
-                        {id: "some-id", name: "logged in user"}
-                    )
-                })
-            );
 
             getCartStub.resolves(fakeCart);
 
@@ -134,7 +124,7 @@ describe('cart', () => {
             request(authenticatedApp)
                 .get('/api/cart')
                 .expect(200, (error, response) => {
-                    sinon.assert.calledWith(findOneUserStub, {email: loggedInUserEmail});
+                    sinon.assert.calledWith(getCartStub, loggedInUserId);
                     sinon.assert.calledWith(getUserStub, ownerId1);
                     sinon.assert.calledWith(getUserStub, ownerId2);
                     assert.deepEqual(response.body, {
@@ -169,10 +159,8 @@ describe('cart', () => {
         it('should add item to cart for authenticated user', (done) => {
             const itemId = "abc-123";
             const itemId2 = "def-123";
-            const userId = "some-user-id";
             const ownerId = "owner-id";
 
-            findOneUserStub.resolves(new User({id: userId}));
             const existingCart = new Cart([
                 new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
             ]);
@@ -185,7 +173,7 @@ describe('cart', () => {
                 .expect(200, (error, response) => {
                     sinon.assert.calledWith(
                         updateCartStub,
-                        userId,
+                        loggedInUserId,
                         sinon.match.some(
                             sinon.match(new CartItemDao(itemId2, 1, ownerId))
                         )
@@ -210,9 +198,7 @@ describe('cart', () => {
 
         it('should remove item from cart for user', (done) => {
             const itemId = "abc-123";
-            const userId = "some-user-id";
             const ownerId = "owner-id";
-            findOneUserStub.resolves(new User({id: userId}));
             const existingCart = new Cart([
                 new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
             ]);
@@ -225,7 +211,7 @@ describe('cart', () => {
                 .expect(200, (error, response) => {
                     sinon.assert.calledWith(
                         updateCartStub,
-                        userId,
+                        loggedInUserId,
                         sinon.match.some(
                             sinon.match(new CartItemDao(itemId, 1, ownerId))
                         )
@@ -236,9 +222,7 @@ describe('cart', () => {
 
         it('should remove all instances of an item from cart for user when delete all is true', (done) => {
             const itemId = "abc-123";
-            const userId = "some-user-id";
             const ownerId = "owner-id";
-            findOneUserStub.resolves(new User({id: userId}));
 
             const existingCart = new Cart([
                 new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
@@ -252,7 +236,7 @@ describe('cart', () => {
                 .expect(200, (error, response) => {
                     sinon.assert.calledWith(
                         updateCartStub,
-                        userId,
+                        loggedInUserId,
                         sinon.match.some(
                             sinon.match(new CartItemDao(itemId, 0, ownerId))
                         )

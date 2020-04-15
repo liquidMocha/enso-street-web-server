@@ -1,7 +1,6 @@
 require('newrelic');
 import express from "express";
 
-import dotenv from 'dotenv';
 import locationRouter from "./location/LocationController";
 import usersRouter from "./user/UsersController";
 import itemRouter from "./item/ItemController";
@@ -20,7 +19,6 @@ import axios from "axios";
 import session from "express-session";
 import sessionOptions from "./sessionOptions";
 
-dotenv.config();
 const uiDomain = process.env.uiBaseUrl;
 
 const app = express();

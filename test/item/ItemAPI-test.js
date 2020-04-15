@@ -9,15 +9,17 @@ import {Item} from "../../src/item/Item";
 import BorrowerItem from "../../src/item/BorrowerItem";
 import {Coordinates} from "../../src/location/Coordinates";
 import ItemLocation from "../../src/item/ItemLocation";
+import UserRepository from "../../src/user/UserRepository";
 
 describe('item API', () => {
     describe('create new item', () => {
-        let saveItemStub;
-        let geocodeStub;
-        let getItemsForUserStub;
-        let getItemByIdStub;
-        let updateItemStub;
-        const loggedInUser = 'mschoot@dundler.com';
+        let saveItemStub,
+            geocodeStub,
+            getItemsForUserStub,
+            getItemByIdStub,
+            updateItemStub,
+            getUserStub;
+        const loggedInUser = 'j1i4o13-n314in-234nkjn';
 
         const authenticatedApp = getAuthenticatedApp(loggedInUser);
         before(() => {
@@ -30,6 +32,7 @@ describe('item API', () => {
             getItemsForUserStub = sinon.stub(ItemRepository, 'getItemsForUser');
             getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
             updateItemStub = sinon.stub(ItemRepository, 'update');
+            getUserStub = sinon.stub(UserRepository, 'getUser');
         });
 
         beforeEach(() => {
@@ -73,6 +76,8 @@ describe('item API', () => {
                         }
                     }
                 };
+
+                getUserStub.resolves({name: "", email: ""})
 
                 request(authenticatedApp)
                     .post('/api/items')

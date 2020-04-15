@@ -9,13 +9,13 @@ import {
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-    const userEmail = req.session?.email;
-    if (userEmail) {
+    const userId = req.session?.userId;
+    if (userId) {
         try {
-            const cartDTO = await getCartForUser(userEmail);
+            const cartDTO = await getCartForUser(userId);
             res.status(200).json(cartDTO);
         } catch (e) {
-            console.error(`Error when retrieving cart for user ${userEmail}: ${e}`);
+            console.error(`Error when retrieving cart for user ${userId}: ${e}`);
             res.status(500).send();
         }
     } else {
@@ -24,41 +24,41 @@ router.get('/', async (req, res, next) => {
 });
 
 router.put('/', async (req, res, next) => {
-    const userEmail = req.session?.email;
+    const userId = req.session?.userId;
     const itemId = req.body.itemId;
 
     try {
-        if (userEmail) {
-            const updatedCart = await addItemToCartForUser(userEmail, itemId);
+        if (userId) {
+            const updatedCart = await addItemToCartForUser(userId, itemId);
             res.status(200).json(updatedCart).send();
         } else {
             res.status(401).send();
         }
     } catch (e) {
-        console.error(`Error when adding item to cart for user ${userEmail}: ${e}`);
+        console.error(`Error when adding item to cart for user ${userId}: ${e}`);
         res.status(500).send();
     }
 });
 
 router.delete('/', async (req, res, next) => {
-    const userEmail = req.session?.email;
+    const userId = req.session?.userId;
     const itemId = req.body.itemId;
     const deleteAll = req.body.all;
 
     try {
-        if (userEmail) {
+        if (userId) {
             let updatedCart;
             if (deleteAll) {
-                updatedCart = await removeAllInstanceOfItemFromCart(userEmail, itemId);
+                updatedCart = await removeAllInstanceOfItemFromCart(userId, itemId);
             } else {
-                updatedCart = await removeSingleItemFromCart(userEmail, itemId);
+                updatedCart = await removeSingleItemFromCart(userId, itemId);
             }
             res.status(200).json(updatedCart).send();
         } else {
             res.status(401).send();
         }
     } catch (e) {
-        console.error(`Error when removing item from cart for user ${userEmail}: ${e}`);
+        console.error(`Error when removing item from cart for user ${userId}: ${e}`);
         res.status(500).send();
     }
 });

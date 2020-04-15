@@ -1,9 +1,9 @@
 import {expect} from "chai";
-import {setupItem, setupUser} from "../../TestHelper";
-import {getCartItemsFor, update} from '../../../src/cart/CartRepository';
+import {setupItem, setupUser} from "../TestHelper";
+import {getCartItemsFor, update} from '../../src/cart/CartRepository';
 import uuidv4 from 'uuid/v4';
-import database from "../../../src/database.js";
-import {CartItemDao} from "../../../src/cart/CartItemDao";
+import database from "../../src/database.js";
+import {CartItemDao} from "../../src/cart/CartItemDao";
 
 describe('cart database', () => {
     afterEach(async () => {

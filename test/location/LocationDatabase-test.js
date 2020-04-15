@@ -1,32 +1,21 @@
 import database from '../../src/database.js';
 import {assert} from "chai";
-import {createLocation, getLocationsForUser, updateLocation} from "../../src/location/LocationRepository";
+import {
+    createLocation,
+    getLocationById,
+    getLocationsForUser,
+    updateLocation
+} from "../../src/location/LocationRepository";
 import {setupUser} from "../TestHelper";
+import Location from '../../src/location/Location'
+import {uuid} from "uuidv4";
 
-function assertSameLocationWithUserId(actualLocation, location, userId) {
-    assert.equal(actualLocation.street, location.street);
-    assert.equal(actualLocation.zipcode, location.zipCode);
-    assert.equal(actualLocation.city, location.city);
-    assert.equal(actualLocation.state, location.state);
-    assert.equal(actualLocation.nickname, location.nickname);
-    assert.equal(actualLocation.user, userId);
-}
-
-function assertSameLocationObjectWithUserId(actualLocation, location, userId) {
+function assertSameLocation(actualLocation, location) {
     assert.equal(actualLocation.street, location.street);
     assert.equal(actualLocation.zipCode, location.zipCode);
     assert.equal(actualLocation.city, location.city);
     assert.equal(actualLocation.state, location.state);
     assert.equal(actualLocation.nickname, location.nickname);
-}
-
-async function getLocationBy(locationId) {
-    return await database.one(
-            `SELECT city, nickname, state, street, "user", zipcode as zipCode
-             FROM location
-             WHERE id = $1`,
-        [locationId]
-    );
 }
 
 describe('location data', () => {
@@ -40,68 +29,74 @@ describe('location data', () => {
     });
 
     it('should create location', async () => {
-        const location = {
-            street: "astor",
-            zipCode: "123456",
-            city: "Chicago",
-            state: "IL",
-            nickname: "home"
-        };
+        const location = new Location(
+            uuid(),
+            "astor",
+            "Chicago",
+            "IL",
+            "123456",
+            "home"
+        );
         const locationId = await createLocation(location, userId);
 
-        const actualLocation = await getLocationBy(locationId);
+        const actualLocation = await getLocationById(locationId);
 
-        assertSameLocationWithUserId(actualLocation, location, userId);
+        assertSameLocation(actualLocation, location);
     });
 
     it('should get all locations for user', async () => {
-        const location1 = {
-            street: "dunder",
-            zipCode: "123456",
-            city: "Chicago",
-            state: "IL",
-            nickname: "home"
-        };
+        const location1 = new Location(
+            uuid(),
+            "dunder",
+            "Chicago",
+            "IL",
+            "123456",
+            "home"
+        );
 
-        const location2 = {
-            street: "mifflin",
-            zipCode: "65897",
-            city: "Scranton",
-            state: "PA",
-            nickname: "office"
-        };
+        const location2 = new Location(
+            uuid(),
+            "mifflin",
+            "65897",
+            "Scranton",
+            "PA",
+            "office"
+        );
         await createLocation(location1, userId);
         await createLocation(location2, userId);
 
         const locations = await getLocationsForUser(userId);
 
         assert.equal(locations.length, 2);
-        assertSameLocationObjectWithUserId(locations[0], location1, userId);
-        assertSameLocationObjectWithUserId(locations[1], location2, userId);
+        assertSameLocation(locations[0], location1);
+        assertSameLocation(locations[1], location2);
     });
 
     it('should update location', async () => {
-        const location = {
-            street: "astor",
-            zipCode: "123456",
-            city: "Chicago",
-            state: "IL",
-            nickname: "home"
-        };
-        const locationId = await createLocation(location, userId);
+        const locationId = uuid();
+        const location = new Location(
+            locationId,
+            "astor",
+            "Chicago",
+            "IL",
+            "123456",
+            "home"
+        );
 
-        const updatedLocation = {
-            id: locationId,
-            street: "mifflin",
-            zipCode: "65897",
-            city: "Scranton",
-            state: "PA",
-            nickname: "office"
-        };
-        await updateLocation(updatedLocation, userId);
+        await createLocation(location, userId);
 
-        const actualLocation = await getLocationBy(locationId);
+        const updatedLocation = new Location(
+            locationId,
+            "mifflin",
+            "Scranton",
+            "PA",
+            "65897",
+            "office"
+        );
+        await updateLocation(updatedLocation);
 
-        assertSameLocationWithUserId(actualLocation, updatedLocation, userId)
+        const actualLocation = await getLocationById(locationId);
+
+        assert.deepEqual(actualLocation, updatedLocation);
     });
 });

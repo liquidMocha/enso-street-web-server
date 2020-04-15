@@ -1,23 +1,18 @@
-// @ts-ignore
-import UserRepository from "../user/UserRepository";
-// @ts-ignore
-import * as ItemRepository from "../item/ItemRepository";
 import {getCartItemsFor, update as updateCart} from "./CartRepository";
 import {CartMapper} from "./CartMapper";
 import {CartItemDto, OwnerBatchDto} from "./DTO/OwnerBatchDto";
-// @ts-ignore
 import {getUser} from "../user/UserService";
 import {CartDto} from "./DTO/CartDto";
+import {findOwnerForItem, getItemById} from "../item/ItemRepository";
 
-export const getCartForUser = async (email: string): Promise<CartDto> => {
-    const user = await UserRepository.findOne({email});
-    const cart = await getCartItemsFor(user.id);
+export const getCartForUser = async (userId: string): Promise<CartDto> => {
+    const cart = await getCartItemsFor(userId);
 
     const ownerBatchDto = Promise.all(cart.ownerBatches.map(async ownerBatch => {
         const user = await getUser(ownerBatch.ownerId);
 
         const cartItemDtos = ownerBatch.cartItems.map(async cartItem => {
-            const borrowerItem = await ItemRepository.getItemById(cartItem.id);
+            const borrowerItem = await getItemById(cartItem.id);
             return new CartItemDto(
                 cartItem.id,
                 borrowerItem.title,
@@ -33,32 +28,29 @@ export const getCartForUser = async (email: string): Promise<CartDto> => {
     return new CartDto(await ownerBatchDto)
 };
 
-export const addItemToCartForUser = async (email: string, itemId: string) => {
-    const user = await UserRepository.findOne({email});
-    const cart = await getCartItemsFor(user.id);
+export const addItemToCartForUser = async (userId: string, itemId: string) => {
+    const cart = await getCartItemsFor(userId);
 
-    const ownerId = await ItemRepository.findOwnerForItem(itemId);
+    const ownerId = await findOwnerForItem(itemId);
     cart.addItem(itemId, ownerId);
 
-    return await updateCart((await user).id, CartMapper.toDao(cart));
+    return await updateCart(userId, CartMapper.toDao(cart));
 };
 
-export const removeSingleItemFromCart = async (email: string, itemId: string) => {
-    const user = await UserRepository.findOne({email});
-    const cart = await getCartItemsFor(user.id);
+export const removeSingleItemFromCart = async (userId: string, itemId: string) => {
+    const cart = await getCartItemsFor(userId);
 
-    const ownerId = await ItemRepository.findOwnerForItem(itemId);
+    const ownerId = await findOwnerForItem(itemId);
     cart.removeItem(itemId, ownerId);
 
-    return await updateCart((await user).id, CartMapper.toDao(cart));
+    return await updateCart(userId, CartMapper.toDao(cart));
 };
 
-export const removeAllInstanceOfItemFromCart = async (email: string, itemId: string) => {
-    const user = await UserRepository.findOne({email});
-    const cart = await getCartItemsFor(user.id);
+export const removeAllInstanceOfItemFromCart = async (userId: string, itemId: string) => {
+    const cart = await getCartItemsFor(userId);
 
-    const ownerId = await ItemRepository.findOwnerForItem(itemId);
+    const ownerId = await findOwnerForItem(itemId);
     cart.removeAllInstanceOfItem(itemId, ownerId);
 
-    return await updateCart((await user).id, CartMapper.toDao(cart));
+    return await updateCart(userId, CartMapper.toDao(cart));
 };

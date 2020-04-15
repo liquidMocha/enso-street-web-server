@@ -19,11 +19,11 @@ const {expect} = require('chai');
 
 describe('item data', () => {
     const userEmail = 'some@email.com';
-    let userId;
+    const userId = uuid();
     beforeEach(async () => {
         sinon.restore();
         sinon.stub(Index);
-        userId = await setupUser({email: userEmail});
+        await setupUser({id: userId, email: userEmail});
         await setupCategories(['garden-and-patio', 'music-instruments']);
     });
 
@@ -37,7 +37,7 @@ describe('item data', () => {
             const fakeFindUser = sinon.fake.returns(new Promise(((resolve, reject) => {
                 resolve(null);
             })));
-            sinon.replace(UserRepository, "findOne", fakeFindUser);
+            sinon.replace(UserRepository, "findOneUser", fakeFindUser);
 
             return getItemsForUser(userEmail).should.eventually.be.rejected;
         });
@@ -88,7 +88,7 @@ describe('item data', () => {
                 }
             ));
 
-            const items = await getItemsForUser(userEmail);
+            const items = await getItemsForUser(userId);
 
             expect(items.length).to.equal(1);
             expect(items[0].title).to.equal(title);

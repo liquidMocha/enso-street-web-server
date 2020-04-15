@@ -1,6 +1,7 @@
 import database from "../src/database.js";
 import express from "express";
 import app from "../src/app";
+import {uuid} from "uuidv4";
 
 export async function setupItem(itemId) {
     return database.none(`INSERT INTO item(id)
@@ -8,22 +9,22 @@ export async function setupItem(itemId) {
 }
 
 export async function setupUser(
-    {email: email, password: password, name: name = "", failedLoginAttempts: failedLoginAttempts = 0}
+    {id: id, email: email, password: password, name: name = "", failedLoginAttempts: failedLoginAttempts = 0}
 ) {
     const createdUser = await database.one(`
-                INSERT INTO public.user(email, password, failed_login_attempts)
-                VALUES ($1, $2, $3)
+                INSERT INTO public.user(id, email, password, failed_login_attempts)
+                VALUES ($1, $2, $3, $4)
                 ON CONFLICT (email) DO UPDATE
                     SET password=$2
                 RETURNING id`,
-        [email, password, failedLoginAttempts]
+        [id || uuid(), email, password, failedLoginAttempts]
     );
 
     if (name) {
         await database.none(`
-                    insert into public.user_profile(name, user_id)
-                    values ($1, $2)`,
-            [name, createdUser.id]
+                    insert into public.user_profile(id, name, user_id)
+                    values ($1, $2, $3)`,
+            [uuid(), name, createdUser.id]
         );
     }
 
@@ -38,12 +39,12 @@ export async function setupCategories(categories) {
     });
 }
 
-export function getAuthenticatedApp(loggedInUserEmail) {
+export function getAuthenticatedApp(loggedInUserId) {
     const testApp = express();
-    const email = loggedInUserEmail || 'someemail';
+    const userId = loggedInUserId || 'some-user-id';
 
     testApp.use((req, res, next) => {
-        req.session = {email: email};
+        req.session = {userId: userId};
         next();
     });
 

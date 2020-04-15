@@ -1,5 +1,6 @@
 import request from "supertest";
 import UserRepository from "../../src/user/UserRepository";
+import * as UserProfileRepository from "../../src/userprofile/UserProfileRepository";
 import app from "../../src/app";
 import sinon from 'sinon';
 import bcrypt from "bcrypt";
@@ -12,12 +13,20 @@ describe('users', () => {
     let saveEnsoUserStub,
         findUserStub,
         bcryptStub,
-        userUpdateStub;
+        userUpdateStub,
+        saveUserProfileStub,
+        emailExistsStub,
+        getPasswordForUserStub,
+        userExistsStub;
 
     before(() => {
         saveEnsoUserStub = sinon.stub(UserRepository, 'saveEnsoUser');
-        findUserStub = sinon.stub(UserRepository, 'findOne');
+        findUserStub = sinon.stub(UserRepository, 'findOneUser');
         userUpdateStub = sinon.stub(UserRepository, 'update');
+        saveUserProfileStub = sinon.stub(UserProfileRepository, 'save');
+        emailExistsStub = sinon.stub(UserRepository, 'emailExists');
+        getPasswordForUserStub = sinon.stub(UserRepository, 'getPasswordForUser');
+        userExistsStub = sinon.stub(UserRepository, 'userExists');
         bcryptStub = sinon.stub(bcrypt);
     });
 
@@ -42,14 +51,16 @@ describe('users', () => {
 
         it('should return 201 if successfully created user', (done) => {
             saveEnsoUserStub.resolves();
+            emailExistsStub.resolves(false)
 
             request(app)
                 .post('/api/users/createUser')
                 .send(userDto)
                 .expect(201, (error) => {
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("password", userDto.password));
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("email", userDto.email));
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match({profile: {name: userDto.name}}));
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("email", userDto.email), userDto.password);
+                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("_failedAttempts", 0));
+                    sinon.assert.calledWith(saveUserProfileStub, sinon.match.has("name", userDto.name));
+
                     if (error) {
                         return done(error);
                     }
@@ -58,20 +69,23 @@ describe('users', () => {
                 });
         });
 
-        it('should return 500 if failed to create user', (done) => {
-            saveEnsoUserStub.rejects();
+        it('should return 409 and not creating user if user\'s email already exist', (done) => {
+            saveEnsoUserStub.resolves();
+            emailExistsStub.resolves(true)
 
             request(app)
                 .post('/api/users/createUser')
                 .send(userDto)
-                .expect(500, (error) => {
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("password", userDto.password));
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match.has("email", userDto.email));
-                    sinon.assert.calledWith(saveEnsoUserStub, sinon.match({profile: {name: userDto.name}}));
+                .expect(409, (error) => {
+                    sinon.assert.notCalled(saveEnsoUserStub);
 
-                    done(error);
+                    if (error) {
+                        return done(error);
+                    }
+
+                    done();
                 });
-        });
+        })
 
         describe('should sanitize input', () => {
             it('should not try to create user if password is less than minimum password length', (done) => {
@@ -91,7 +105,9 @@ describe('users', () => {
         it('should return 200 when found user and password matches', (done) => {
             const expectedEmail = "some@email.org";
 
-            findUserStub.resolves(new User({password: 'abc'}));
+            const user = new User({id: "some-id"});
+            findUserStub.resolves(user);
+            getPasswordForUserStub.resolves('abc')
             bcryptStub.compare.resolves(true);
 
             request(app)
@@ -99,8 +115,8 @@ describe('users', () => {
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(200, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
-                    sinon.assert.calledWithExactly(bcryptStub.compare, 'somepass', 'abc');
-
+                    sinon.assert.calledWith(bcryptStub.compare, 'somepass', 'abc');
+                    sinon.assert.calledWith(userUpdateStub, user);
                     if (error) {
                         return done(error);
                     }
@@ -111,7 +127,8 @@ describe('users', () => {
         it('should reset failed sign in attempts when login successful', (done) => {
             const expectedEmail = "some@email.org";
             userUpdateStub.resolves();
-            findUserStub.resolves(new User({email: expectedEmail, password: 'abc'}));
+            findUserStub.resolves(new User({email: expectedEmail}));
+            getPasswordForUserStub.resolves('abc')
             bcryptStub.compare.resolves(true);
 
             request(app)
@@ -150,7 +167,9 @@ describe('users', () => {
 
         it('should return 401 when user found but password unmatched', (done) => {
             const expectedEmail = 'some@email';
-            findUserStub.resolves(new User({email: expectedEmail, password: 'password'}));
+            findUserStub.resolves(new User({email: expectedEmail}));
+            const existingPassword = 'password';
+            getPasswordForUserStub.resolves(existingPassword)
             bcryptStub.compare.resolves(false);
 
             request(app)
@@ -158,7 +177,7 @@ describe('users', () => {
                 .send({email: expectedEmail, password: 'somepass'})
                 .expect(401, (error) => {
                     sinon.assert.calledWithExactly(findUserStub, {email: expectedEmail});
-                    sinon.assert.calledWithExactly(bcryptStub.compare, 'somepass', 'password');
+                    sinon.assert.calledWithExactly(bcryptStub.compare, 'somepass', existingPassword);
 
                     if (error) {
                         return done(error);
@@ -169,7 +188,8 @@ describe('users', () => {
 
         it('should increment failed login attempts when password unmatched', (done) => {
             const expectedEmail = 'some@email.com';
-            findUserStub.resolves(new User({email: expectedEmail, password: 'password', failedAttempts: 1}));
+            findUserStub.resolves(new User({email: expectedEmail, failedAttempts: 1}));
+            getPasswordForUserStub.resolves('abc')
             bcryptStub.compare.resolves(false);
 
             request(app)
@@ -188,23 +208,23 @@ describe('users', () => {
 
     describe('is requester logged in', () => {
         it('should return true if user has cookie and exists', (done) => {
-            const email = 'some@loggedin.email';
+            const userId = '123-3nskf';
 
-            findUserStub.resolves(new User({email: email}));
+            userExistsStub.resolves(true);
 
-            const testApp = getAuthenticatedApp(email);
+            const testApp = getAuthenticatedApp(userId);
 
             request(testApp)
                 .post('/api/users/isLoggedIn')
                 .expect(200, (error, response) => {
-                    sinon.assert.calledWithExactly(findUserStub, {email: email});
+                    sinon.assert.calledWithExactly(userExistsStub, userId);
                     assert.equal(true, response.body.loggedIn);
                     done(error);
                 });
         });
 
         it('should return false if user has cookie but no longer exists', (done) => {
-            findUserStub.resolves(null);
+            userExistsStub.resolves(false);
             const email = 'some@loggedin.email';
 
             const testApp = getAuthenticatedApp(email);

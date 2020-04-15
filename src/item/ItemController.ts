@@ -10,6 +10,7 @@ import BorrowerItem from "./BorrowerItem";
 import UpdateItem from "./UpdateItem";
 import ItemLocation from "./ItemLocation";
 import Address from "../location/Address";
+import {getUser} from "../user/UserService";
 
 const router = express.Router();
 
@@ -111,10 +112,11 @@ const mapToUpdateItem = async (updateItemPayload: any): Promise<UpdateItem> => {
 }
 
 router.post('/', async (req, res, next) => {
-    const userEmail = req.session?.email;
-    if (userEmail) {
+    const userId = req.session?.userId;
+    if (userId) {
         const itemPayload = req.body;
-        const itemDTO = mapToItemDTO(itemPayload, userEmail);
+        const user = getUser(userId);
+        const itemDTO = mapToItemDTO(itemPayload, (await user).email);
         const item = mapToItem(await itemDTO);
 
         try {
@@ -123,7 +125,7 @@ router.post('/', async (req, res, next) => {
             res.status(201).send();
         } catch (e) {
             res.status(500).send();
-            console.error(`Error when saving item for user ${userEmail}: ${e}`)
+            console.error(`Error when saving item for user ${userId}: ${e}`)
         }
     } else {
         res.status(401).send();
@@ -131,15 +133,15 @@ router.post('/', async (req, res, next) => {
 });
 
 router.get('/', async (req, res, next) => {
-    const userEmail = req.session?.email;
-    if (userEmail) {
+    const userId = req.session?.userId;
+    if (userId) {
         try {
-            const items = await getItemsForUser(userEmail);
+            const items = await getItemsForUser(userId);
             const unarchivedItems = items.filter(item => !item.archived)
             res.status(200).json(unarchivedItems);
         } catch (e) {
             res.status(500).send();
-            console.error(`Error when retrieving item for user ${userEmail}: ${e}`)
+            console.error(`Error when retrieving item for user ${userId}: ${e}`)
         }
     } else {
         res.status(401).send();
@@ -175,9 +177,9 @@ router.get('/:itemId', async (req, res, next) => {
 
 router.delete('/:itemId', async (req, res, next) => {
     const params = req.params;
-    const userEmail = req.session?.email;
-    if (userEmail) {
-        const items = await getItemsForUser(userEmail);
+    const userId = req.session?.userId;
+    if (userId) {
+        const items = await getItemsForUser(userId);
         const itemToBeDeleted = items.find(item => item.id === params.itemId)
 
         if (itemToBeDeleted) {
@@ -195,17 +197,16 @@ router.delete('/:itemId', async (req, res, next) => {
 
 router.put('/:itemId', async (req, res, next) => {
     const itemId = req.params.itemId;
-    const userEmail = req.session?.email;
+    const userId = req.session?.userId;
 
-    if (userEmail) {
+    if (userId) {
         try {
-            const items = await getItemsForUser(userEmail);
+            const items = await getItemsForUser(userId);
             const itemToBeEdited = items.find(item => item.id === itemId);
             const updatedItem = mapToUpdateItem(req.body);
 
             if (itemToBeEdited) {
                 itemToBeEdited.update(await updatedItem);
-                console.log('item to be edited: ', itemToBeEdited);
                 await update(itemToBeEdited);
 
                 res.status(200).send();

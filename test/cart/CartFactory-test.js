@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {reconstitueFromDao} from "../../../src/cart/CartFactory";
-import {CartItemDao} from "../../../src/cart/CartItemDao";
+import {reconstitueFromDao} from "../../src/cart/CartFactory";
+import {CartItemDao} from "../../src/cart/CartItemDao";
 
 describe('CartFactory', () => {
     it('should return cart based on cart items from DAO', () => {

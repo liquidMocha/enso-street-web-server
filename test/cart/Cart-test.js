@@ -1,7 +1,7 @@
-import {Cart} from "../../../src/cart/domain/Cart";
+import {Cart} from "../../src/cart/domain/Cart";
 import {expect} from 'chai';
-import {CartItem} from "../../../src/cart/domain/CartItem";
-import {CartOwnerBatch} from "../../../src/cart/domain/CartOwnerBatch";
+import {CartItem} from "../../src/cart/domain/CartItem";
+import {CartOwnerBatch} from "../../src/cart/domain/CartOwnerBatch";
 
 describe('cart', () => {
     describe('add item', () => {

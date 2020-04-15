@@ -4,3 +4,7 @@
 /.nyc_output/
 /.idea/dataSources.xml
 /newrelic_agent.log
+
+/src/**/*.js
+/src/**/*.js.map
+!/src/newrelic.js

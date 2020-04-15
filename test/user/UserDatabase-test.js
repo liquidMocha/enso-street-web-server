@@ -1,7 +1,8 @@
 import database from "../../src/database.js";
 import UserRepository from "../../src/user/UserRepository";
-import {create} from "../../src/user/UserFactory";
 import {setupUser} from "../TestHelper";
+import {User} from "../../src/user/User";
+import {uuid} from "uuidv4";
 
 const {expect} = require('chai');
 
@@ -11,7 +12,22 @@ describe('User data', () => {
         database.none('truncate public.user_profile cascade;');
     });
 
-    describe('findOne', () => {
+    describe('get email by ID', () => {
+        it('should find user email given user ID', async () => {
+            const userId = uuid();
+            const userEmail = "abc@123";
+            const password = "123456";
+            const user = User.create({id: userId, email: userEmail})
+
+            await UserRepository.saveEnsoUser(user, password);
+
+            const actual = await UserRepository.getEmailById(userId);
+
+            expect(actual).to.equal(userEmail);
+        });
+    })
+
+    describe('findOneUser', () => {
         it('should return user entity if found a user', async () => {
             const expectedEmail = 'abc@123.com';
             const expectedPassword = 'some password';
@@ -24,33 +40,17 @@ describe('User data', () => {
                 failedLoginAttempts: expectedFailedLoginAttempts
             });
 
-            const actual = await UserRepository.findOne({email: expectedEmail});
+            const actual = await UserRepository.findOneUser({email: expectedEmail});
 
             expect(actual.email).to.equal(expectedEmail);
-            expect(actual.password).to.equal(expectedPassword);
             expect(actual.failedAttempts).to.equal(expectedFailedLoginAttempts);
-            expect(actual.profile.name).to.equal(expectedName);
-        });
-
-        it('should return user if found by email; but profile doesn\'t exist', async () => {
-            const expectedEmail = 'abc@123.com';
-            const expectedPassword = 'some password';
-            await setupUser({email: expectedEmail, password: expectedPassword});
-
-            await UserRepository.findOne({email: expectedEmail})
-                .then(userEntity => {
-                    expect(userEntity).not.to.be.null;
-                })
-                .catch(error => {
-                    expect.fail(error);
-                });
         });
 
         it('should return null if no user found using email', async () => {
             const existingEmail = 'abc@123.com';
             await setupUser({email: existingEmail, password: "expectedPassword"});
 
-            await UserRepository.findOne({email: 'wrong email'})
+            await UserRepository.findOneUser({email: 'wrong email'})
                 .then(user => {
                     expect(user).to.be.null;
                 })
@@ -64,101 +64,152 @@ describe('User data', () => {
             const expectedPassword = 'some password';
             await setupUser({email: expectedEmail, password: expectedPassword});
 
-            const userEntity = await UserRepository.findOne({email: expectedEmail.toUpperCase()});
+            const userEntity = await UserRepository.findOneUser({email: expectedEmail.toUpperCase()});
 
             expect(userEntity).not.to.be.null;
         })
     });
 
-    //TODO: bug here. If user sign up through Enso street first and then google, they will be
-    //logged into google sign up user's account
-    describe('findOrCreate', () => {
-        it('should return user when found by email', async () => {
-            const expectedEmail = 'email@123.org';
-            const expectedName = 'Jim Helpert';
-            await setupUser({email: expectedEmail, name: expectedName});
+    describe('oAuthUserExists', () => {
+        it('should return true when an oauth user exists', async () => {
+            const oAuthUserEmail = "123@abc";
+            const user = User.create({id: uuid(), email: oAuthUserEmail})
+            await UserRepository.createOAuthUser(user);
 
-            const user = create(expectedName, "", expectedEmail);
-            const actualUser = await UserRepository.findOrCreate(user);
+            const actual = await UserRepository.oAuthUserExists(oAuthUserEmail)
 
-            expect(actualUser.email).to.equal(expectedEmail);
-            expect(actualUser.profile.name).to.equal(expectedName);
-        });
-
-        it('should create new user if not found', async () => {
-            const expectedEmail = 'abc@dundermifflin.com';
-            const expectedName = 'Erin Hannen';
-
-            const user = create(expectedName, null, expectedEmail);
-            await UserRepository.findOrCreate(user);
-
-            const createdUser = await database.one('select * from public.user where email = $1', expectedEmail);
-            expect(createdUser.email).to.equal(expectedEmail);
-        });
-
-        it('should return created user if no user found', async () => {
-            const expectedEmail = 'abc@dundermifflin.com';
-            const expectedName = 'Erin Hannen';
-
-            const userToBeSaved = create(expectedName, null, expectedEmail);
-            const user = await UserRepository.findOrCreate(userToBeSaved);
-
-            expect(user.email).to.equal(expectedEmail);
-            expect(user.profile.name).to.equal(expectedName);
+            expect(actual).to.be.equal(true);
         })
-    });
 
-    describe('create enso user', () => {
-        it('should throw exception if found existing user', async () => {
-            const existingEmail = 'existing@email.com';
-            await setupUser({email: existingEmail});
+        it('should return false when an Enso User with the same email exists', async () => {
+            const ensoUserEmail = "123@abc";
+            const user = User.create({id: uuid(), email: ensoUserEmail})
+            await UserRepository.saveEnsoUser(user, "some-pass");
 
-            const userToBeRejected = create("someName", "password", existingEmail);
+            const actual = await UserRepository.oAuthUserExists(ensoUserEmail)
 
-            await UserRepository.saveEnsoUser(userToBeRejected)
-                .catch(error => {
-                    expect(error.message).to.contains('Account Exists')
-                })
-        });
-
-        it('should create user if no user with same email exists', async () => {
-            const expectedEmail = 'abc@dundermifflin.com';
-            const expectedName = 'Erin Hannen';
-
-            const userToBeSaved = create(expectedName, "password", expectedEmail);
-            await UserRepository.saveEnsoUser(userToBeSaved)
-                .then(() => {
-                    return database.one('select * from public.user where email = $1', expectedEmail);
-                })
-                .then(user => {
-                    expect(user.email).to.equal(expectedEmail);
-                    expect(user.password).not.to.be.empty;
-                })
-                .catch((error) => {
-                    expect.fail(error);
-                })
+            expect(actual).to.be.equal(false);
         })
-    });
+    })
 
-    describe('track failed login attempts', () => {
-        const email = 'some@email.com';
-        const failedLoginAttempts = 3;
+    describe('ensoUserExists', () => {
+        it('should return false when an oauth user exists', async () => {
+            const oAuthUserEmail = "123@abc";
+            const user = User.create({id: uuid(), email: oAuthUserEmail})
+            await UserRepository.createOAuthUser(user);
 
-        it('should update user', async () => {
-            await setupUser({email});
+            const actual = await UserRepository.ensoUserExists(oAuthUserEmail)
 
-            const user = create("", "", email);
-            user.failedAttempts = failedLoginAttempts;
+            expect(actual).to.be.equal(false);
+        })
 
-            await UserRepository.update(user);
+        it('should return true when an Enso User with the same email exists', async () => {
+            const ensoUserEmail = "123@abc";
+            const user = User.create({id: uuid(), email: ensoUserEmail})
+            await UserRepository.saveEnsoUser(user, "some-pass");
 
-            const data = await database.one(`
-                SELECT failed_login_attempts
-                FROM public.user
-                WHERE email = $1;`, email);
+            const actual = await UserRepository.ensoUserExists(ensoUserEmail)
 
-            expect(data.failed_login_attempts).to.equal(failedLoginAttempts);
-        });
-    });
+            expect(actual).to.be.equal(true);
+        })
+    })
+
+    describe('email exists', () => {
+        it('should return true when an Enso user exists with email', async () => {
+            const ensoEmail = "123@abc";
+            const ensoUser = User.create({id: uuid(), email: ensoEmail})
+            await UserRepository.saveEnsoUser(ensoUser, "pass");
+
+            const actual = await UserRepository.emailExists(ensoEmail)
+
+            expect(actual).to.be.equal(true);
+        })
+
+        it('should return true when an OAuth user exists with email', async () => {
+            const oAuthUserEmail = "123@abc";
+            const user = User.create({id: uuid(), email: oAuthUserEmail})
+            await UserRepository.createOAuthUser(user);
+
+            const actual = await UserRepository.emailExists(oAuthUserEmail)
+
+            expect(actual).to.be.equal(true);
+        })
+
+        it('should return false when user with email doesn\'t exist', async () => {
+            const actual = await UserRepository.emailExists('non-existing@email')
+
+            expect(actual).to.be.equal(false);
+        })
+    })
+
+    describe('userExists', () => {
+        it('should return true when user with ID exists', async () => {
+            const oAuthUserEmail = "123@abc";
+            const userId = uuid();
+            const user = User.create({id: userId, email: oAuthUserEmail})
+            await UserRepository.createOAuthUser(user);
+
+            const actual = await UserRepository.userExists(userId)
+
+            expect(actual).to.be.equal(true);
+        })
+
+        it('should return false when user with ID does not exist', async () => {
+            const oAuthUserEmail = "123@abc";
+            const userId = uuid();
+            const user = User.create({id: userId, email: oAuthUserEmail})
+            await UserRepository.createOAuthUser(user);
+
+            const actual = await UserRepository.userExists(uuid())
+
+            expect(actual).to.be.equal(false);
+        })
+    })
+
+    describe('saveEnsoUser', () => {
+        it('should save user', async () => {
+            const userId = uuid();
+            const userEmail = "some@email";
+            const password = "12345";
+            const user = User.create({id: userId, email: userEmail})
+
+            await UserRepository.saveEnsoUser(user, password);
+
+            const actualUser = await UserRepository.findOneUser({email: userEmail});
+
+            expect(actualUser.id).to.be.equal(userId);
+            expect(actualUser.email).to.be.equal(userEmail);
+            expect(actualUser.failedAttempts).to.be.equal(0);
+        })
+
+        it('should hash password', async () => {
+            const password = "12345";
+            const userId = uuid();
+            const user = User.create({id: userId, email: "some@email"})
+
+            await UserRepository.saveEnsoUser(user, password);
+
+            const actualPassword = await UserRepository.getPasswordForUser(userId);
+
+            expect(actualPassword).not.to.be.equal(password);
+            expect(actualPassword).not.to.be.null;
+        })
+    })
+
+    describe('saveOAuthUser', () => {
+        it('should save user', async () => {
+            const userEmail = 'some@email';
+            const userId = uuid();
+            const user = User.create({id: userId, email: userEmail});
+
+            await UserRepository.createOAuthUser(user)
+
+            const actualUser = await UserRepository.findOneUser({email: userEmail});
+
+            expect(actualUser.id).to.be.equal(userId);
+            expect(actualUser.email).to.be.equal(userEmail);
+            expect(actualUser.failedAttempts).to.be.equal(0);
+        })
+    })
 
 });
