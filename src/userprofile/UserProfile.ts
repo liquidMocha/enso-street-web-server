@@ -20,6 +20,14 @@ export class UserProfile {
     }
 
     addContact(contact: Contact) {
-        this.contacts.push(contact);
+        const existingContact = this.contacts.find(contact => contact.id === contact.id);
+        if (existingContact) {
+            existingContact.updateFirstName(contact.firstName);
+            existingContact.updateLastName(contact.lastName);
+            existingContact.updatePhone(contact.phone);
+            existingContact.updateEmail(contact.email);
+        } else {
+            this.contacts.push(contact);
+        }
     }
 }

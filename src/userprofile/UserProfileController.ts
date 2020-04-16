@@ -22,7 +22,7 @@ router.put('/', async (req, res, next) => {
     if (userId) {
         const userProfile = await getUserProfile(userId);
         userProfile.addContact(new Contact({
-            id: uuid(),
+            id: contactDto.id || uuid(),
             firstName: contactDto.firstName,
             lastName: contactDto.lastName,
             phone: contactDto.phone,
