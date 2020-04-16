@@ -6,7 +6,7 @@ Create test database:
 ```create database "enso-street-test";```
 
 Database migration:
-create a new migration ```db-migrate create <migration-title> -e local```
+create a new migration ```db-migrate create --config ./src/database.json <migration-title>```
 run ```db-migrate up```
 migration for test ```db-migrate up -e test```
 

@@ -2,7 +2,7 @@ import {createNewEnsoUser} from "./UserFactory"
 import {save as saveUserProfile} from "../userprofile/UserProfileRepository";
 import UserRepository from "./UserRepository";
 import {OAuth2Client} from "google-auth-library";
-import {UserProfile} from "./UserProfile";
+import {UserProfile} from "../userprofile/UserProfile";
 import bcrypt from "bcrypt";
 import GoogleSignOnResponse from "./GoogleSignOnResponse";
 

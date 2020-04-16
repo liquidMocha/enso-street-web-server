@@ -3,7 +3,7 @@ import express from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
 import UserRepository from "./UserRepository";
-import {UserProfile} from "./UserProfile";
+import {UserProfile} from "../userprofile/UserProfile";
 import {save as saveUserProfile} from "../userprofile/UserProfileRepository";
 import {createNewEnsoUser} from "./UserFactory";
 
