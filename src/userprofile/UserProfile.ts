@@ -20,7 +20,7 @@ export class UserProfile {
     }
 
     addContact(contact: Contact) {
-        const existingContact = this.contacts.find(contact => contact.id === contact.id);
+        const existingContact = this.contacts.find(contact => this.id === contact.id);
         if (existingContact) {
             existingContact.updateFirstName(contact.firstName);
             existingContact.updateLastName(contact.lastName);
