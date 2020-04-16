@@ -69,7 +69,8 @@ router.post('/googleSignOn', async (req, res) => {
         const user = createNewEnsoUser(response.email);
 
         if (await UserRepository.oAuthUserExists(user.email)) {
-            req!.session!.userId = user.id;
+            const existingUser = UserRepository.findOneUser({email: user.email})
+            req!.session!.userId = (await existingUser)?.id;
             res.status(200).send();
         } else {
             if (await UserRepository.ensoUserExists(user.email)) {
