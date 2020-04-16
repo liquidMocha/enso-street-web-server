@@ -1,6 +1,7 @@
 import express from "express";
 import {getUserProfile, update} from "./UserProfileRepository";
 import Contact from "./Contact";
+import {uuid} from "uuidv4";
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.put('/', async (req, res, next) => {
     if (userId) {
         const userProfile = await getUserProfile(userId);
         userProfile.addContact(new Contact({
+            id: uuid(),
             firstName: contactDto.firstName,
             lastName: contactDto.lastName,
             phone: contactDto.phone,
