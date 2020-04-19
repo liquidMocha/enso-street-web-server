@@ -18,16 +18,16 @@ const getEmailById = (userId: string): Promise<string> => {
 
 const findOneUser = async ({email}: { email: string }): Promise<User | null> => {
     return database.oneOrNone(
-            `SELECT *, public.user.id as userId
+            `SELECT *, public.user.id as userId, public.user.email as accountEmail
              FROM public.user
                       LEFT JOIN public.user_profile profile
                                 ON public.user.id = profile.user_id
-             WHERE lower(email) = lower($1)`, [email],
-        async userEntity => {
+             WHERE lower(public.user.email) = lower($1)`, [email],
+        userEntity => {
             if (userEntity) {
                 const userDao = new UserDAO({
                     id: userEntity.userid,
-                    email: userEntity.email,
+                    email: userEntity.accountemail,
                     failedAttempts: userEntity.failed_login_attempts,
                     name: userEntity.name,
                     createdOn: userEntity.creaedOn,
@@ -38,6 +38,26 @@ const findOneUser = async ({email}: { email: string }): Promise<User | null> => 
             }
         });
 };
+
+const getUserById = async (id: string): Promise<User> => {
+    return database.one(
+            `SELECT *
+             FROM "user"
+             WHERE id = $1;`, [id],
+        userEntity => {
+            const userDao = new UserDAO({
+                id: userEntity.id,
+                email: userEntity.email,
+                failedAttempts: userEntity.failed_login_attempts,
+                name: userEntity.name,
+                createdOn: userEntity.creaedOn,
+            })
+            return reconstitueEnsoUser(userDao);
+        }
+    ).catch(e => {
+        return Promise.reject(`Errored when getUserById: ${e.stack}.`)
+    })
+}
 
 const oAuthUserExists = async (email: string): Promise<boolean> => {
     return database.one(`
@@ -125,5 +145,6 @@ export default {
     saveEnsoUser,
     createOAuthUser,
     update,
+    getUserById,
     getUser
 }

@@ -14,9 +14,20 @@ export const update = async (userProfile: UserProfile) => {
     return database.tx('update user profile', t => {
         const updateProfile = t.none(`
             UPDATE public.user_profile
-            SET name = $1
+            SET name       = $1,
+                first_name = $3,
+                last_name  = $4,
+                phone      = $5,
+                email      = $6
             WHERE user_id = $2
-        `, [userProfile.name, userProfile.user.id])
+        `, [
+            userProfile.name,
+            userProfile.user.id,
+            userProfile.firstName,
+            userProfile.lastName,
+            userProfile.phone,
+            userProfile.email
+        ])
 
         const updateContacts = userProfile.contacts.map(contact => {
             t.none(`
@@ -36,9 +47,9 @@ export const update = async (userProfile: UserProfile) => {
 }
 
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
-    const user = UserRepository.getUser(userId);
+    const user = UserRepository.getUserById(userId);
     const profileEntity = await database.oneOrNone(`
-                SELECT up.id, up.name
+                SELECT up.id, up.name, up.first_name, up.last_name, up.phone, up.email
                 FROM public."user" u
                          JOIN user_profile up on u.id = up.user_id
                 WHERE u.id = $1
@@ -56,6 +67,10 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     return new UserProfile({
         id: profileEntity.id,
         name: profileEntity.name,
+        firstName: profileEntity.first_name,
+        lastName: profileEntity.last_name,
+        phone: profileEntity.phone,
+        email: profileEntity.email,
         contact: profileEntity.contacts.map((contact: any) => {
             return new Contact({
                 id: contact.id,

@@ -1,4 +1,5 @@
 require('newrelic');
+require('source-map-support').install();
 import express from "express";
 
 import locationRouter from "./location/LocationController";
