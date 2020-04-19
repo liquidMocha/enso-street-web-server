@@ -4,7 +4,7 @@ import Contact from "./Contact";
 
 export class UserProfile {
     readonly id: string;
-    readonly name: string;
+    name: string;
     firstName?: string;
     lastName?: string;
     phone?: string;
@@ -54,5 +54,9 @@ export class UserProfile {
 
     updateEmail(email: string) {
         this.email = email;
+    }
+
+    updateProfileName(name: string) {
+        this.name = name;
     }
 }

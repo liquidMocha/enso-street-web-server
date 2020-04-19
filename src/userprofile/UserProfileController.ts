@@ -15,9 +15,17 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.put('/', async (req, res, next) => {
+async function updateProfile(req: any, res: any, next: any) {
+    interface UpdateProfileDto {
+        profileName: string,
+        firstName: string,
+        lastName: string,
+        phone: string,
+        email: string
+    }
+
     const userId = req.session?.userId;
-    const updatedProfileDto = req.body.profile;
+    const updatedProfileDto: UpdateProfileDto = req.body.profile;
 
     if (userId) {
         const userProfile = await getUserProfile(userId);
@@ -25,13 +33,16 @@ router.put('/', async (req, res, next) => {
         userProfile.updateLastName(updatedProfileDto.lastName);
         userProfile.updatePhone(updatedProfileDto.phone);
         userProfile.updateEmail(updatedProfileDto.email);
+        userProfile.updateProfileName(updatedProfileDto.profileName);
 
         await update(userProfile);
         res.status(200).send();
     } else {
         res.status(401).send();
     }
-});
+}
+
+router.put('/', updateProfile);
 
 router.put('/contact', async (req, res, next) => {
     const userId = req.session?.userId;
