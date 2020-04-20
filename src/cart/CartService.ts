@@ -18,7 +18,8 @@ export const getCartForUser = async (userId: string): Promise<CartDto> => {
                 borrowerItem.title,
                 borrowerItem.rentalDailyPrice,
                 borrowerItem.imageUrl,
-                cartItem.quantity
+                cartItem.quantity,
+                borrowerItem.canBeDelivered
             )
         });
 
