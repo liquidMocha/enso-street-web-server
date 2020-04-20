@@ -7,6 +7,7 @@ import {assert} from "chai";
 import {getAuthenticatedApp} from "../TestHelper";
 import {uuid} from "uuidv4";
 import Location from "../../src/location/Location";
+import * as UserProfileController from "../../src/userprofile/UserProfileController";
 
 describe('location', () => {
     const url = '/api/locations';
@@ -18,6 +19,7 @@ describe('location', () => {
     let createLocationStub;
     let updateLocationStub;
     let getLocationByIdStub;
+    let initializeDefaultLocationStub;
 
     const authenticatedApp = getAuthenticatedApp(loggedInUserId);
 
@@ -29,6 +31,7 @@ describe('location', () => {
         createLocationStub = sinon.stub(LocationRepository, 'createLocation').resolves(locationId);
         updateLocationStub = sinon.stub(LocationRepository, 'updateLocation');
         getLocationByIdStub = sinon.stub(LocationRepository, 'getLocationById');
+        initializeDefaultLocationStub = sinon.stub(UserProfileController, 'InitializeDefaultLocation');
     });
 
     after(() => {
@@ -69,6 +72,8 @@ describe('location', () => {
             const state = "IL";
             const zipCode = "17271";
             const nickname = "office";
+            initializeDefaultLocationStub.resolves();
+
             request(authenticatedApp)
                 .put(url)
                 .send({

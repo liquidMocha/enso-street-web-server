@@ -1,8 +1,9 @@
-import express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import Location from './Location';
 import {createLocation, getLocationById, getLocationsForUser, updateLocation} from "./LocationRepository";
 import {autosuggest, routeDistanceInMiles} from "./HereApiClient";
 import {Coordinates} from "./Coordinates";
+import {InitializeDefaultLocation} from "../userprofile/UserProfileController";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.put('/', async (req, res, next) => {
+async function addLocation(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     if (userId) {
         const location = Location.create(
@@ -26,12 +27,17 @@ router.put('/', async (req, res, next) => {
             req.body.location.zipCode,
             req.body.location.nickname
         )
-        const newLocationId = await createLocation(location, userId);
-        res.status(201).json(newLocationId);
+
+        await createLocation(location, userId);
+        await InitializeDefaultLocation(userId, await getLocationById(location.id));
+
+        res.status(201).json(location.id);
     } else {
         res.status(401).send();
     }
-});
+}
+
+router.put('/', addLocation);
 
 router.put('/:locationId', async (req, res, next) => {
     const userId = req.session?.userId;

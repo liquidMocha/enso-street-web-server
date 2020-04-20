@@ -3,6 +3,8 @@ import {User} from "../user/User";
 import database from '../database.js';
 import UserRepository from "../user/UserRepository";
 import Contact from "./Contact";
+import {getLocationById} from "../location/LocationRepository";
+import Location from "../location/Location";
 
 export const save = async (userProfile: UserProfile, user: User) => {
     return database.none(`
@@ -14,11 +16,12 @@ export const update = async (userProfile: UserProfile) => {
     return database.tx('update user profile', t => {
         const updateProfile = t.none(`
             UPDATE public.user_profile
-            SET name       = $1,
-                first_name = $3,
-                last_name  = $4,
-                phone      = $5,
-                email      = $6
+            SET name             = $1,
+                first_name       = $3,
+                last_name        = $4,
+                phone            = $5,
+                email            = $6,
+                default_location = $7
             WHERE user_id = $2
         `, [
             userProfile.name,
@@ -26,7 +29,8 @@ export const update = async (userProfile: UserProfile) => {
             userProfile.firstName,
             userProfile.lastName,
             userProfile.phone,
-            userProfile.email
+            userProfile.email,
+            userProfile.defaultLocation?.id
         ])
 
         const updateContacts = userProfile.contacts.map(contact => {
@@ -46,8 +50,25 @@ export const update = async (userProfile: UserProfile) => {
 
 }
 
+async function getDefaultLocation(userId: string): Promise<Location | undefined> {
+    const defaultLocationId = await database.oneOrNone(`
+        SELECT default_location
+        FROM user_profile
+        WHERE user_id = $1
+    `, [userId], data => data.default_location);
+
+    let location;
+    if (defaultLocationId != null) {
+        location = getLocationById(await defaultLocationId)
+    }
+    return location;
+}
+
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     const user = UserRepository.getUserById(userId);
+
+    const defaultLocation = await getDefaultLocation(userId);
+
     const profileEntity = await database.oneOrNone(`
                 SELECT up.id, up.name, up.first_name, up.last_name, up.phone, up.email
                 FROM public."user" u
@@ -71,6 +92,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
         lastName: profileEntity.last_name,
         phone: profileEntity.phone,
         email: profileEntity.email,
+        defaultLocation: await defaultLocation,
         contact: profileEntity.contacts.map((contact: any) => {
             return new Contact({
                 id: contact.id,

@@ -1,25 +1,56 @@
 import {uuid} from "uuidv4";
 import {User} from "../user/User";
 import Contact from "./Contact";
+import Location from "../location/Location";
 
 export class UserProfile {
+    get defaultLocation(): Location | undefined {
+        return this._defaultLocation;
+    }
+
+    set defaultLocation(value: Location | undefined) {
+        this._defaultLocation = value;
+    }
+
     readonly id: string;
     name: string;
     firstName?: string;
     lastName?: string;
     phone?: string;
     email?: string;
+    private _defaultLocation?: Location;
     readonly user: User;
     readonly contacts: Contact[];
 
-    constructor({id, name, firstName, lastName, phone, email, user, contact}:
-                    { id: string, name: string, firstName?: string, lastName?: string, phone?: string, email?: string, user: User, contact: Contact[] }) {
+    constructor({
+                    id,
+                    name,
+                    firstName,
+                    lastName,
+                    phone,
+                    email,
+                    defaultLocation,
+                    user,
+                    contact
+                }: {
+                    id: string,
+                    name: string,
+                    firstName?: string,
+                    lastName?: string,
+                    phone?: string,
+                    email?: string,
+                    defaultLocation?: Location,
+                    user: User,
+                    contact: Contact[]
+                }
+    ) {
         this.id = id;
         this.name = name;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.email = email;
+        this._defaultLocation = defaultLocation;
         this.user = user;
         this.contacts = contact;
     }
