@@ -1,66 +1,62 @@
-import express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import {
     addItemToCartForUser,
     getCartForUser,
     removeAllInstanceOfItemFromCart,
     removeSingleItemFromCart
 } from "./CartService";
+import {requireAuthentication} from "../user/AuthenticationCheck";
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
-    const userId = req.session?.userId;
-    if (userId) {
-        try {
-            const cartDTO = await getCartForUser(userId);
-            res.status(200).json(cartDTO);
-        } catch (e) {
-            console.error(`Error when retrieving cart for user ${userId}: ${e}`);
-            res.status(500).send();
-        }
-    } else {
-        res.status(401).send();
-    }
-});
+router.get('/', requireAuthentication, getCart);
 
-router.put('/', async (req, res, next) => {
+async function getCart(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session?.userId;
+
+    try {
+        const cartDTO = await getCartForUser(userId);
+        res.status(200).json(cartDTO);
+    } catch (e) {
+        console.error(`Error when retrieving cart for user ${userId}: ${e}`);
+        res.status(500).send();
+    }
+}
+
+router.put('/', requireAuthentication, addItemToCart);
+
+async function addItemToCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const itemId = req.body.itemId;
 
     try {
-        if (userId) {
-            const updatedCart = await addItemToCartForUser(userId, itemId);
-            res.status(200).json(updatedCart).send();
-        } else {
-            res.status(401).send();
-        }
+        const updatedCart = await addItemToCartForUser(userId, itemId);
+        res.status(200).json(updatedCart).send();
     } catch (e) {
         console.error(`Error when adding item to cart for user ${userId}: ${e}`);
         res.status(500).send();
     }
-});
+}
 
-router.delete('/', async (req, res, next) => {
+router.delete('/', requireAuthentication, deleteItemFromCart);
+
+async function deleteItemFromCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const itemId = req.body.itemId;
     const deleteAll = req.body.all;
 
     try {
-        if (userId) {
-            let updatedCart;
-            if (deleteAll) {
-                updatedCart = await removeAllInstanceOfItemFromCart(userId, itemId);
-            } else {
-                updatedCart = await removeSingleItemFromCart(userId, itemId);
-            }
-            res.status(200).json(updatedCart).send();
+        let updatedCart;
+        if (deleteAll) {
+            updatedCart = await removeAllInstanceOfItemFromCart(userId, itemId);
         } else {
-            res.status(401).send();
+            updatedCart = await removeSingleItemFromCart(userId, itemId);
         }
+        res.status(200).json(updatedCart).send();
     } catch (e) {
         console.error(`Error when removing item from cart for user ${userId}: ${e}`);
         res.status(500).send();
     }
-});
+}
 
 export default router;
