@@ -3,6 +3,8 @@ import {Condition} from "./Condition";
 import {uuid} from "uuidv4";
 import UpdateItem from "./UpdateItem";
 import ItemLocation from "./ItemLocation";
+import {DELIVERY_STARTING_DISTANCE_IN_MILES} from "../Constants";
+import {Coordinates} from "../location/Coordinates";
 
 export class Item {
     readonly id: string;
@@ -70,7 +72,21 @@ export class Item {
         this.searchable = updateItem.searchable;
     }
 
+    getDeliveryFee(distance: number): number {
+        const deliveryStarting = this.deliveryStarting;
+        if (distance <= DELIVERY_STARTING_DISTANCE_IN_MILES) {
+            return deliveryStarting;
+        } else {
+            const additionalMiles = distance - DELIVERY_STARTING_DISTANCE_IN_MILES;
+            return deliveryStarting + this.deliveryAdditional * Math.ceil(additionalMiles);
+        }
+    }
+
     get archived(): boolean {
         return this._archived;
+    }
+
+    get coordinates(): Coordinates {
+        return this.location.coordinates;
     }
 }
