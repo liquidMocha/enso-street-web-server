@@ -2,7 +2,6 @@
   "compilerOptions": {
     "module": "commonjs",
     "sourceMap": true,
-    "jsx": "react",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "target": "ES5",

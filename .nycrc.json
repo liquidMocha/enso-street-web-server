@@ -1,0 +1,12 @@
+{
+  "all": true,
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "exclude": [
+    "migrations/*",
+    "test/*",
+    "**/*.d.ts"
+  ]
+}
