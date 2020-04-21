@@ -9,8 +9,6 @@
     "start": "./node_modules/db-migrate/bin/db-migrate up -e local && node -r esm src/app.ts",
     "local": "./node_modules/db-migrate/bin/db-migrate up -e local --config ./src/database.json && node -r dotenv/config -r esm src/app.ts dotenv_config_path=./src/.env",
     "test": "tsc && DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && ALGOLIA_ITEM_INDEX=test-enso-street-items DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect",
     "tsc:w": "tsc -w",
     "build": "tsc",
     "postinstall": "npm run build"
@@ -52,7 +50,6 @@
     "pug": "^2.0.4",
     "redis": "^2.8.0",
     "sinon": "^7.4.2",
-    "snyk": "^1.290.1",
     "uuid": "^3.3.3",
     "uuidv4": "^6.0.7"
   },
@@ -72,7 +69,6 @@
     "ts-node": "^8.9.0",
     "typescript": "^3.8.3"
   },
-  "snyk": true,
   "nyc": {
     "all": true,
     "extension": [
