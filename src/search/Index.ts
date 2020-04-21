@@ -15,14 +15,14 @@ const indexItem = (item: Item) => {
         }
     };
 
-    return searchIndex.addObject(itemToBeIndexed);
+    return searchIndex.saveObject(itemToBeIndexed);
 };
 
 const searchByLocation = async (keyWord: string, coordinates: Coordinates): Promise<SearchItemHit[]> => {
-    const response = await searchIndex.search({
-        query: keyWord,
-        aroundLatLng: `${coordinates.latitude}, ${coordinates.longitude}`
-    });
+    const response = await searchIndex.search(
+        keyWord,
+        {aroundLatLng: `${coordinates.latitude}, ${coordinates.longitude}`}
+    );
 
     return response.hits.map(hit => {
         return new SearchItemHit(hit.objectID);
@@ -39,7 +39,7 @@ const updateItemIndex = (item: Item) => {
             lat: item.location.coordinates.latitude,
             lng: item.location.coordinates.longitude
         }
-    });
+    }, {createIfNotExists: true});
 };
 
 const deleteItemIndex = (item: Item) => {
