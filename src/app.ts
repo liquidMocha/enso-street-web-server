@@ -1,6 +1,5 @@
 require('newrelic');
 import express from "express";
-
 import locationRouter from "./location/LocationController";
 import usersRouter from "./user/UsersController";
 import itemRouter from "./item/ItemController";
@@ -14,19 +13,15 @@ import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";
 import helmet from "helmet";
-import cors from "cors";
 import https from "https";
 import fs from "fs";
 import axios from "axios";
 import session from "express-session";
 import sessionOptions from "./sessionOptions";
 
-const uiDomain = process.env.uiBaseUrl;
-
 const app = express();
 app.set('trust proxy', 1);
 app.use(session(sessionOptions));
-app.use(cors({origin: uiDomain, optionsSuccessStatus: 200, credentials: true}));
 
 app.use(helmet());
 
