@@ -7,6 +7,9 @@
   "exclude": [
     "migrations/*",
     "test/*",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "src/newrelic.js",
+    "src/search/AlgoliaConfig.ts",
+    "src/app.ts"
   ]
 }
