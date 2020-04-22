@@ -175,50 +175,43 @@ async function getById(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-router.delete('/:itemId', async (req, res, next) => {
+router.delete('/:itemId', requireAuthentication, async (req, res, next) => {
     const params = req.params;
     const userId = req.session?.userId;
-    if (userId) {
-        const items = await getItemsForUser(userId);
-        const itemToBeDeleted = items.find(item => item.id === params.itemId)
 
-        if (itemToBeDeleted) {
-            itemToBeDeleted.archive();
-            await update(itemToBeDeleted);
+    const items = await getItemsForUser(userId);
+    const itemToBeDeleted = items.find(item => item.id === params.itemId)
 
-            res.status(200).send();
-        } else {
-            res.status(204).send();
-        }
+    if (itemToBeDeleted) {
+        itemToBeDeleted.archive();
+        await update(itemToBeDeleted);
+
+        res.status(200).send();
     } else {
-        res.status(401).send();
+        res.status(204).send();
     }
 });
 
-router.put('/:itemId', async (req, res, next) => {
+router.put('/:itemId', requireAuthentication, async (req, res, next) => {
     const itemId = req.params.itemId;
     const userId = req.session?.userId;
 
-    if (userId) {
-        try {
-            const items = await getItemsForUser(userId);
-            const itemToBeEdited = items.find(item => item.id === itemId);
-            const updatedItem = mapToUpdateItem(req.body);
+    try {
+        const items = await getItemsForUser(userId);
+        const itemToBeEdited = items.find(item => item.id === itemId);
+        const updatedItem = mapToUpdateItem(req.body);
 
-            if (itemToBeEdited) {
-                itemToBeEdited.update(await updatedItem);
-                await update(itemToBeEdited);
+        if (itemToBeEdited) {
+            itemToBeEdited.update(await updatedItem);
+            await update(itemToBeEdited);
 
-                res.status(200).send();
-            } else {
-                res.status(404).send();
-            }
-        } catch (error) {
-            console.error(`Error when updating item ${itemId}: ${error}`);
-            res.status(500).send();
+            res.status(200).send();
+        } else {
+            res.status(404).send();
         }
-    } else {
-        res.status(401).send();
+    } catch (error) {
+        console.error(`Error when updating item ${itemId}: ${error}`);
+        res.status(500).send();
     }
 });
 

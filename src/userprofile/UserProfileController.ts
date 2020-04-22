@@ -1,64 +1,57 @@
-import express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import {getUserProfile, update} from "./UserProfileRepository";
 import Contact from "./Contact";
 import {uuid} from "uuidv4";
 import Location from "../location/Location";
 import {toDto} from "./UserProfileMapper";
+import {requireAuthentication} from "../user/AuthenticationCheck";
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
-    const userId = req.session?.userId;
-    if (userId) {
-        const userProfile = await getUserProfile(userId);
-        const userProfileDto = toDto(userProfile);
-        res.status(200).json(userProfileDto);
-    } else {
-        res.status(401).send();
-    }
-});
+router.get('/', requireAuthentication, fetchUserProfile);
 
-async function updateProfile(req: any, res: any, next: any) {
+async function fetchUserProfile(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session?.userId;
+    const userProfile = await getUserProfile(userId);
+    const userProfileDto = toDto(userProfile);
+    res.status(200).json(userProfileDto);
+}
+
+router.put('/', requireAuthentication, updateProfile);
+
+async function updateProfile(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const updatedProfileDto: UpdateProfileDto = req.body.profile;
 
-    if (userId) {
-        const userProfile = await getUserProfile(userId);
-        userProfile.updateFirstName(updatedProfileDto.firstName);
-        userProfile.updateLastName(updatedProfileDto.lastName);
-        userProfile.updatePhone(updatedProfileDto.phone);
-        userProfile.updateEmail(updatedProfileDto.email);
-        userProfile.updateProfileName(updatedProfileDto.profileName);
+    const userProfile = await getUserProfile(userId);
+    userProfile.updateFirstName(updatedProfileDto.firstName);
+    userProfile.updateLastName(updatedProfileDto.lastName);
+    userProfile.updatePhone(updatedProfileDto.phone);
+    userProfile.updateEmail(updatedProfileDto.email);
+    userProfile.updateProfileName(updatedProfileDto.profileName);
 
-        await update(userProfile);
-        res.status(200).send();
-    } else {
-        res.status(401).send();
-    }
+    await update(userProfile);
+    res.status(200).send();
 }
 
-router.put('/', updateProfile);
+router.put('/contact', requireAuthentication, addContact);
 
-router.put('/contact', async (req, res, next) => {
+async function addContact(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const contactDto = req.body.contact;
 
-    if (userId) {
-        const userProfile = await getUserProfile(userId);
-        userProfile.addContact(new Contact({
-            id: contactDto.id || uuid(),
-            firstName: contactDto.firstName,
-            lastName: contactDto.lastName,
-            phone: contactDto.phone,
-            email: contactDto.email,
-        }))
+    const userProfile = await getUserProfile(userId);
+    userProfile.addContact(new Contact({
+        id: contactDto.id || uuid(),
+        firstName: contactDto.firstName,
+        lastName: contactDto.lastName,
+        phone: contactDto.phone,
+        email: contactDto.email,
+    }))
 
-        await update(userProfile)
-        res.status(200).json(userProfile);
-    } else {
-        res.status(401).send();
-    }
-});
+    await update(userProfile)
+    res.status(200).json(userProfile);
+}
 
 export const InitializeDefaultLocation = async (userId: string, location: Location) => {
     const userProfile = await getUserProfile(userId);

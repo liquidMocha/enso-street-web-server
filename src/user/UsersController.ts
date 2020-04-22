@@ -1,5 +1,5 @@
 import {createEnsoUser, ensoLogin, googleSignOn, userExists} from "./UserService";
-import express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
 import UserRepository from "./UserRepository";
@@ -9,7 +9,9 @@ import {createNewEnsoUser} from "./UserFactory";
 
 const router = express.Router();
 
-router.post('/createUser', async (req, res) => {
+router.post('/createUser', registerEnsoUser);
+
+async function registerEnsoUser(req: Request, res: Response, next: NextFunction) {
     const schema = Joi.object({
         email: Joi.any(),
         name: Joi.any(),
@@ -34,7 +36,7 @@ router.post('/createUser', async (req, res) => {
         console.error(error);
         res.status(500).send();
     }
-});
+}
 
 router.post('/login', async (req, res) => {
     const email = req.body.email;

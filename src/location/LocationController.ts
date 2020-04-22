@@ -16,26 +16,23 @@ async function getAddressBook(req: Request, res: Response, next: NextFunction) {
     res.status(200).json(locations);
 }
 
-router.put('/', addLocation);
+router.put('/', requireAuthentication, addLocation);
 
 async function addLocation(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-    if (userId) {
-        const location = Location.create(
-            req.body.location.street,
-            req.body.location.city,
-            req.body.location.state,
-            req.body.location.zipCode,
-            req.body.location.nickname
-        )
 
-        await createLocation(location, userId);
-        await InitializeDefaultLocation(userId, await getLocationById(location.id));
+    const location = Location.create(
+        req.body.location.street,
+        req.body.location.city,
+        req.body.location.state,
+        req.body.location.zipCode,
+        req.body.location.nickname
+    )
 
-        res.status(201).json(location.id);
-    } else {
-        res.status(401).send();
-    }
+    await createLocation(location, userId);
+    await InitializeDefaultLocation(userId, await getLocationById(location.id));
+
+    res.status(201).json(location.id);
 }
 
 router.put('/:locationId', requireAuthentication, updateLocationById);
