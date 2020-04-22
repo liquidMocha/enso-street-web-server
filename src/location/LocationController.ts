@@ -4,18 +4,19 @@ import {createLocation, getLocationById, getLocationsForUser, updateLocation} fr
 import {autosuggest, routeDistanceInMiles} from "./HereApiClient";
 import {Coordinates} from "./Coordinates";
 import {InitializeDefaultLocation} from "../userprofile/UserProfileController";
+import {requireAuthentication} from "../user/AuthenticationCheck";
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
+router.get('/', requireAuthentication, getAddressBook);
+
+async function getAddressBook(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-    if (userId) {
-        const locations = await getLocationsForUser(userId);
-        res.status(200).json(locations);
-    } else {
-        res.status(401).send();
-    }
-});
+    const locations = await getLocationsForUser(userId);
+    res.status(200).json(locations);
+}
+
+router.put('/', addLocation);
 
 async function addLocation(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
@@ -37,36 +38,31 @@ async function addLocation(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-router.put('/', addLocation);
+router.put('/:locationId', requireAuthentication, updateLocationById);
 
-router.put('/:locationId', async (req, res, next) => {
+async function updateLocationById(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const locationId = req.params.locationId;
     const location = req.body.location;
 
-    if (userId) {
-        const locations = await getLocationsForUser(userId);
-        const locationToBeUpdated = locations
-            .find(location => location.id === locationId);
+    const locations = await getLocationsForUser(userId);
+    const locationToBeUpdated = locations.find(location => location.id === locationId);
 
-        if (locationToBeUpdated) {
-            locationToBeUpdated.update(
-                location.street,
-                location.city,
-                location.state,
-                location.zipCode,
-                location.nickname
-            );
-            await updateLocation(locationToBeUpdated);
-        }
-
-        const updatedLocation = getLocationById(locationId);
-
-        res.status(200).json(await updatedLocation);
-    } else {
-        res.status(401).send();
+    if (locationToBeUpdated) {
+        locationToBeUpdated.update(
+            location.street,
+            location.city,
+            location.state,
+            location.zipCode,
+            location.nickname
+        );
+        await updateLocation(locationToBeUpdated);
     }
-});
+
+    const updatedLocation = getLocationById(locationId);
+
+    res.status(200).json(await updatedLocation);
+}
 
 router.get('/autosuggest/:searchTerm', async (req, res, next) => {
     const userEmail = req.session?.userId;

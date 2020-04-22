@@ -29,15 +29,16 @@ describe('location data', () => {
     });
 
     it('should create location', async () => {
+        const locationId = uuid();
         const location = new Location(
-            uuid(),
+            locationId,
             "astor",
             "Chicago",
             "IL",
             "123456",
             "home"
         );
-        const locationId = await createLocation(location, userId);
+        await createLocation(location, userId);
 
         const actualLocation = await getLocationById(locationId);
 
