@@ -12,7 +12,8 @@ export const update = async (item: Item): Promise<void> => {
     const condition = getConditionId(item.condition);
     const geographicLocation = getGeographicLocationFrom(item.location.coordinates);
 
-    await database.none(`
+    await database.tx(async t => {
+        const updateItem = t.none(`
         UPDATE public.item
         SET title              = $1,
             description        = $2,
@@ -32,25 +33,27 @@ export const update = async (item: Item): Promise<void> => {
             archived           = $15
         WHERE id = $16
     `, [
-        item.title,
-        item.description,
-        item.imageUrl,
-        item.rentalDailyPrice,
-        item.deposit,
-        await condition,
-        item.canBeDelivered,
-        item.deliveryStarting,
-        item.deliveryAdditional,
-        item.location.address.street,
-        item.location.address.city,
-        item.location.address.state,
-        item.location.address.zipCode,
-        item.searchable,
-        item.archived,
-        item.id
-    ]);
+            item.title,
+            item.description,
+            item.imageUrl,
+            item.rentalDailyPrice,
+            item.deposit,
+            await condition,
+            item.canBeDelivered,
+            item.deliveryStarting,
+            item.deliveryAdditional,
+            item.location.address.street,
+            item.location.address.city,
+            item.location.address.state,
+            item.location.address.zipCode,
+            item.searchable,
+            item.archived,
+            item.id
+        ]);
 
-    await saveCategories(item.categories, item.id);
+        const updateCategories = saveCategories(item.categories, item.id);
+        return Promise.all([updateItem, updateCategories])
+    })
 
     if (item.archived || !item.searchable) {
         await Index.deleteItemIndex(item);
@@ -68,7 +71,7 @@ export const getItemByIds = async (itemIds: string[]): Promise<(Item)[]> => {
 };
 
 export const getItemById = async (itemId: string): Promise<Item> => {
-    return database.task(async t => {
+    return database.tx(async t => {
         return await t.one(`SELECT item.id,
                                    item.title,
                                    item.rentaldailyprice,
@@ -122,9 +125,9 @@ export const getItemById = async (itemId: string): Promise<Item> => {
                     new Address(
                         {
                             street: itemEntity.street,
-                            city: itemEntity.zipcode,
-                            state: itemEntity.city,
-                            zipCode: itemEntity.state
+                            city: itemEntity.city,
+                            state: itemEntity.state,
+                            zipCode: itemEntity.zipcode
                         }
                     ),
                     new Coordinates(itemEntity.latitude, itemEntity.longitude)
@@ -139,73 +142,14 @@ export const getItemById = async (itemId: string): Promise<Item> => {
 };
 
 export const getItemsForUser = async (userId: string): Promise<Item[]> => {
-    return await database.task(t => {
-        return t.map(`SELECT item.id,
-                             item.title,
-                             item.rentaldailyprice,
-                             item.deposit,
-                             condition.condition,
-                             item.description,
-                             item.canbedelivered,
-                             item.deliverystarting,
-                             item.deliveryadditional,
-                             item.street,
-                             item.zipcode,
-                             item.city,
-                             item.state,
-                             item.image_url,
-                             item.created_on,
-                             item.searchable,
-                             item.archived,
-                             ST_X(item.geo_location::geometry) AS longitude,
-                             ST_Y(item.geo_location::geometry) AS latitude
-                      FROM item
-                               JOIN condition ON item.condition = condition.id
-                      WHERE item.owner = $1`,
-            [userId], item => {
-                return t.any(`SELECT name
-                              FROM itemtocategory
-                                       JOIN category c ON itemtocategory.categoryid = c.id
-                              WHERE itemid = $1`, [item.id])
-                    .then(categories => {
-                        item.categories = categories.map(category => category.name);
-                        return item;
-                    })
-            }).then(t.batch);
-    }).then(itemEntities => {
-        return itemEntities.map(itemEntity => {
-            return new Item(
-                {
-                    id: itemEntity.id,
-                    title: itemEntity.title,
-                    description: itemEntity.description,
-                    categories: itemEntity.categories,
-                    imageUrl: itemEntity.image_url,
-                    rentalDailyPrice: itemEntity.rentaldailyprice,
-                    deposit: itemEntity.deposit,
-                    condition: itemEntity.condition,
-                    canBeDelivered: itemEntity.canbedelivered,
-                    deliveryStarting: itemEntity.deliverystarting,
-                    deliveryAdditional: itemEntity.deliveryadditional,
-                    location: new ItemLocation(
-                        new Address(
-                            {
-                                street: itemEntity.street,
-                                city: itemEntity.city,
-                                state: itemEntity.state,
-                                zipCode: itemEntity.zipcode
-                            }
-                        ),
-                        new Coordinates(itemEntity.latitude, itemEntity.longitude)
-                    ),
-                    ownerEmail: itemEntity.email,
-                    searchable: itemEntity.searchable,
-                    archived: itemEntity.archived,
-                    createdOn: itemEntity.created_on
-                }
-            )
-        });
-    });
+    const itemIds = database.map(
+            `SELECT id
+             FROM item
+             WHERE owner = $1`,
+        [userId],
+        data => data.id
+    );
+    return getItemByIds(await itemIds);
 };
 
 export const save = async (item: Item) => {

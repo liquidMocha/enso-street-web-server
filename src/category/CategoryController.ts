@@ -14,9 +14,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.get('/:category/count', async (req, res, next) => {
-    const itemCountForCategory =
-        getItemCountForCategory(req.params.category);
-
+    const itemCountForCategory = getItemCountForCategory(req.params.category);
     res.status(200).json(await itemCountForCategory);
 });
 

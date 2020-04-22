@@ -1,4 +1,4 @@
-import express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import ItemDTO from "./ItemDTO";
 import {getItemById, getItemsForUser, save, update} from "./ItemRepository";
 import {Item} from "./Item";
@@ -11,6 +11,7 @@ import UpdateItem from "./UpdateItem";
 import ItemLocation from "./ItemLocation";
 import Address from "../location/Address";
 import {getUser} from "../user/UserService";
+import {requireAuthentication} from "../user/AuthenticationCheck";
 
 const router = express.Router();
 
@@ -111,44 +112,42 @@ const mapToUpdateItem = async (updateItemPayload: any): Promise<UpdateItem> => {
     )
 }
 
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuthentication, createItem);
+
+async function createItem(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-    if (userId) {
-        const itemPayload = req.body;
-        const user = getUser(userId);
-        const itemDTO = mapToItemDTO(itemPayload, (await user).email);
-        const item = mapToItem(await itemDTO);
+    const itemPayload = req.body;
+    const user = getUser(userId);
+    const itemDTO = mapToItemDTO(itemPayload, (await user).email);
+    const item = mapToItem(await itemDTO);
 
-        try {
-            await save(await item);
+    try {
+        await save(await item);
 
-            res.status(201).send();
-        } catch (e) {
-            res.status(500).send();
-            console.error(`Error when saving item for user ${userId}: ${e}`)
-        }
-    } else {
-        res.status(401).send();
+        res.status(201).send();
+    } catch (e) {
+        res.status(500).send();
+        console.error(`Error when saving item for user ${userId}: ${e}`)
     }
-});
+}
 
-router.get('/', async (req, res, next) => {
+router.get('/', requireAuthentication, getAllActiveItemsForUser);
+
+async function getAllActiveItemsForUser(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-    if (userId) {
-        try {
-            const items = await getItemsForUser(userId);
-            const unarchivedItems = items.filter(item => !item.archived)
-            res.status(200).json(unarchivedItems);
-        } catch (e) {
-            res.status(500).send();
-            console.error(`Error when retrieving item for user ${userId}: ${e}`)
-        }
-    } else {
-        res.status(401).send();
-    }
-});
+    try {
+        const unarchivedItems = (await getItemsForUser(userId)).filter(item => !item.archived)
 
-router.get('/:itemId', async (req, res, next) => {
+        res.status(200).json(unarchivedItems);
+    } catch (e) {
+        res.status(500).send();
+        console.error(`Error when retrieving item for user ${userId}: ${e}`)
+    }
+}
+
+router.get('/:itemId', getById);
+
+async function getById(req: Request, res: Response, next: NextFunction) {
     try {
         const item = await getItemById(req.params.itemId);
         const borrowerItem = new BorrowerItem(
@@ -172,8 +171,9 @@ router.get('/:itemId', async (req, res, next) => {
         res.status(200).json(borrowerItem);
     } catch (e) {
         res.status(500).send();
+        console.error(e);
     }
-});
+}
 
 router.delete('/:itemId', async (req, res, next) => {
     const params = req.params;
