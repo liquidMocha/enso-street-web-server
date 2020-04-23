@@ -71,7 +71,6 @@ router.get('/autosuggest/:searchTerm', async (req, res, next) => {
         new Coordinates(latitude, longitude)
     )
 
-
     res.status(200).json(hereAutoSuggestions);
 });
 

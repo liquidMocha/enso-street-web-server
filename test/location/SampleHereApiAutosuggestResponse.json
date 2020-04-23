@@ -1,0 +1,90 @@
+{
+  "suggestions": [
+    {
+      "label": "United States, IL, Evanston, 2727 Hampton Pkwy",
+      "language": "en",
+      "countryCode": "USA",
+      "locationId": "NT_lFMfinLV75rRfM9NQPzxmD_ycjM3A",
+      "address": {
+        "country": "United States",
+        "state": "IL",
+        "county": "Cook",
+        "city": "Evanston",
+        "street": "Hampton Pkwy",
+        "houseNumber": "2727",
+        "postalCode": "60201"
+      },
+      "distance": 15512,
+      "matchLevel": "houseNumber"
+    },
+    {
+      "label": "United States, IL, Rockford, 2727 Hampden Ct",
+      "language": "en",
+      "countryCode": "USA",
+      "locationId": "NT_1UK6Wu0.f7wKilCktAyo7C_ycjM3A",
+      "address": {
+        "country": "United States",
+        "state": "IL",
+        "county": "Winnebago",
+        "city": "Rockford",
+        "street": "Hampden Ct",
+        "houseNumber": "2727",
+        "postalCode": "61107"
+      },
+      "distance": 122480,
+      "matchLevel": "houseNumber"
+    },
+    {
+      "label": "United States, IN, Mishawaka, 2727 Hampton Rd",
+      "language": "en",
+      "countryCode": "USA",
+      "locationId": "NT_QYsVt8Z2sfaBkUaLCUlrJC_ycjM3A",
+      "address": {
+        "country": "United States",
+        "state": "IN",
+        "county": "St Joseph",
+        "city": "Mishawaka",
+        "street": "Hampton Rd",
+        "houseNumber": "2727",
+        "postalCode": "46544"
+      },
+      "distance": 129216,
+      "matchLevel": "houseNumber"
+    },
+    {
+      "label": "United States, IL, Chicago, 2727 N Hampden Ct",
+      "language": "en",
+      "countryCode": "USA",
+      "locationId": "NT_tNnXzgJ2B36rw2Tlow6XHB_ycjM3A",
+      "address": {
+        "country": "United States",
+        "state": "IL",
+        "county": "Cook",
+        "city": "Chicago",
+        "district": "Lincoln Park",
+        "street": "N Hampden Ct",
+        "houseNumber": "2727",
+        "postalCode": "60614"
+      },
+      "distance": 341,
+      "matchLevel": "houseNumber"
+    },
+    {
+      "label": "United States, IL, Chicago, N New Hampshire Ave",
+      "language": "en",
+      "countryCode": "USA",
+      "locationId": "NT_U-ie.5TOdrHzVr2Irwle3C",
+      "address": {
+        "country": "United States",
+        "state": "IL",
+        "county": "Cook",
+        "city": "Chicago",
+        "district": "Norwood Park",
+        "street": "N New Hampshire Ave",
+        "postalCode": "60631"
+      },
+      "distance": 14079,
+      "matchLevel": "street"
+    }
+  ]
+}

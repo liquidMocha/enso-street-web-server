@@ -21,9 +21,9 @@ export const autosuggest = async (searchTerm: string, coordinates: Coordinates):
             {
                 houseNumber: address.houseNumber,
                 street: address.street,
-                city: address.postalCode,
-                state: address.city,
-                zipCode: address.state
+                city: address.city,
+                state: address.state,
+                zipCode: address.postalCode
             }
         )
     });
