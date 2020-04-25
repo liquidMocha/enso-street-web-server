@@ -1,0 +1,81 @@
+{
+  "Response": {
+    "MetaInfo": {
+      "Timestamp": "2020-04-23T02:11:12.704+0000"
+    },
+    "View": [
+      {
+        "_type": "SearchResultsViewType",
+        "ViewId": 0,
+        "Result": [
+          {
+            "Relevance": 1.0,
+            "MatchLevel": "houseNumber",
+            "MatchQuality": {
+              "State": 1.0,
+              "City": 1.0,
+              "Street": [
+                0.85
+              ],
+              "HouseNumber": 1.0
+            },
+            "MatchType": "interpolated",
+            "Location": {
+              "LocationId": "NT_GJmfb.xBI2T8hLA2N1uxmC_yIjM",
+              "LocationType": "point",
+              "DisplayPosition": {
+                "Latitude": 41.8967249,
+                "Longitude": -87.6353487
+              },
+              "NavigationPosition": [
+                {
+                  "Latitude": 41.89659,
+                  "Longitude": -87.6353487
+                }
+              ],
+              "MapView": {
+                "TopLeft": {
+                  "Latitude": 41.897849,
+                  "Longitude": -87.636859
+                },
+                "BottomRight": {
+                  "Latitude": 41.8956007,
+                  "Longitude": -87.6338385
+                }
+              },
+              "Address": {
+                "Label": "222 W Chicago Ave, Chicago, IL 60654, United States",
+                "Country": "USA",
+                "State": "IL",
+                "County": "Cook",
+                "City": "Chicago",
+                "District": "Near North Side",
+                "Street": "W Chicago Ave",
+                "HouseNumber": "222",
+                "PostalCode": "60654",
+                "AdditionalData": [
+                  {
+                    "value": "United States",
+                    "key": "CountryName"
+                  },
+                  {
+                    "value": "Illinois",
+                    "key": "StateName"
+                  },
+                  {
+                    "value": "Cook",
+                    "key": "CountyName"
+                  },
+                  {
+                    "value": "N",
+                    "key": "PostalCodeType"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

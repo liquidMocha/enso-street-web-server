@@ -10,6 +10,7 @@
     "**/*.d.ts",
     "src/newrelic.js",
     "src/search/AlgoliaConfig.ts",
-    "src/app.ts"
+    "src/app.ts",
+    "src/Constants.ts"
   ]
 }

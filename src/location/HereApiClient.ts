@@ -30,12 +30,7 @@ export const autosuggest = async (searchTerm: string, coordinates: Coordinates):
 };
 
 export const geocode = async (location: Address): Promise<Coordinates> => {
-    const street = `${location.street ? (location.street + ', ') : ''}`;
-    const city = `${location.city ? (location.city + ', ') : ''}`;
-    const state = `${location.state ? (location.state + ', ') : ''}`;
-    const zipCode = `${location.zipCode ? (location.zipCode) : ''}`;
-    const addressString = `${street}${city}${state}${zipCode}`;
-
+    const addressString = `${location.street},${location.city},${location.state},${location.zipCode}`;
     const geocodeResponse = axios.get('https://geocoder.ls.hereapi.com/search/6.2/geocode.json',
         {
             params: {

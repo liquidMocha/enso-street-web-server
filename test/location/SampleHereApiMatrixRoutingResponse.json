@@ -1,0 +1,31 @@
+{
+  "response": {
+    "metaInfo": {
+      "timestamp": "2020-04-23T03:13:10Z",
+      "mapVersion": "8.30.107.158",
+      "moduleVersion": "7.2.202016-6899",
+      "interfaceVersion": "2.6.76",
+      "availableMapVersion": [
+        "8.30.107.158"
+      ]
+    },
+    "route": [
+      {
+        "summary": {
+          "distance": 3819,
+          "trafficTime": 744,
+          "baseTime": 542,
+          "flags": [
+            "noThroughRoad",
+            "builtUpArea",
+            "privateRoad"
+          ],
+          "text": "The trip takes <span class=\"length\">3.8 km</span> and <span class=\"time\">9 mins</span>.",
+          "travelTime": 542,
+          "_type": "RouteSummaryType"
+        }
+      }
+    ],
+    "language": "en-us"
+  }
+}
