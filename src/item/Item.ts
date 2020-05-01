@@ -82,6 +82,10 @@ export class Item {
         }
     }
 
+    getRentalFee(days: number, quantity: number): number {
+        return this.rentalDailyPrice * days * quantity;
+    }
+
     get archived(): boolean {
         return this._archived;
     }
