@@ -5,14 +5,17 @@ import {OAuth2Client} from "google-auth-library";
 import {UserProfile} from "../userprofile/UserProfile";
 import bcrypt from "bcrypt";
 import GoogleSignOnResponse from "./GoogleSignOnResponse";
+import {sendWelcomeEmail} from "../email/SendGridClient";
 
 export const createEnsoUser = async (name: string, password: string, email: string) => {
     const user = createNewEnsoUser(email);
     const userProfile = UserProfile.create(name, email, user);
 
     //TODO: single unit of work
-    await UserRepository.saveEnsoUser(user, password)
-    await saveUserProfile(userProfile, user)
+    await UserRepository.saveEnsoUser(user, password);
+    await saveUserProfile(userProfile, user);
+
+    sendWelcomeEmail(email);
 };
 
 const passwordMatch = async (incomingPassword: string, existingPassword: string) => {
