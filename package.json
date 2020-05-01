@@ -11,7 +11,9 @@
     "test": "tsc && DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test ./node_modules/db-migrate/bin/db-migrate up -e test && ALGOLIA_ITEM_INDEX=test-enso-street-items DATABASE_URL=postgres://enso-street:password@localhost:5432/enso-street-test REDIS_URL=redis://localhost:6379 sessionSecret=this-is-a-session-secret nyc ./node_modules/mocha/bin/mocha --exit -r esm",
     "tsc:w": "tsc -w",
     "build": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -46,7 +48,8 @@
     "pg-promise": "^10.3.1",
     "redis": "^2.8.0",
     "stripe": "^8.47.0",
-    "uuidv4": "^6.0.7"
+    "uuidv4": "^6.0.7",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -66,5 +69,6 @@
     "supertest": "^4.0.2",
     "ts-node": "^8.9.0",
     "typescript": "^3.8.3"
-  }
+  },
+  "snyk": true
 }
