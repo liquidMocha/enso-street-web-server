@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post('/delivery-quote', getDeliveryQuote)
 router.post('/pay', requireAuthentication, getPaymentIntent)
+router.post('/payment-authorized', paymentIntentSucceeded)
 
 async function getDeliveryQuote(req: Request, res: Response, next: NextFunction) {
     const itemIds = req.body.itemIds;
@@ -51,6 +52,22 @@ async function getPaymentIntent(req: Request, res: Response, next: NextFunction)
     const paymentIntent = await createPaymentIntent(orderItems, rentalDays, needsDelivery, deliveryAddress);
 
     res.status(200).json({clientSecret: paymentIntent.client_secret});
+}
+
+async function paymentIntentSucceeded(request: Request, response: Response, next: NextFunction) {
+    let event;
+
+    try {
+        event = request.body;
+        console.log('event: ', event);
+    } catch (err) {
+        response.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    const paymentIntent = event.data.object;
+    console.log('PaymentIntent was successful!')
+
+    response.json({received: true});
 }
 
 export default router;

@@ -2,7 +2,7 @@ import {OrderItem} from "./OrderItem";
 import Address from "../location/Address";
 import {geocode, routeDistanceInMiles} from "../location/HereApiClient";
 import {Item} from "../item/Item";
-import {paymentIntent} from "./stripe/StripeClient";
+import {paymentIntent} from "../stripe/StripeClient";
 import Stripe from 'stripe';
 
 export async function createPaymentIntent(orderItems: OrderItem[], rentalDays: number, needsDelivery: boolean, deliveryAddress: Address): Promise<Stripe.PaymentIntent> {
