@@ -2,10 +2,39 @@ import database from "../src/database.js";
 import express from "express";
 import app from "../src/app";
 import {uuid} from "uuidv4";
+import {save} from "../src/item/ItemRepository";
+import {Item} from "../src/item/Item";
+import ItemLocation from "../src/item/ItemLocation";
+import Address from "../src/location/Address";
+import {Coordinates} from "../src/location/Coordinates";
 
 export async function setupItem(itemId) {
-    return database.none(`INSERT INTO item(id)
-                          VALUES ($1)`, itemId);
+    const userEmail = "some@email.com";
+    await setupUser({id: uuid(), email: userEmail})
+    return save(new Item(
+        {
+            id: itemId,
+            title: "test item",
+            description: "non descriptive description",
+            categories: "novelty-electronics",
+            imageUrl: "some.url.com",
+            rentalDailyPrice: 5,
+            deposit: 10,
+            condition: 'like-new',
+            canBeDelivered: true,
+            deliveryStarting: 1,
+            deliveryAdditional: 2,
+            location: new ItemLocation(new Address({
+                street: "",
+                city: "",
+                state: "",
+                zipCode: ""
+            }), new Coordinates(20, 30)),
+            ownerEmail: userEmail,
+            searchable: true,
+            archived: false,
+            createdOn: new Date()
+        }));
 }
 
 export async function setupUser(

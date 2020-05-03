@@ -158,7 +158,6 @@ export const save = async (item: Item) => {
         await Index.indexItem(item);
     } catch (error) {
         console.error(`Error when creating item: ${error}`);
-        throw new Error('Error when creating item.');
     }
 };
 
@@ -188,7 +187,10 @@ const saveItem = async (item: Item) => {
     try {
         const conditionId = getConditionId(item.condition);
         const ownerUser = UserRepository.findOneUser({email: item.ownerEmail});
-
+        if ((await ownerUser) == null) {
+            console.error(`Cannot find owner user for item ${JSON.stringify(item)}`);
+            return;
+        }
         const geographicLocation = getGeographicLocationFrom(item.location.coordinates);
 
         const [resolvedConditionId, resolvedOwner] =
@@ -252,7 +254,7 @@ const saveItem = async (item: Item) => {
             categories: [...(await categoriesSaved)]
         };
     } catch (e) {
-        console.log(`Error when creating item: ${e}`);
+        console.trace(`Error when creating item: ${e}`);
     }
 };
 
