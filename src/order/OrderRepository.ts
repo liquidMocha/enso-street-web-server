@@ -8,6 +8,7 @@ import {Owner} from "../item/Owner";
 import ItemLocation from "../item/ItemLocation";
 import Address from "../location/Address";
 import {Coordinates} from "../location/Coordinates";
+import {Condition} from "../item/Condition";
 
 export async function save(order: Order): Promise<any> {
     return database.tx('save new order', async t => {
@@ -23,8 +24,9 @@ export async function save(order: Order): Promise<any> {
             order.executor.id
         ]);
 
-        const insertOrderItems = order.orderLineItems.map(orderLineItem => {
+        const insertOrderItems = order.orderLineItems.map(async orderLineItem => {
             const geographicLocation = getGeographicLocationFrom(orderLineItem.orderItem.location.coordinates);
+            const conditionId = getConditionId(orderLineItem.orderItem.condition);
 
             t.none(`
                 INSERT INTO order_line_item(order_id,
@@ -54,7 +56,7 @@ export async function save(order: Order): Promise<any> {
                 orderLineItem.orderItem.imageUrl,
                 orderLineItem.orderItem.rentalDailyPrice,
                 orderLineItem.orderItem.deposit,
-                orderLineItem.orderItem.condition,
+                await conditionId,
                 orderLineItem.orderItem.canBeDelivered,
                 orderLineItem.orderItem.deliveryStarting,
                 orderLineItem.orderItem.deliveryAdditional,
@@ -65,8 +67,11 @@ export async function save(order: Order): Promise<any> {
             ])
         });
 
-        return t.batch([insertOrderItems, insertOrder]);
-    })
+        await Promise.all(insertOrderItems);
+        await insertOrder;
+    }).catch(e => {
+        console.trace(`Error saving order: ${order}\n`, e);
+    });
 }
 
 export async function getByPaymentIntentId(paymentIntentId: string): Promise<Order> {
@@ -85,7 +90,8 @@ export async function getByPaymentIntentId(paymentIntentId: string): Promise<Ord
         orderDao.payment_intent_id,
         new Date(orderDao.start_time),
         new Date(orderDao.return_time),
-        new Owner(orderDao.id, ownerEmail)
+        new Owner(orderDao.id, ownerEmail),
+        orderDao.status
     );
 }
 
@@ -115,12 +121,22 @@ export async function getReceivedOrders(userId: string) {
             orderDao.payment_intent_id,
             new Date(orderDao.start_time),
             new Date(orderDao.return_time),
-            new Owner(userId, userEmail)
+            new Owner(userId, userEmail),
+            orderDao.status
         )
     });
 
     return await Promise.all(orders);
 }
+
+const getConditionId = (condition: Condition): Promise<number> => {
+    return database.one(`SELECT id
+                         FROM public.condition
+                         WHERE condition = $1`,
+        [condition],
+        result => result.id
+    );
+};
 
 async function getOrderLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
     return database.map(`

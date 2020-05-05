@@ -6,9 +6,9 @@ import Stripe from 'stripe';
 import {OrderLineItem} from "./OrderLineItem";
 import {getItemById} from "../item/ItemRepository";
 
-export async function createPaymentIntent(orderLineItems: OrderLineItem[], rentalDays: number, needsDelivery: boolean, deliveryAddress: Address): Promise<Stripe.PaymentIntent> {
+export async function createPaymentIntent(orderLineItems: OrderLineItem[], rentalDays: number, deliveryAddress?: Address): Promise<Stripe.PaymentIntent> {
     let deliveryFee = Promise.resolve(0);
-    if (needsDelivery) {
+    if (deliveryAddress) {
         deliveryFee = calculateDeliveryFee(orderLineItems.map(lineItem => lineItem.orderItem), deliveryAddress);
     }
 

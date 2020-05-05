@@ -17,14 +17,15 @@ export class Order {
         paymentIntentId: string,
         startTime: Date,
         returnTime: Date,
-        executor: Owner
+        executor: Owner,
+        status: OrderStatus = OrderStatus.FUND_NOT_AUTHORIZED
     ) {
         this.id = id;
         this.orderLineItems = orderItems;
         this.paymentIntentId = paymentIntentId;
         this.startTime = startTime;
         this.returnTime = returnTime;
-        this.status = OrderStatus.FUND_NOT_AUTHORIZED;
+        this.status = status;
         this.executor = executor;
     }
 

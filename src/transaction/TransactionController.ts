@@ -42,19 +42,21 @@ function calculateRentalDays(startDate: Date, endDate: Date) {
 }
 
 async function initiateOrder(req: Request, res: Response, next: NextFunction) {
-    const needsDelivery: boolean = req.body.needsDelivery;
     const startTime: Date = new Date(req.body.rentDate);
     const returnTime: Date = new Date(req.body.returnDate);
     const rentalDays: number = calculateRentalDays(startTime, returnTime);
 
     const deliveryAddressJson = req.body.deliveryAddress;
 
-    const deliveryAddress = new Address({
-        street: deliveryAddressJson.street,
-        city: deliveryAddressJson.city,
-        state: deliveryAddressJson.state,
-        zipCode: deliveryAddressJson.zipCode
-    });
+    let deliveryAddress = undefined;
+    if (deliveryAddressJson) {
+        const deliveryAddress = new Address({
+            street: deliveryAddressJson.street,
+            city: deliveryAddressJson.city,
+            state: deliveryAddressJson.state,
+            zipCode: deliveryAddressJson.zipCode
+        });
+    }
     const checkoutItems: CheckoutItemDTO[] = req.body.items
         .map((item: any) => new CheckoutItemDTO(item.id, item.quantity));
 
@@ -65,7 +67,7 @@ async function initiateOrder(req: Request, res: Response, next: NextFunction) {
         })
     );
 
-    const paymentIntent = await createPaymentIntent(orderLineItems, rentalDays, needsDelivery, deliveryAddress);
+    const paymentIntent = await createPaymentIntent(orderLineItems, rentalDays, deliveryAddress);
     await createOrder(paymentIntent.id, orderLineItems, startTime, returnTime);
 
     res.status(200).json({clientSecret: paymentIntent.client_secret});

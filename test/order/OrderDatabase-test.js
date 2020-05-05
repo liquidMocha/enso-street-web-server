@@ -31,6 +31,7 @@ describe('order database', () => {
             new OrderLineItem(
                 new OrderItem({
                     itemId: itemId,
+                    condition: "like-new",
                     location: new ItemLocation(
                         new Address({
                             street: "",
