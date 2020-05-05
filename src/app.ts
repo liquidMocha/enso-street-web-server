@@ -1,4 +1,3 @@
-require('newrelic');
 import express from "express";
 import locationRouter from "./location/LocationController";
 import usersRouter from "./user/UsersController";
