@@ -12,6 +12,8 @@ import ItemLocation from "./ItemLocation";
 import Address from "../location/Address";
 import {getUser} from "../user/UserService";
 import {requireAuthentication} from "../user/AuthenticationCheck";
+import UserRepository from "../user/UserRepository";
+import {Owner} from "./Owner";
 
 const router = express.Router();
 
@@ -51,7 +53,12 @@ const mapToItemDTO = async (itemPayload: any, userEmail: string): Promise<ItemDT
     );
 };
 
-const mapToItem = (itemDTO: ItemDTO): Item => {
+const mapToItem = async (itemDTO: ItemDTO): Promise<Item> => {
+    const user = await UserRepository.findOneUser({email: itemDTO.userEmail});
+    if (user === null) {
+        throw new Error(`User not found for item ${itemDTO}`);
+    }
+
     return new Item(
         {
             id: itemDTO.id,
@@ -71,7 +78,7 @@ const mapToItem = (itemDTO: ItemDTO): Item => {
                 itemDTO.location.address,
                 itemDTO.location.coordinates
             ),
-            ownerEmail: itemDTO.userEmail,
+            owner: new Owner(user.id, user.email),
             searchable: itemDTO.searchable,
             archived: itemDTO.archived,
             createdOn: itemDTO.createdOn
@@ -155,7 +162,7 @@ async function getById(req: Request, res: Response, next: NextFunction) {
                 itemId: item.id,
                 title: item.title,
                 description: item.description,
-                ownerEmail: item.ownerEmail,
+                ownerEmail: item.owner.email,
                 deposit: item.deposit,
                 rentalDailyPrice: item.rentalDailyPrice,
                 deliveryAdditional: item.deliveryAdditional,

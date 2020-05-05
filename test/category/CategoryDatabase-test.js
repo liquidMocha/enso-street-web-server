@@ -1,15 +1,9 @@
 import database from '../../src/database.js';
 import {getAllCategories, getItemCountForCategory} from "../../src/category/CategoryRepository";
 import {expect} from 'chai';
-import * as ItemRepository from "../../src/item/ItemRepository";
-import {setupUser} from "../TestHelper";
-import {Item} from "../../src/item/Item";
-import {uuid} from "uuidv4";
+import {setupItem, setupUser} from "../TestHelper";
 import Index from "../../src/search/Index";
 import sinon from "sinon";
-import ItemLocation from "../../src/item/ItemLocation";
-import Address from "../../src/location/Address";
-import {Coordinates} from "../../src/location/Coordinates";
 
 const chai = require('chai');
 const assertArrays = require('chai-arrays');
@@ -37,9 +31,9 @@ describe('category database', () => {
         const userEmail = 'someemail';
         await createCategories();
         await setupUser({email: userEmail});
-        await setupItem([electronics], userEmail);
-        await setupItem([electronics], userEmail);
-        await setupItem([babyClothes], userEmail);
+        await setupItem({categories: [electronics], userEmail: userEmail})
+        await setupItem({categories: [electronics], userEmail: userEmail})
+        await setupItem({categories: [babyClothes], userEmail: userEmail})
 
         const count = await getItemCountForCategory(electronics);
 
@@ -51,30 +45,4 @@ describe('category database', () => {
                              VALUES ('electronics'),
                                     ('baby-clothes')`);
     };
-
-    const setupItem = async (categories, userEmail) => {
-        await ItemRepository.save(new Item(
-            {
-                id: uuid(),
-                title: "",
-                description: "",
-                categories: categories,
-                imageUrl: "",
-                rentalDailyPrice: 0,
-                deposit: 0,
-                condition: 'normal-wear',
-                canBeDelivered: true,
-                deliveryStarting: 0,
-                deliveryAdditional: 0,
-                location: new ItemLocation(
-                    new Address({street: "", city: "", state: "", zipCode: ""}),
-                    new Coordinates(1, 1)
-                ),
-                ownerEmail: userEmail,
-                searchable: true,
-                archived: false,
-                createdOn: null
-            }
-        ));
-    }
 });

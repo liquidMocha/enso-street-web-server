@@ -3,8 +3,8 @@ import {Condition} from "./Condition";
 import {uuid} from "uuidv4";
 import UpdateItem from "./UpdateItem";
 import ItemLocation from "./ItemLocation";
-import {DELIVERY_STARTING_DISTANCE_IN_MILES} from "../Constants";
 import {Coordinates} from "../location/Coordinates";
+import {Owner} from "./Owner";
 
 export class Item {
     readonly id: string;
@@ -20,13 +20,12 @@ export class Item {
     deliveryStarting: number;
     deliveryAdditional: number;
     location: ItemLocation;
-    //TODO: change owner email to be User/Owner entity
-    readonly ownerEmail: string;
+    readonly owner: Owner;
     searchable: boolean;
     private _archived: boolean;
 
     constructor(
-        {id, title, description, categories, imageUrl, rentalDailyPrice, deposit, condition, canBeDelivered, deliveryStarting, deliveryAdditional, location, ownerEmail, searchable, archived, createdOn}: { id: string | undefined, title: string, description: string, categories: Category[], imageUrl: string, rentalDailyPrice: number, deposit: number, condition: Condition, canBeDelivered: boolean, deliveryStarting: number, deliveryAdditional: number, location: ItemLocation, ownerEmail: string, searchable: boolean, archived: boolean, createdOn: Date }
+        {id, title, description, categories, imageUrl, rentalDailyPrice, deposit, condition, canBeDelivered, deliveryStarting, deliveryAdditional, location, owner, searchable, archived, createdOn}: { id: string | undefined, title: string, description: string, categories: Category[], imageUrl: string, rentalDailyPrice: number, deposit: number, condition: Condition, canBeDelivered: boolean, deliveryStarting: number, deliveryAdditional: number, location: ItemLocation, owner: Owner, searchable: boolean, archived: boolean, createdOn: Date }
     ) {
         this.id = id || uuid();
         this.title = title;
@@ -40,7 +39,7 @@ export class Item {
         this.deliveryStarting = deliveryStarting;
         this.deliveryAdditional = deliveryAdditional;
         this.location = location;
-        this.ownerEmail = ownerEmail;
+        this.owner = owner;
         this.searchable = searchable;
         this._archived = archived;
         this.createdOn = createdOn;
@@ -70,20 +69,6 @@ export class Item {
             this.location = updateItem.location
         }
         this.searchable = updateItem.searchable;
-    }
-
-    getDeliveryFee(distance: number): number {
-        const deliveryStarting = this.deliveryStarting;
-        if (distance <= DELIVERY_STARTING_DISTANCE_IN_MILES) {
-            return deliveryStarting;
-        } else {
-            const additionalMiles = distance - DELIVERY_STARTING_DISTANCE_IN_MILES;
-            return deliveryStarting + this.deliveryAdditional * Math.ceil(additionalMiles);
-        }
-    }
-
-    getRentalFee(days: number, quantity: number): number {
-        return this.rentalDailyPrice * days * quantity;
     }
 
     get archived(): boolean {

@@ -4,27 +4,33 @@ import {getCartItemsFor, update} from '../../src/cart/CartRepository';
 import uuidv4 from 'uuid/v4';
 import database from "../../src/database.js";
 import {CartItemDao} from "../../src/cart/CartItemDao";
+import sinon from "sinon";
+import Index from "../../src/search/Index";
 
 describe('cart database', () => {
-    afterEach(async () => {
-        await database.none('truncate public.user cascade;');
-        await database.none('truncate public.user_profile cascade;');
-        await database.none('truncate public.itemtocategory cascade;');
-        await database.none('truncate public.item cascade;');
-    });
-
     const email = "some@email.com";
     const name = "jon doe";
     let userId;
     let itemId1, itemId2;
+
+    before(() => {
+        sinon.stub(Index);
+    });
 
     beforeEach(async () => {
         userId = await setupUser({email, name});
 
         itemId1 = uuidv4();
         itemId2 = uuidv4();
-        await setupItem(itemId1);
-        await setupItem(itemId2);
+        await setupItem({itemId: itemId1});
+        await setupItem({itemId: itemId2});
+    });
+
+    afterEach(async () => {
+        await database.none('truncate public.user cascade;');
+        await database.none('truncate public.user_profile cascade;');
+        await database.none('truncate public.itemtocategory cascade;');
+        await database.none('truncate public.item cascade;');
     });
 
     describe('update cart', () => {

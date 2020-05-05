@@ -1,6 +1,6 @@
 import {uuid} from "uuidv4";
 import database from "../../src/database.js";
-import {setupCategories, setupUser} from "../TestHelper";
+import {setupCategories, setupItem, setupUser} from "../TestHelper";
 import sinon from "sinon";
 import UserRepository from "../../src/user/UserRepository";
 import chai from 'chai';
@@ -11,6 +11,7 @@ import ItemLocation from "../../src/item/ItemLocation";
 import Address from "../../src/location/Address";
 import {Coordinates} from "../../src/location/Coordinates";
 import Index from "../../src/search/Index";
+import {Owner} from "../../src/item/Owner";
 
 const chaiAsPromised = require('chai-as-promised');
 const should = chai.should();
@@ -83,7 +84,7 @@ describe('item data', () => {
                     deliveryStarting: deliveryStarting,
                     deliveryAdditional: deliveryAdditional,
                     location: location,
-                    ownerEmail: userEmail,
+                    owner: new Owner(userId, userEmail),
                     imageUrl: imageUrl
                 }
             ));
@@ -115,8 +116,8 @@ describe('item data', () => {
     it('get items by IDs', async () => {
         const id1 = uuid();
         const id2 = uuid();
-        const aSavedItem = await setupItems({itemId: id1});
-        const anotherSavedItem = await setupItems({itemId: id2});
+        const aSavedItem = await setupItem({itemId: id1});
+        const anotherSavedItem = await setupItem({itemId: id2});
 
         const items = await getItemByIds([id1, id2]);
 
@@ -125,7 +126,7 @@ describe('item data', () => {
 
     it('get item by ID', async () => {
         const itemId = uuid();
-        const aSavedItem = await setupItems({itemId: itemId});
+        const aSavedItem = await setupItem({itemId: itemId});
 
         const item = await getItemById(itemId);
 
@@ -143,54 +144,4 @@ describe('item data', () => {
         expect(item.location.coordinates.latitude).to.equal(aSavedItem.location.coordinates.latitude).but.not.be.undefined;
         expect(item.location.coordinates.longitude).to.equal(aSavedItem.location.coordinates.longitude).but.not.be.undefined;
     });
-
-    const setupItems = async ({itemId}) => {
-        const title = "some title";
-        const rentalDailyPrice = 1.23;
-        const deposit = 50.23;
-        const condition = "like-new";
-        const categories = ['garden-and-patio', 'music-instruments'];
-        const description = "the item's description";
-        const canBeDelivered = true;
-        const deliveryStarting = 1.45;
-        const deliveryAdditional = 0.8;
-        const locationStreet = 'Clark';
-        const locationZipCode = '10101';
-        const locationCity = 'Chicago';
-        const locationState = 'IL';
-        const latitude = 41.90934;
-        const longitude = -87.62785;
-        const imageUrl = 'someurl.com';
-
-        const location = new ItemLocation(
-            new Address({
-                street: locationStreet,
-                zipCode: locationZipCode,
-                city: locationCity,
-                state: locationState,
-            }),
-            new Coordinates(latitude, longitude)
-        );
-
-        const savedItem = new Item(
-            {
-                id: itemId,
-                title: title,
-                rentalDailyPrice: rentalDailyPrice,
-                deposit: deposit,
-                condition: condition,
-                categories: categories,
-                description: description,
-                canBeDelivered: canBeDelivered,
-                deliveryStarting: deliveryStarting,
-                deliveryAdditional: deliveryAdditional,
-                location: location,
-                ownerEmail: userEmail,
-                imageUrl: imageUrl
-            }
-        );
-
-        await save(savedItem)
-        return savedItem;
-    }
 });

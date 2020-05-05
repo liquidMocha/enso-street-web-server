@@ -1,5 +1,6 @@
 import {assert} from "chai";
 import app from "../../src/app";
+import {uuid} from "uuidv4";
 import request from "supertest";
 import sinon from "sinon";
 import * as ItemRepository from "../../src/item/ItemRepository";
@@ -10,6 +11,8 @@ import BorrowerItem from "../../src/item/BorrowerItem";
 import {Coordinates} from "../../src/location/Coordinates";
 import ItemLocation from "../../src/item/ItemLocation";
 import UserRepository from "../../src/user/UserRepository";
+import {User} from "../../src/user/User";
+import {Owner} from "../../src/item/Owner";
 
 describe('item API', () => {
     describe('create new item', () => {
@@ -18,7 +21,8 @@ describe('item API', () => {
             getItemsForUserStub,
             getItemByIdStub,
             updateItemStub,
-            getUserStub;
+            getUserStub,
+            findOneUserStub;
         const loggedInUser = 'j1i4o13-n314in-234nkjn';
 
         const authenticatedApp = getAuthenticatedApp(loggedInUser);
@@ -33,6 +37,7 @@ describe('item API', () => {
             getItemByIdStub = sinon.stub(ItemRepository, 'getItemById');
             updateItemStub = sinon.stub(ItemRepository, 'update');
             getUserStub = sinon.stub(UserRepository, 'getUser');
+            findOneUserStub = sinon.stub(UserRepository, 'findOneUser');
         });
 
         beforeEach(() => {
@@ -78,6 +83,10 @@ describe('item API', () => {
                 };
 
                 getUserStub.resolves({name: "", email: ""})
+                const userId = "123-abc";
+                const userEmail = "user@ensost.com";
+                const owner = new User({id: userId, email: userEmail});
+                findOneUserStub.resolves(owner)
 
                 request(authenticatedApp)
                     .post('/api/items')
@@ -87,7 +96,7 @@ describe('item API', () => {
                             street, city, state, zipCode
                         }));
                         sinon.assert.calledWithMatch(saveItemStub, sinon.match({
-                            ...item
+                            ...item, owner: new Owner(owner.id, owner.email)
                         }));
                         done(error);
                     });
@@ -133,6 +142,7 @@ describe('item API', () => {
                 const itemId = "abc-123";
                 const title = "smelly cat";
                 const description = "not favourite cat";
+                const ownerId = uuid();
                 const ownerEmail = "abc@phalange";
                 const deposit = 2.1;
                 const rentalDailyPrice = 5.2;
@@ -148,7 +158,7 @@ describe('item API', () => {
                     id: itemId,
                     title: title,
                     description: description,
-                    ownerEmail: ownerEmail,
+                    owner: new Owner(ownerId, ownerEmail),
                     deposit: deposit,
                     rentalDailyPrice: rentalDailyPrice,
                     deliveryAdditional: deliveryAdditional,

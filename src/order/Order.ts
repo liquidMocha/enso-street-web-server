@@ -1,27 +1,31 @@
-import {OrderItem} from "../transaction/OrderItem";
 import {OrderStatus} from "./OrderStatus";
+import {OrderLineItem} from "../transaction/OrderLineItem";
+import {Owner} from "../item/Owner";
 
 export class Order {
     readonly id: string;
-    readonly orderItems: OrderItem[];
+    readonly orderLineItems: OrderLineItem[];
     readonly paymentIntentId: string;
     readonly startTime: Date;
     readonly returnTime: Date;
     status: OrderStatus;
+    readonly executor: Owner;
 
     constructor(
         id: string,
-        orderItems: OrderItem[],
+        orderItems: OrderLineItem[],
         paymentIntentId: string,
         startTime: Date,
-        returnTime: Date
+        returnTime: Date,
+        executor: Owner
     ) {
         this.id = id;
-        this.orderItems = orderItems;
+        this.orderLineItems = orderItems;
         this.paymentIntentId = paymentIntentId;
         this.startTime = startTime;
         this.returnTime = returnTime;
         this.status = OrderStatus.FUND_NOT_AUTHORIZED;
+        this.executor = executor;
     }
 
     authorizePayment() {

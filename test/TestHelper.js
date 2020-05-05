@@ -7,16 +7,17 @@ import {Item} from "../src/item/Item";
 import ItemLocation from "../src/item/ItemLocation";
 import Address from "../src/location/Address";
 import {Coordinates} from "../src/location/Coordinates";
+import {Owner} from "../src/item/Owner";
 
-export async function setupItem(itemId) {
-    const userEmail = "some@email.com";
-    await setupUser({id: uuid(), email: userEmail})
-    return save(new Item(
+export async function setupItem({itemId = uuid(), userId, categories = ["novelty-electronics"], userEmail = "some@email.com"}) {
+    await setupCategories(categories);
+    const savedUserId = await setupUser({id: userId, email: userEmail})
+    const item = new Item(
         {
             id: itemId,
             title: "test item",
             description: "non descriptive description",
-            categories: "novelty-electronics",
+            categories: categories,
             imageUrl: "some.url.com",
             rentalDailyPrice: 5,
             deposit: 10,
@@ -25,16 +26,19 @@ export async function setupItem(itemId) {
             deliveryStarting: 1,
             deliveryAdditional: 2,
             location: new ItemLocation(new Address({
-                street: "",
-                city: "",
-                state: "",
-                zipCode: ""
+                street: "enso street",
+                city: "Chicago",
+                state: "IL",
+                zipCode: "64521"
             }), new Coordinates(20, 30)),
-            ownerEmail: userEmail,
+            owner: new Owner(savedUserId, userEmail),
             searchable: true,
             archived: false,
             createdOn: new Date()
-        }));
+        });
+    await save(item);
+
+    return item;
 }
 
 export async function setupUser(

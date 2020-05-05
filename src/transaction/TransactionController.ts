@@ -1,22 +1,21 @@
 import express, {NextFunction, Request, Response} from "express";
-import {getItemById, getItemByIds} from "../item/ItemRepository";
 import Address from "../location/Address";
 import {requireAuthentication} from "../user/AuthenticationCheck";
 import {CheckoutItemDTO} from "./CheckoutItemDTO";
-import {OrderItem} from "./OrderItem";
-import {calculateDeliveryFee, createPaymentIntent} from "./TransactionService";
+import {calculateDeliveryFee, createPaymentIntent, snapshotItem, snapshotItems} from "./TransactionService";
 import {StripeEvent} from "../stripe/StripeEvent";
 import {createOrder, getOrderByPaymentIntent} from "../order/OrderService";
 import {update} from "../order/OrderRepository";
+import {OrderLineItem} from "./OrderLineItem";
 
 const router = express.Router();
 
 router.post('/delivery-quote', getDeliveryQuote)
-router.post('/pay', requireAuthentication, getPaymentIntent)
+router.post('/pay', requireAuthentication, initiateOrder)
 router.post('/payment-authorized', customerPaymentAuthorized)
 
 async function getDeliveryQuote(req: Request, res: Response, next: NextFunction) {
-    const itemIds = req.body.itemIds;
+    const itemIds: string[] = req.body.itemIds;
     const deliveryAddressJson = req.body.deliveryAddress;
 
     const deliveryAddress = new Address({
@@ -26,9 +25,8 @@ async function getDeliveryQuote(req: Request, res: Response, next: NextFunction)
         zipCode: deliveryAddressJson.zipCode
     });
 
-    const items = getItemByIds(itemIds);
-
-    const deliveryFee = await calculateDeliveryFee((await items), (await deliveryAddress));
+    const orderItems = snapshotItems(itemIds);
+    const deliveryFee = await calculateDeliveryFee(await orderItems, await deliveryAddress);
 
     res.status(200).json(deliveryFee);
 }
@@ -43,7 +41,7 @@ function calculateRentalDays(startDate: Date, endDate: Date) {
     ) + 1;
 }
 
-async function getPaymentIntent(req: Request, res: Response, next: NextFunction) {
+async function initiateOrder(req: Request, res: Response, next: NextFunction) {
     const needsDelivery: boolean = req.body.needsDelivery;
     const startTime: Date = new Date(req.body.rentDate);
     const returnTime: Date = new Date(req.body.returnDate);
@@ -60,13 +58,15 @@ async function getPaymentIntent(req: Request, res: Response, next: NextFunction)
     const checkoutItems: CheckoutItemDTO[] = req.body.items
         .map((item: any) => new CheckoutItemDTO(item.id, item.quantity));
 
-    const orderItems = await Promise.all(
-        checkoutItems
-            .map(async checkoutItem => new OrderItem(await getItemById(checkoutItem.id), checkoutItem.quantity))
+    const orderLineItems = await Promise.all(
+        checkoutItems.map(async checkoutItem => {
+            const orderItem = snapshotItem(checkoutItem.id);
+            return new OrderLineItem(await orderItem, checkoutItem.quantity);
+        })
     );
 
-    const paymentIntent = await createPaymentIntent(orderItems, rentalDays, needsDelivery, deliveryAddress);
-    await createOrder(paymentIntent.id, orderItems, startTime, returnTime);
+    const paymentIntent = await createPaymentIntent(orderLineItems, rentalDays, needsDelivery, deliveryAddress);
+    await createOrder(paymentIntent.id, orderLineItems, startTime, returnTime);
 
     res.status(200).json({clientSecret: paymentIntent.client_secret});
 }

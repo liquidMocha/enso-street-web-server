@@ -1,5 +1,5 @@
+test
 --require ts-node/register
 --require source-map-support/register
-test
 --recursive
 --full-trace

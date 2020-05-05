@@ -1,5 +1,4 @@
 import database from '../database.js';
-import UserRepository from "../user/UserRepository";
 import {Condition} from "./Condition";
 import {Item} from "./Item";
 import {Coordinates} from "../location/Coordinates";
@@ -7,6 +6,7 @@ import {Category} from "../category/Category";
 import ItemLocation from "./ItemLocation";
 import Address from "../location/Address";
 import Index from "../search/Index";
+import {Owner} from "./Owner";
 
 export const update = async (item: Item): Promise<void> => {
     const condition = getConditionId(item.condition);
@@ -90,6 +90,7 @@ export const getItemById = async (itemId: string): Promise<Item> => {
                                    item.searchable,
                                    item.archived,
                                    public.user.email,
+                                   public.user.id                    as ownerId,
                                    ST_X(item.geo_location::geometry) AS longitude,
                                    ST_Y(item.geo_location::geometry) AS latitude
                             FROM item
@@ -132,7 +133,7 @@ export const getItemById = async (itemId: string): Promise<Item> => {
                     ),
                     new Coordinates(itemEntity.latitude, itemEntity.longitude)
                 ),
-                ownerEmail: itemEntity.email,
+                owner: new Owner(itemEntity.ownerid, itemEntity.email),
                 searchable: itemEntity.searchable,
                 archived: itemEntity.archived,
                 createdOn: itemEntity.created_on
@@ -157,7 +158,7 @@ export const save = async (item: Item) => {
         await saveItem(item);
         await Index.indexItem(item);
     } catch (error) {
-        console.error(`Error when creating item: ${error}`);
+        console.error(`Error when creating item: ${JSON.stringify(error)}`);
     }
 };
 
@@ -170,7 +171,7 @@ export const findOwnerForItem = (itemId: string) => {
         result => result.owner);
 };
 
-const getConditionId = (condition: Condition) => {
+const getConditionId = (condition: Condition): Promise<number> => {
     return database.one(`SELECT id
                          FROM public.condition
                          WHERE condition = $1`,
@@ -186,15 +187,7 @@ const getGeographicLocationFrom = (coordinates: Coordinates) => {
 const saveItem = async (item: Item) => {
     try {
         const conditionId = getConditionId(item.condition);
-        const ownerUser = UserRepository.findOneUser({email: item.ownerEmail});
-        if ((await ownerUser) == null) {
-            console.error(`Cannot find owner user for item ${JSON.stringify(item)}`);
-            return;
-        }
         const geographicLocation = getGeographicLocationFrom(item.location.coordinates);
-
-        const [resolvedConditionId, resolvedOwner] =
-            await Promise.all([conditionId, ownerUser]);
 
         const savedItem = database.one(
             `INSERT INTO public.item(
@@ -226,12 +219,12 @@ const saveItem = async (item: Item) => {
                 item.title,
                 item.rentalDailyPrice,
                 item.deposit,
-                resolvedConditionId,
+                await conditionId,
                 item.description,
                 item.canBeDelivered,
                 item.deliveryStarting,
                 item.deliveryAdditional,
-                resolvedOwner.id,
+                item.owner.id,
                 true,
                 item.location.address.street,
                 item.location.address.city,
