@@ -107,7 +107,6 @@ export async function getReceivedOrders(userId: string) {
     const orderDAOs = await database.manyOrNone(`
         SELECT id, payment_intent_id, start_time, return_time, status
         FROM "order"
-                 JOIN order_line_item oi on "order".id = oi.order_id
         WHERE executor = $1
     `, [userId]);
 
