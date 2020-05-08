@@ -24,14 +24,14 @@ async function cancelOrder(request: Request, response: Response, next: NextFunct
 
     try {
         const order = await getOrderById(request.params.orderId);
-        order.cancel();
+        order.cancel(userId);
         await update(order);
         await cancelPaymentIntent(order.paymentIntentId);
     } catch (error) {
         next(error);
     }
 
-    response.status(200);
+    response.status(200).send();
 }
 
 export default router;

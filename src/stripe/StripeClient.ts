@@ -18,6 +18,6 @@ export async function cancelPaymentIntent(paymentIntentId: string): Promise<void
         await stripe.paymentIntents.cancel(paymentIntentId);
     } catch (e) {
         console.error(`Cancel payment intent failed for ${paymentIntentId}`)
-        return Promise.reject()
+        return Promise.resolve();
     }
 }

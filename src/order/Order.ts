@@ -33,7 +33,11 @@ export class Order {
         this.status = OrderStatus.PENDING;
     }
 
-    cancel() {
-        this.status = OrderStatus.CANCELLED;
+    cancel(userId: string) {
+        if (this.executor.id === userId) {
+            this.status = OrderStatus.CANCELLED;
+        } else {
+            throw Error(`${userId} cannot cancel this order.`);
+        }
     }
 }
