@@ -21,3 +21,12 @@ export async function cancelPaymentIntent(paymentIntentId: string): Promise<void
         return Promise.resolve();
     }
 }
+
+export async function capturePaymentIntent(paymentIntentId: string): Promise<void> {
+    try {
+        await stripe.paymentIntents.capture(paymentIntentId);
+    } catch (e) {
+        console.error(`Cannot capture payment intent ${paymentIntentId}.`);
+        return Promise.reject();
+    }
+}

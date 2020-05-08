@@ -128,12 +128,13 @@ export async function getReceivedOrders(userId: string): Promise<Order[]> {
     return await Promise.all(orders);
 }
 
-export async function getOrderById(orderId: string): Promise<Order> {
+export async function getOrderById(orderId: string, userId: string): Promise<Order> {
     const orderDao = await database.one(`
         SELECT id, payment_intent_id, start_time, return_time, status, executor
         FROM "order"
         WHERE id = $1
-    `, [orderId]);
+          and executor = $2
+    `, [orderId, userId]);
 
     const userEmail = await UserRepository.getEmailById(orderDao.executor);
     const lineItems = getLineItemsForOrder(orderDao.id);

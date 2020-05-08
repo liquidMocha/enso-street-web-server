@@ -30,14 +30,29 @@ export class Order {
     }
 
     authorizePayment() {
-        this.status = OrderStatus.PENDING;
+        if (OrderStatus.FUND_NOT_AUTHORIZED === this.status) {
+            this.status = OrderStatus.PENDING;
+        } else {
+            throw Error(`Illegal status transition for order: ${this.id}`)
+        }
     }
 
-    cancel(userId: string) {
-        if (this.executor.id === userId) {
+    cancel() {
+        if (
+            OrderStatus.CONFIRMED === this.status ||
+            OrderStatus.PENDING === this.status
+        ) {
             this.status = OrderStatus.CANCELLED;
         } else {
-            throw Error(`${userId} cannot cancel this order.`);
+            throw Error(`Illegal status transition for order: ${this.id}`)
+        }
+    }
+
+    confirm() {
+        if (OrderStatus.PENDING === this.status) {
+            this.status = OrderStatus.CONFIRMED;
+        } else {
+            throw Error(`Illegal status transition for order: ${this.id}`)
         }
     }
 }
