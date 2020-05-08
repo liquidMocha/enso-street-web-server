@@ -32,4 +32,8 @@ export class Order {
     authorizePayment() {
         this.status = OrderStatus.PENDING;
     }
+
+    cancel() {
+        this.status = OrderStatus.CANCELLED;
+    }
 }

@@ -12,3 +12,12 @@ export async function paymentIntent(amount: number): Promise<Stripe.PaymentInten
         capture_method: 'manual',
     })
 }
+
+export async function cancelPaymentIntent(paymentIntentId: string): Promise<void> {
+    try {
+        await stripe.paymentIntents.cancel(paymentIntentId);
+    } catch (e) {
+        console.error(`Cancel payment intent failed for ${paymentIntentId}`)
+        return Promise.reject()
+    }
+}

@@ -81,7 +81,7 @@ export async function getByPaymentIntentId(paymentIntentId: string): Promise<Ord
         WHERE payment_intent_id = $1
     `, [paymentIntentId]);
 
-    const orderLineItems = await getOrderLineItemsForOrder(orderDao.id);
+    const orderLineItems = await getLineItemsForOrder(orderDao.id);
     const ownerEmail = await UserRepository.getEmailById(orderDao.executor);
 
     return new Order(
@@ -103,7 +103,7 @@ export function update(order: Order) {
     `, [order.status, order.id])
 }
 
-export async function getReceivedOrders(userId: string) {
+export async function getReceivedOrders(userId: string): Promise<Order[]> {
     const orderDAOs = await database.manyOrNone(`
         SELECT id, payment_intent_id, start_time, return_time, status
         FROM "order"
@@ -112,7 +112,7 @@ export async function getReceivedOrders(userId: string) {
 
     const userEmail = await UserRepository.getEmailById(userId);
     const orders = orderDAOs.map(async orderDao => {
-        const orderItems = getOrderLineItemsForOrder(orderDao.id);
+        const orderItems = getLineItemsForOrder(orderDao.id);
 
         return new Order(
             orderDao.id,
@@ -128,6 +128,26 @@ export async function getReceivedOrders(userId: string) {
     return await Promise.all(orders);
 }
 
+export async function getOrderById(orderId: string): Promise<Order> {
+    const orderDao = await database.one(`
+        SELECT id, payment_intent_id, start_time, return_time, status, executor
+        FROM "order"
+        WHERE id = $1
+    `, [orderId]);
+
+    const userEmail = await UserRepository.getEmailById(orderDao.executor);
+    const lineItems = getLineItemsForOrder(orderDao.id);
+    return new Order(
+        orderDao.id,
+        (await lineItems),
+        orderDao.payment_intent_id,
+        new Date(orderDao.start_time),
+        new Date(orderDao.return_time),
+        new Owner(orderDao.executor, userEmail),
+        orderDao.status
+    )
+}
+
 const getConditionId = (condition: Condition): Promise<number> => {
     return database.one(`SELECT id
                          FROM public.condition
@@ -137,7 +157,7 @@ const getConditionId = (condition: Condition): Promise<number> => {
     );
 };
 
-async function getOrderLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
+async function getLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
     return database.map(`
         SELECT item_id,
                quantity,
