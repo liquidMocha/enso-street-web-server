@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import {Order} from "../order/Order";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!,
     {apiVersion: '2020-03-02'});
@@ -28,5 +29,16 @@ export async function capturePaymentIntent(paymentIntentId: string): Promise<voi
     } catch (e) {
         console.error(`Cannot capture payment intent ${paymentIntentId}.`);
         return Promise.reject();
+    }
+}
+
+export async function refundDeposit(order: Order): Promise<void> {
+    try {
+        await stripe.refunds.create({
+            payment_intent: order.paymentIntentId,
+            amount: order.totalDeposits()
+        });
+    } catch (e) {
+        console.error(`Failed to refund order: ${order.id}`);
     }
 }

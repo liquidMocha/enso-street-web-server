@@ -29,7 +29,7 @@ export class Order {
         this.executor = executor;
     }
 
-    authorizePayment() {
+    authorizePayment(): void {
         if (OrderStatus.FUND_NOT_AUTHORIZED === this.status) {
             this.status = OrderStatus.PENDING;
         } else {
@@ -37,7 +37,7 @@ export class Order {
         }
     }
 
-    cancel() {
+    cancel(): void {
         if (
             OrderStatus.CONFIRMED === this.status ||
             OrderStatus.PENDING === this.status
@@ -48,11 +48,25 @@ export class Order {
         }
     }
 
-    confirm() {
+    confirm(): void {
         if (OrderStatus.PENDING === this.status) {
             this.status = OrderStatus.CONFIRMED;
         } else {
             throw Error(`Illegal status transition for order: ${this.id}`)
         }
+    }
+
+    complete(): void {
+        if (OrderStatus.CONFIRMED === this.status) {
+            this.status = OrderStatus.COMPLETED;
+        } else {
+            throw Error(`Illegal status transition for order: ${this.id}`);
+        }
+    }
+
+    totalDeposits(): number {
+        return this.orderLineItems.reduce((aggregate, lineItem) => {
+            return aggregate + lineItem.orderItem.deposit * lineItem.quantity
+        }, 0)
     }
 }
