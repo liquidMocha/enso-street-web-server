@@ -101,25 +101,7 @@ export async function getByPaymentIntentId(paymentIntentId: string): Promise<Ord
     const orderLineItems = await getLineItemsForOrder(orderDao.id);
     const ownerEmail = await UserRepository.getEmailById(orderDao.executor);
 
-    return new Order(
-        {
-            id: orderDao.id,
-            orderItems: orderLineItems,
-            startTime: new Date(orderDao.start_time),
-            returnTime: new Date(orderDao.return_time),
-            executor: new Owner(orderDao.id, ownerEmail),
-            status: orderDao.status,
-            deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
-            deliveryAddress: new Address({
-                street: orderDao.street,
-                city: orderDao.city,
-                state: orderDao.city,
-                zipCode: orderDao.zip_code
-            }),
-            deliveryFee: orderDao.delivery_fee,
-            paymentIntentId: orderDao.payment_intent_id,
-        }
-    );
+    return reconstituteOrder(orderDao, ownerEmail, orderLineItems);
 }
 
 function selectOrder(): string {
@@ -158,38 +140,17 @@ export async function getReceivedOrders(userId: string): Promise<Order[]> {
     const orders = orderDAOs.map(async orderDao => {
         const orderItems = getLineItemsForOrder(orderDao.id);
 
-        return new Order(
-            {
-                id: orderDao.id,
-                orderItems: (await orderItems),
-                startTime: new Date(orderDao.start_time),
-                returnTime: new Date(orderDao.return_time),
-                executor: new Owner(userId, userEmail),
-                status: orderDao.status,
-                deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
-                deliveryAddress: new Address({
-                    street: orderDao.street,
-                    city: orderDao.city,
-                    state: orderDao.city,
-                    zipCode: orderDao.zip_code
-                }),
-                deliveryFee: orderDao.delivery_fee,
-                paymentIntentId: orderDao.payment_intent_id,
-            }
-        )
+        return reconstituteOrder(orderDao, userEmail, await orderItems);
     });
 
     return await Promise.all(orders);
 }
 
-async function reconstituteOrder(orderDao: any) {
-    const userEmail = await UserRepository.getEmailById(orderDao.executor);
-    const lineItems = getLineItemsForOrder(orderDao.id);
-
+function reconstituteOrder(orderDao: any, userEmail: string, lineItems: OrderLineItem[]) {
     return new Order(
         {
             id: orderDao.id,
-            orderItems: (await lineItems),
+            orderItems: lineItems,
             startTime: new Date(orderDao.start_time),
             returnTime: new Date(orderDao.return_time),
             executor: new Owner(orderDao.executor, userEmail),
@@ -201,7 +162,7 @@ async function reconstituteOrder(orderDao: any) {
                 state: orderDao.city,
                 zipCode: orderDao.zip_code
             }),
-            deliveryFee: orderDao.delivery_fee,
+            deliveryFee: Number(orderDao.delivery_fee),
             paymentIntentId: orderDao.payment_intent_id,
         }
     )
@@ -214,7 +175,10 @@ export async function getOrderById(orderId: string): Promise<Order> {
         WHERE id = $1
     `, [orderId]);
 
-        return await reconstituteOrder(orderDao);
+        const userEmail = await UserRepository.getEmailById(orderDao.executor);
+        const lineItems = await getLineItemsForOrder(orderDao.id);
+
+        return await reconstituteOrder(orderDao, userEmail, lineItems);
     } catch (e) {
         console.error(`Error getting order by ID(${orderId}): ${e}`);
         throw Error(e);
@@ -228,7 +192,9 @@ export async function getOrderByIdForExecutor(orderId: string, userId: string): 
         WHERE id = $1 and executor = $2
     `, [orderId, userId]);
 
-        return await reconstituteOrder(orderDao);
+        const userEmail = await UserRepository.getEmailById(orderDao.executor);
+        const lineItems = await getLineItemsForOrder(orderDao.id);
+        return await reconstituteOrder(orderDao, userEmail, lineItems);
     } catch (e) {
         console.error(`Error getting order by ID(${orderId}): ${e}`);
         throw Error(e);
@@ -273,12 +239,12 @@ async function getLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
                     title: data.title,
                     description: data.description,
                     imageUrl: data.image_url,
-                    rentalDailyPrice: data.rental_daily_price,
-                    deposit: data.deposit,
+                    rentalDailyPrice: Number(data.rental_daily_price),
+                    deposit: Number(data.deposit),
                     condition: data.condition,
                     canBeDelivered: data.can_be_delivered,
-                    deliveryStarting: data.delivery_starting,
-                    deliveryAdditional: data.delivery_additional,
+                    deliveryStarting: Number(data.delivery_starting),
+                    deliveryAdditional: Number(data.delivery_additional),
                     location: new ItemLocation(
                         new Address({
                             street: data.street,
