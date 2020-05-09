@@ -4,7 +4,7 @@ import {Order} from "../order/Order";
 const stripe = new Stripe(process.env.STRIPE_API_KEY!,
     {apiVersion: '2020-03-02'});
 
-export async function paymentIntent(amount: number): Promise<Stripe.PaymentIntent> {
+export async function createPaymentIntentOf(amount: number): Promise<Stripe.PaymentIntent> {
     return stripe.paymentIntents.create({
         amount: amount * 100,
         currency: 'usd',

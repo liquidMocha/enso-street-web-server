@@ -18,8 +18,7 @@ describe("order domain object", () => {
             )
         ];
         const subject = new Order(
-            "some-id",
-            items
+            {id: "some-id", orderItems: items}
         );
 
         expect(subject.totalDeposits()).to.equal(10 * 2 + 3 * 4);

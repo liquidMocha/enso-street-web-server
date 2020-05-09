@@ -1,36 +1,20 @@
 import {OrderItem} from "./OrderItem";
+import {createPaymentIntentOf} from "../stripe/StripeClient";
+import Stripe from 'stripe';
+import {getItemById} from "../item/ItemRepository";
+import {Order} from "../order/Order";
+import {update} from "../order/OrderRepository";
 import Address from "../location/Address";
 import {geocode, routeDistanceInMiles} from "../location/HereApiClient";
-import {paymentIntent} from "../stripe/StripeClient";
-import Stripe from 'stripe';
-import {OrderLineItem} from "./OrderLineItem";
-import {getItemById} from "../item/ItemRepository";
 
-export async function createPaymentIntent(orderLineItems: OrderLineItem[], rentalDays: number, deliveryAddress?: Address): Promise<Stripe.PaymentIntent> {
-    let deliveryFee = Promise.resolve(0);
-    if (deliveryAddress) {
-        deliveryFee = calculateDeliveryFee(orderLineItems.map(lineItem => lineItem.orderItem), deliveryAddress);
-    }
+export async function createPaymentIntentFor(order: Order): Promise<Stripe.PaymentIntent> {
+    const amount = order.itemSubtotal + order.deliveryFee;
 
-    const itemSubtotal = orderLineItems
-        .map(orderItem => orderItem.getRentalFee(rentalDays, orderItem.quantity))
-        .reduce((aggregate, itemRental) => {
-            return aggregate + itemRental;
-        }, 0);
+    const paymentIntent = await createPaymentIntentOf(amount);
+    order.paymentIntentId = paymentIntent.id;
+    await update(order);
 
-    const amount = itemSubtotal + (await deliveryFee);
-
-    return paymentIntent(amount);
-}
-
-export async function calculateDeliveryFee(items: OrderItem[], deliveryAddress: Address) {
-    const deliveryCoordinates = geocode(deliveryAddress);
-    const deliveryFees = items.map(async item => {
-        const distance = routeDistanceInMiles(item.coordinates, (await deliveryCoordinates));
-        return item.getDeliveryFee(await distance);
-    });
-
-    return Math.max(...(await Promise.all(deliveryFees)));
+    return paymentIntent;
 }
 
 export function snapshotItems(itemIds: string[]): Promise<OrderItem[]> {
@@ -56,4 +40,14 @@ export async function snapshotItem(itemId: string): Promise<OrderItem> {
             location: item.location
         });
 
+}
+
+export async function getDeliveryFee(items: OrderItem[], deliveryAddress: Address): Promise<number> {
+    const deliveryCoordinates = geocode(deliveryAddress);
+    const deliveryFees = items.map(async item => {
+        const distance = routeDistanceInMiles(item.coordinates, (await deliveryCoordinates));
+        return item.getDeliveryFee(await distance);
+    });
+
+    return Math.max(...(await Promise.all(deliveryFees)));
 }

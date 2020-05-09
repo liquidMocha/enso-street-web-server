@@ -1,6 +1,6 @@
 import express, {NextFunction, Request, Response} from "express";
 import {requireAuthentication} from "../user/AuthenticationCheck";
-import {getOrderById, getReceivedOrders, update} from "./OrderRepository";
+import {getOrderByIdForExecutor, getReceivedOrders, update} from "./OrderRepository";
 import {cancelPaymentIntent, capturePaymentIntent, refundDeposit} from "../stripe/StripeClient";
 
 const router = express.Router();
@@ -25,10 +25,14 @@ async function cancelOrder(request: Request, response: Response, next: NextFunct
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderById(request.params.orderId, userId);
+        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
         order.cancel();
         await update(order);
-        await cancelPaymentIntent(order.paymentIntentId);
+        if (order.paymentIntentId !== undefined) {
+            await cancelPaymentIntent(order.paymentIntentId);
+        } else {
+            console.warn(`Cancelled order ${order.id} with null payment intent.`)
+        }
     } catch (error) {
         response.status(400).send();
         next(error);
@@ -41,10 +45,14 @@ async function confirmOrder(request: Request, response: Response, next: NextFunc
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderById(request.params.orderId, userId);
+        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
         order.confirm();
         await update(order);
-        await capturePaymentIntent(order.paymentIntentId);
+        if (order.paymentIntentId !== undefined) {
+            await capturePaymentIntent(order.paymentIntentId);
+        } else {
+            console.warn(`Confirmed order ${order.id} without payment intent.`)
+        }
         response.status(200).send();
     } catch (e) {
         response.status(400).send();
@@ -56,7 +64,7 @@ async function completeOrder(request: Request, response: Response, next: NextFun
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderById(request.params.orderId, userId);
+        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
         order.complete();
         await update(order);
         await refundDeposit(order);

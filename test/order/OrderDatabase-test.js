@@ -72,12 +72,14 @@ describe('order database', () => {
         await setupItem({itemId: itemId, userId: userId, userEmail: userEmail});
 
         const order = new Order(
-            orderId,
-            orderItems,
-            paymentIntentId,
-            startTime,
-            returnTime,
-            new Owner(userId, userEmail)
+            {
+                id: orderId,
+                orderItems: orderItems,
+                paymentIntentId: paymentIntentId,
+                startTime: startTime,
+                returnTime: returnTime,
+                executor: new Owner(userId, userEmail)
+            }
         );
 
         await save(order);

@@ -12,16 +12,34 @@ import {Condition} from "../item/Condition";
 
 export async function save(order: Order): Promise<any> {
     return database.tx('save new order', async t => {
+        const geographicLocation = getGeographicLocationFrom(order.deliveryCoordinates);
+
         const insertOrder = t.none(`
-            INSERT INTO "order"(id, payment_intent_id, start_time, return_time, status, executor)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO "order"(id,
+                                payment_intent_id,
+                                start_time,
+                                return_time,
+                                status,
+                                executor,
+                                street,
+                                city,
+                                state,
+                                zip_code,
+                                delivery_fee,
+                                delivery_coordinates)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, ${geographicLocation})
         `, [
             order.id,
             order.paymentIntentId,
             order.startTime,
             order.returnTime,
             order.status,
-            order.executor.id
+            order.executor.id,
+            order.deliveryAddress?.street,
+            order.deliveryAddress?.city,
+            order.deliveryAddress?.state,
+            order.deliveryAddress?.zipCode,
+            order.deliveryFee
         ]);
 
         const insertOrderItems = order.orderLineItems.map(async orderLineItem => {
@@ -76,8 +94,7 @@ export async function save(order: Order): Promise<any> {
 
 export async function getByPaymentIntentId(paymentIntentId: string): Promise<Order> {
     const orderDao = await database.one(`
-        SELECT id, payment_intent_id, start_time, return_time, status, executor
-        FROM "order"
+        ${selectOrder()}
         WHERE payment_intent_id = $1
     `, [paymentIntentId]);
 
@@ -85,28 +102,55 @@ export async function getByPaymentIntentId(paymentIntentId: string): Promise<Ord
     const ownerEmail = await UserRepository.getEmailById(orderDao.executor);
 
     return new Order(
-        orderDao.id,
-        orderLineItems,
-        orderDao.payment_intent_id,
-        new Date(orderDao.start_time),
-        new Date(orderDao.return_time),
-        new Owner(orderDao.id, ownerEmail),
-        orderDao.status
+        {
+            id: orderDao.id,
+            orderItems: orderLineItems,
+            startTime: new Date(orderDao.start_time),
+            returnTime: new Date(orderDao.return_time),
+            executor: new Owner(orderDao.id, ownerEmail),
+            status: orderDao.status,
+            deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
+            deliveryAddress: new Address({
+                street: orderDao.street,
+                city: orderDao.city,
+                state: orderDao.city,
+                zipCode: orderDao.zip_code
+            }),
+            deliveryFee: orderDao.delivery_fee,
+            paymentIntentId: orderDao.payment_intent_id,
+        }
     );
+}
+
+function selectOrder(): string {
+    return `SELECT id,
+                   payment_intent_id,
+                   start_time,
+                   return_time,
+                   status,
+                   executor,
+                   delivery_fee,
+                   street,
+                   city,
+                   state,
+                   zip_code,
+                   ST_X(delivery_coordinates::geometry) AS longitude,
+                   ST_Y(delivery_coordinates::geometry) AS latitude
+            FROM "order" `
 }
 
 export function update(order: Order) {
     return database.none(`
         UPDATE "order"
-        SET status = $1
+        SET status            = $1,
+            payment_intent_id = $3
         WHERE id = $2
-    `, [order.status, order.id])
+    `, [order.status, order.id, order.paymentIntentId])
 }
 
 export async function getReceivedOrders(userId: string): Promise<Order[]> {
     const orderDAOs = await database.manyOrNone(`
-        SELECT id, payment_intent_id, start_time, return_time, status
-        FROM "order"
+        ${selectOrder()}
         WHERE executor = $1
     `, [userId]);
 
@@ -115,38 +159,80 @@ export async function getReceivedOrders(userId: string): Promise<Order[]> {
         const orderItems = getLineItemsForOrder(orderDao.id);
 
         return new Order(
-            orderDao.id,
-            (await orderItems),
-            orderDao.payment_intent_id,
-            new Date(orderDao.start_time),
-            new Date(orderDao.return_time),
-            new Owner(userId, userEmail),
-            orderDao.status
+            {
+                id: orderDao.id,
+                orderItems: (await orderItems),
+                startTime: new Date(orderDao.start_time),
+                returnTime: new Date(orderDao.return_time),
+                executor: new Owner(userId, userEmail),
+                status: orderDao.status,
+                deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
+                deliveryAddress: new Address({
+                    street: orderDao.street,
+                    city: orderDao.city,
+                    state: orderDao.city,
+                    zipCode: orderDao.zip_code
+                }),
+                deliveryFee: orderDao.delivery_fee,
+                paymentIntentId: orderDao.payment_intent_id,
+            }
         )
     });
 
     return await Promise.all(orders);
 }
 
-export async function getOrderById(orderId: string, userId: string): Promise<Order> {
-    const orderDao = await database.one(`
-        SELECT id, payment_intent_id, start_time, return_time, status, executor
-        FROM "order"
-        WHERE id = $1
-          and executor = $2
-    `, [orderId, userId]);
-
+async function reconstituteOrder(orderDao: any) {
     const userEmail = await UserRepository.getEmailById(orderDao.executor);
     const lineItems = getLineItemsForOrder(orderDao.id);
+
     return new Order(
-        orderDao.id,
-        (await lineItems),
-        orderDao.payment_intent_id,
-        new Date(orderDao.start_time),
-        new Date(orderDao.return_time),
-        new Owner(orderDao.executor, userEmail),
-        orderDao.status
+        {
+            id: orderDao.id,
+            orderItems: (await lineItems),
+            startTime: new Date(orderDao.start_time),
+            returnTime: new Date(orderDao.return_time),
+            executor: new Owner(orderDao.executor, userEmail),
+            status: orderDao.status,
+            deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
+            deliveryAddress: new Address({
+                street: orderDao.street,
+                city: orderDao.city,
+                state: orderDao.city,
+                zipCode: orderDao.zip_code
+            }),
+            deliveryFee: orderDao.delivery_fee,
+            paymentIntentId: orderDao.payment_intent_id,
+        }
     )
+}
+
+export async function getOrderById(orderId: string): Promise<Order> {
+    try {
+        const orderDao = await database.one(`
+        ${selectOrder()}
+        WHERE id = $1
+    `, [orderId]);
+
+        return await reconstituteOrder(orderDao);
+    } catch (e) {
+        console.error(`Error getting order by ID(${orderId}): ${e}`);
+        throw Error(e);
+    }
+}
+
+export async function getOrderByIdForExecutor(orderId: string, userId: string): Promise<Order> {
+    try {
+        const orderDao = await database.one(`
+        ${selectOrder()}
+        WHERE id = $1 and executor = $2
+    `, [orderId, userId]);
+
+        return await reconstituteOrder(orderDao);
+    } catch (e) {
+        console.error(`Error getting order by ID(${orderId}): ${e}`);
+        throw Error(e);
+    }
 }
 
 const getConditionId = (condition: Condition): Promise<number> => {
