@@ -1,16 +1,5 @@
 import {UserProfile} from "./UserProfile";
-
-interface UserProfileDto {
-    id: string,
-    name: string,
-    firstName?: string,
-    lastName?: string,
-    phone?: string,
-    email?: string,
-    defaultAddress?: LocationDto,
-    user: UserDto,
-    contacts: ContactDto[]
-}
+import {UserProfileDto} from "./UserProfileDto";
 
 export const toDto = (profile: UserProfile): UserProfileDto => {
     return {

@@ -3,16 +3,16 @@ import {createPaymentIntentOf} from "../stripe/StripeClient";
 import Stripe from 'stripe';
 import {getItemById} from "../item/ItemRepository";
 import {Order} from "../order/Order";
-import {update} from "../order/OrderRepository";
 import Address from "../location/Address";
 import {geocode, routeDistanceInMiles} from "../location/HereApiClient";
+import {sameProcessOrderRepository} from "../ApplicationContext";
+
+const orderRepository = sameProcessOrderRepository;
 
 export async function createPaymentIntentFor(order: Order): Promise<Stripe.PaymentIntent> {
-    const amount = order.itemSubtotal + order.deliveryFee;
-
-    const paymentIntent = await createPaymentIntentOf(amount);
+    const paymentIntent = await createPaymentIntentOf(order.charge);
     order.paymentIntentId = paymentIntent.id;
-    await update(order);
+    await orderRepository.update(order);
 
     return paymentIntent;
 }

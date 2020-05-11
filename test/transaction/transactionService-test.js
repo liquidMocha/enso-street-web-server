@@ -4,6 +4,7 @@ import {Order} from "../../src/order/Order";
 import {OrderItem} from "../../src/transaction/OrderItem";
 import {OrderLineItem} from "../../src/transaction/OrderLineItem";
 import sinon from "sinon";
+import {Renter} from "../../src/order/Renter";
 
 describe('TransactionService', () => {
     let createPaymentIntentForStub;
@@ -27,7 +28,8 @@ describe('TransactionService', () => {
                 orderItems: lineItems,
                 startTime: startTime,
                 returnTime: returnTime,
-                deliveryFee: 0.00
+                deliveryFee: 0.00,
+                renter: new Renter("", "", true)
             }
         );
         createPaymentIntentFor(order);

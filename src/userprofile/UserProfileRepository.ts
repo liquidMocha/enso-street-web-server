@@ -64,7 +64,7 @@ async function getDefaultLocation(userId: string): Promise<Location | undefined>
     return location;
 }
 
-export const getUserProfile = async (userId: string): Promise<UserProfile> => {
+export const getUserProfileByUserId = async (userId: string): Promise<UserProfile> => {
     const user = UserRepository.getUserById(userId);
 
     const defaultLocation = await getDefaultLocation(userId);

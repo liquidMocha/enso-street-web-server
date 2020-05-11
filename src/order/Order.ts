@@ -3,6 +3,7 @@ import {OrderLineItem} from "../transaction/OrderLineItem";
 import {Owner} from "../item/Owner";
 import {Coordinates} from "../location/Coordinates";
 import Address from "../location/Address";
+import {Renter} from "./Renter";
 
 export class Order {
     get paymentIntentId(): string | undefined {
@@ -27,15 +28,17 @@ export class Order {
     readonly deliveryAddress?: Address;
     readonly deliveryCoordinates?: Coordinates;
     readonly deliveryFee: number;
+    readonly renter: Renter;
 
     constructor(
-        {id, orderItems, startTime, returnTime, executor, status = OrderStatus.FUND_NOT_AUTHORIZED, deliveryCoordinates, deliveryAddress, paymentIntentId, deliveryFee = 0}:
+        {id, orderItems, startTime, returnTime, executor, status = OrderStatus.FUND_NOT_AUTHORIZED, deliveryCoordinates, deliveryAddress, paymentIntentId, deliveryFee = 0, renter}:
             {
                 id: string,
                 orderItems: OrderLineItem[],
                 startTime: Date,
                 returnTime: Date,
                 executor: Owner,
+                renter: Renter,
                 status?: OrderStatus,
                 deliveryCoordinates?: Coordinates,
                 deliveryAddress?: Address,
@@ -53,6 +56,7 @@ export class Order {
         this.deliveryAddress = deliveryAddress;
         this.deliveryCoordinates = deliveryCoordinates;
         this.deliveryFee = deliveryFee;
+        this.renter = renter;
     }
 
     authorizePayment(): void {
@@ -114,4 +118,17 @@ export class Order {
         ) + 1;
     };
 
+    hasTrustedRenter(): boolean {
+        return this.renter.trusted;
+    }
+
+    get charge(): number {
+        let charge = this.itemSubtotal + this.deliveryFee;
+
+        if (charge >= this.totalDeposits() || this.hasTrustedRenter()) {
+            return charge;
+        } else {
+            return charge + this.totalDeposits();
+        }
+    }
 }

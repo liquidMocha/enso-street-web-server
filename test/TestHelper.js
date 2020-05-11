@@ -42,7 +42,7 @@ export async function setupItem({itemId = uuid(), userId, categories = ["novelty
 }
 
 export async function setupUser(
-    {id: id, email: email, password: password, name: name = "", failedLoginAttempts: failedLoginAttempts = 0}
+    {id: id, email: email, password: password, name: name = "some name", failedLoginAttempts: failedLoginAttempts = 0}
 ) {
     const createdUser = await database.one(`
                 INSERT INTO public.user(id, email, password, failed_login_attempts)
@@ -53,13 +53,11 @@ export async function setupUser(
         [id || uuid(), email, password, failedLoginAttempts]
     );
 
-    if (name) {
-        await database.none(`
-                    insert into public.user_profile(id, name, user_id)
-                    values ($1, $2, $3)`,
-            [uuid(), name, createdUser.id]
-        );
-    }
+    await database.none(`
+                insert into public.user_profile(id, name, user_id)
+                values ($1, $2, $3)`,
+        [uuid(), name, createdUser.id]
+    );
 
     return createdUser.id;
 }

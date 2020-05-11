@@ -2,8 +2,7 @@ import chai, {expect} from 'chai';
 import {uuid} from "uuidv4";
 import {Order} from "../../src/order/Order";
 import {OrderItem} from "../../src/transaction/OrderItem";
-import {setupItem} from "../TestHelper";
-import {getByPaymentIntentId, save} from "../../src/order/OrderRepository";
+import {setupItem, setupUser} from "../TestHelper";
 import {OrderStatus} from "../../src/order/OrderStatus";
 import {Owner} from "../../src/item/Owner";
 import {OrderLineItem} from "../../src/transaction/OrderLineItem";
@@ -12,10 +11,14 @@ import Address from "../../src/location/Address";
 import {Coordinates} from "../../src/location/Coordinates";
 import sinon from "sinon";
 import Index from "../../src/search/Index";
+import {Renter} from "../../src/order/Renter";
+import {sameProcessOrderRepository} from "../../src/ApplicationContext";
 
 chai.use(require('chai-datetime'));
 
 describe('order database', () => {
+    const subject = sameProcessOrderRepository;
+
     before(() => {
         sinon.stub(Index);
     });
@@ -52,7 +55,7 @@ describe('order database', () => {
         await givenAnOrderWith(paymentIntentId, orderItems, orderId, startTime, returnTime, itemId);
 
 
-        const actual = (await getByPaymentIntentId(paymentIntentId));
+        const actual = (await subject.getByPaymentIntentId(paymentIntentId));
 
 
         expect(actual.id).to.equal(orderId);
@@ -71,6 +74,10 @@ describe('order database', () => {
         const userEmail = "abc@ensost.com";
         await setupItem({itemId: itemId, userId: userId, userEmail: userEmail});
 
+        const renterId = uuid();
+        await setupUser({
+            id: renterId, email: "some-email@enso"
+        });
         const order = new Order(
             {
                 id: orderId,
@@ -78,11 +85,12 @@ describe('order database', () => {
                 paymentIntentId: paymentIntentId,
                 startTime: startTime,
                 returnTime: returnTime,
-                executor: new Owner(userId, userEmail)
+                executor: new Owner(userId, userEmail),
+                renter: new Renter(renterId, "John Doe", true)
             }
         );
 
-        await save(order);
+        await subject.save(order);
         return {paymentIntentId, orderItems, orderId, startTime, returnTime};
     }
 })

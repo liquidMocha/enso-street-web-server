@@ -1,11 +1,14 @@
 import {Order} from "./Order";
-import {getByPaymentIntentId, save} from "./OrderRepository";
 import {uuid} from "uuidv4";
 import {OrderLineItem} from "../transaction/OrderLineItem";
 import {getItemById} from "../item/ItemRepository";
 import Address from "../location/Address";
 import {geocode} from "../location/HereApiClient";
 import {getDeliveryFee} from "../transaction/TransactionService";
+import {UserAdaptor} from "./UserAdaptor";
+import {sameProcessOrderRepository} from "../ApplicationContext";
+
+const orderRepository = sameProcessOrderRepository;
 
 export async function initiateOrder(
     {deliveryAddress, orderLineItems, startTime, returnTime, userId}: {
@@ -14,7 +17,7 @@ export async function initiateOrder(
         startTime: Date,
         returnTime: Date,
         userId: string
-    }
+    }, userAdaptor: UserAdaptor
 ): Promise<string> {
     let deliveryCoordinates;
     let deliveryFee = Promise.resolve(0);
@@ -24,6 +27,7 @@ export async function initiateOrder(
     }
 
     const owner = (await getItemById(orderLineItems[0].orderItem.itemId)).owner
+    const userProfileDto = userAdaptor.getRenterById(userId);
     const order = new Order({
         id: uuid(),
         orderItems: orderLineItems,
@@ -32,14 +36,15 @@ export async function initiateOrder(
         executor: owner,
         deliveryCoordinates: await deliveryCoordinates,
         deliveryAddress,
-        deliveryFee: await deliveryFee
+        deliveryFee: await deliveryFee,
+        renter: await orderRepository.reconstitueRenter(await userProfileDto)
     });
 
-    await save(order);
+    await orderRepository.save(order);
 
     return order.id;
 }
 
 export function getOrderByPaymentIntent(paymentIntentId: string): Promise<Order> {
-    return getByPaymentIntentId(paymentIntentId);
+    return orderRepository.getByPaymentIntentId(paymentIntentId);
 }

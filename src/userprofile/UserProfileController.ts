@@ -1,10 +1,10 @@
 import express, {NextFunction, Request, Response} from "express";
-import {getUserProfile, update} from "./UserProfileRepository";
+import {getUserProfileByUserId, update} from "./UserProfileRepository";
 import Contact from "./Contact";
 import {uuid} from "uuidv4";
 import Location from "../location/Location";
-import {toDto} from "./UserProfileMapper";
 import {requireAuthentication} from "../user/AuthenticationCheck";
+import {getUserProfile} from "./UserProfileService";
 
 const router = express.Router();
 
@@ -12,8 +12,9 @@ router.get('/', requireAuthentication, fetchUserProfile);
 
 async function fetchUserProfile(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-    const userProfile = await getUserProfile(userId);
-    const userProfileDto = toDto(userProfile);
+
+    const userProfileDto = await getUserProfile(userId);
+
     res.status(200).json(userProfileDto);
 }
 
@@ -23,7 +24,7 @@ async function updateProfile(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const updatedProfileDto: UpdateProfileDto = req.body.profile;
 
-    const userProfile = await getUserProfile(userId);
+    const userProfile = await getUserProfileByUserId(userId);
     userProfile.updateFirstName(updatedProfileDto.firstName);
     userProfile.updateLastName(updatedProfileDto.lastName);
     userProfile.updatePhone(updatedProfileDto.phone);
@@ -40,7 +41,7 @@ async function addContact(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const contactDto = req.body.contact;
 
-    const userProfile = await getUserProfile(userId);
+    const userProfile = await getUserProfileByUserId(userId);
     userProfile.addContact(new Contact({
         id: contactDto.id || uuid(),
         firstName: contactDto.firstName,
@@ -54,7 +55,7 @@ async function addContact(req: Request, res: Response, next: NextFunction) {
 }
 
 export const InitializeDefaultLocation = async (userId: string, location: Location) => {
-    const userProfile = await getUserProfile(userId);
+    const userProfile = await getUserProfileByUserId(userId);
     if (userProfile.defaultLocation == null) {
         userProfile.defaultLocation = location;
     }

@@ -5,9 +5,11 @@ import {CheckoutItemDTO} from "./CheckoutItemDTO";
 import {createPaymentIntentFor, getDeliveryFee, snapshotItem, snapshotItems} from "./TransactionService";
 import {StripeEvent} from "../stripe/StripeEvent";
 import {getOrderByPaymentIntent, initiateOrder} from "../order/OrderService";
-import {getOrderById, update} from "../order/OrderRepository";
 import {OrderLineItem} from "./OrderLineItem";
+import {sameProcessOrderRepository, sameProcessUserAdaptor} from "../ApplicationContext";
 
+const orderRepository = sameProcessOrderRepository;
+const userAdaptor = sameProcessUserAdaptor;
 const router = express.Router();
 
 router.post('/delivery-quote', getDeliveryQuote)
@@ -34,7 +36,7 @@ async function getDeliveryQuote(req: Request, res: Response, next: NextFunction)
 async function startTransaction(req: Request, res: Response, next: NextFunction) {
     const startTime: Date = new Date(req.body.rentDate);
     const returnTime: Date = new Date(req.body.returnDate);
-    const userId = req.session?.userId;
+    const renterUserId = req.session?.userId;
 
     const deliveryAddressJson = req.body.deliveryAddress;
 
@@ -62,9 +64,9 @@ async function startTransaction(req: Request, res: Response, next: NextFunction)
         orderLineItems: orderLineItems,
         startTime: startTime,
         returnTime: returnTime,
-        userId: userId
-    });
-    const order = await getOrderById(await orderId);
+        userId: renterUserId
+    }, userAdaptor);
+    const order = await orderRepository.getOrderById(await orderId);
     const paymentIntent = await createPaymentIntentFor(order);
 
     res.status(200).json({clientSecret: paymentIntent.client_secret});
@@ -81,7 +83,7 @@ async function handleCustomerPaymentAuthorized(request: Request, response: Respo
         console.log('event data object: ', event.data.object);
         const order = await getOrderByPaymentIntent(event.data.object.id);
         order.authorizePayment();
-        await update(order);
+        await orderRepository.update(order);
     }
 
     response.json({received: true});

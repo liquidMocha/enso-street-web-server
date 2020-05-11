@@ -1,9 +1,10 @@
 import express, {NextFunction, Request, Response} from "express";
 import {requireAuthentication} from "../user/AuthenticationCheck";
-import {getOrderByIdForExecutor, getReceivedOrders, update} from "./OrderRepository";
 import {cancelPaymentIntent, capturePaymentIntent, refundDeposit} from "../stripe/StripeClient";
+import {sameProcessOrderRepository} from "../ApplicationContext";
 
 const router = express.Router();
+const orderRepository = sameProcessOrderRepository;
 
 router.get('/', requireAuthentication, getOrders);
 router.post('/:orderId/cancel', requireAuthentication, cancelOrder);
@@ -14,7 +15,7 @@ async function getOrders(request: Request, response: Response, next: NextFunctio
     const userId = request.session?.userId;
 
     try {
-        const orders = await getReceivedOrders(userId);
+        const orders = await orderRepository.getReceivedOrders(userId);
         response.json(orders);
     } catch (error) {
         next(error);
@@ -25,9 +26,9 @@ async function cancelOrder(request: Request, response: Response, next: NextFunct
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
+        const order = await orderRepository.getOrderByIdForExecutor(request.params.orderId, userId);
         order.cancel();
-        await update(order);
+        await orderRepository.update(order);
         if (order.paymentIntentId !== undefined) {
             await cancelPaymentIntent(order.paymentIntentId);
         } else {
@@ -45,9 +46,9 @@ async function confirmOrder(request: Request, response: Response, next: NextFunc
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
+        const order = await orderRepository.getOrderByIdForExecutor(request.params.orderId, userId);
         order.confirm();
-        await update(order);
+        await orderRepository.update(order);
         if (order.paymentIntentId !== undefined) {
             await capturePaymentIntent(order.paymentIntentId);
         } else {
@@ -64,9 +65,9 @@ async function completeOrder(request: Request, response: Response, next: NextFun
     const userId = request.session?.userId;
 
     try {
-        const order = await getOrderByIdForExecutor(request.params.orderId, userId);
+        const order = await orderRepository.getOrderByIdForExecutor(request.params.orderId, userId);
         order.complete();
-        await update(order);
+        await orderRepository.update(order);
         await refundDeposit(order);
         response.status(200).send();
     } catch (e) {
