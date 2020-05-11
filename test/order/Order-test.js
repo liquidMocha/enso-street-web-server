@@ -3,6 +3,7 @@ import {OrderLineItem} from "../../src/transaction/OrderLineItem";
 import {OrderItem} from "../../src/transaction/OrderItem";
 import {expect} from 'chai';
 import {Renter} from "../../src/order/Renter";
+import {OrderStatus} from "../../src/order/OrderStatus";
 
 describe("order domain object", () => {
     it('should return sum of deposits of all line items', () => {
@@ -122,5 +123,47 @@ describe("order domain object", () => {
 
             expect(subject.rentalDays).to.equal(4);
         });
+    })
+
+    describe('order status', () => {
+        it('return EXPIRED when order is created 3 days ago and status is PENDING', () => {
+            const now = new Date();
+            const timestamp = new Date().getTime();
+            const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 1);
+
+            const subject = new Order({
+                status: OrderStatus.PENDING,
+                createdOn: threeDaysAgo
+            });
+
+            expect(subject.status).to.equal(OrderStatus.EXPIRED);
+        })
+
+        it('return PENDING when order is created within 3 days and status is PENDING', () => {
+            const now = new Date();
+            const timestamp = new Date().getTime();
+            const lessThanThreeDaysAgo = new Date(now.getTime() - 3 * 23 * 60 * 60 * 1000);
+
+            const subject = new Order({
+                status: OrderStatus.PENDING,
+                createdOn: lessThanThreeDaysAgo
+            });
+
+            expect(subject.status).to.equal(OrderStatus.PENDING);
+        })
+
+        it('return order status if status is not pending regardless of when it was created', () => {
+            const now = new Date();
+            const timestamp = new Date().getTime();
+            const aYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+            const subject = new Order({
+                status: OrderStatus.COMPLETED,
+                createdOn: aYearAgo
+            });
+
+            expect(subject.status).to.equal(OrderStatus.COMPLETED);
+        })
+
     })
 })

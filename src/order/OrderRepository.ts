@@ -116,24 +116,6 @@ export class OrderRepository {
         return this.reconstituteOrder(orderDao, ownerEmail, orderLineItems);
     }
 
-    selectOrder(): string {
-        return `SELECT id,
-                       payment_intent_id,
-                       start_time,
-                       return_time,
-                       status,
-                       executor,
-                       delivery_fee,
-                       street,
-                       city,
-                       state,
-                       zip_code,
-                       ST_X(delivery_coordinates::geometry) AS longitude,
-                       ST_Y(delivery_coordinates::geometry) AS latitude,
-                       renter
-                FROM "order" `
-    }
-
     async update(order: Order): Promise<null> {
         return await database.none(`
             UPDATE "order"
@@ -189,9 +171,29 @@ export class OrderRepository {
                 }),
                 deliveryFee: Number(orderDao.delivery_fee),
                 paymentIntentId: orderDao.payment_intent_id,
-                renter: await this.reconstitueRenter(userProfileDto)
+                renter: await this.reconstitueRenter(userProfileDto),
+                createdOn: orderDao.created_on
             }
         )
+    }
+
+    selectOrder(): string {
+        return `SELECT id,
+                       payment_intent_id,
+                       start_time,
+                       return_time,
+                       status,
+                       executor,
+                       delivery_fee,
+                       street,
+                       city,
+                       state,
+                       zip_code,
+                       ST_X(delivery_coordinates::geometry) AS longitude,
+                       ST_Y(delivery_coordinates::geometry) AS latitude,
+                       renter,
+                       created_on
+                FROM "order" `
     }
 
     async getOrderById(orderId: string): Promise<Order> {
