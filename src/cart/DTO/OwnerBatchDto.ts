@@ -5,6 +5,7 @@ export class CartItemDto {
     private rentalDailyPrice: number;
     private imageUrl: string;
     private canBeDelivered: boolean;
+    private deposit: number;
 
     constructor(
         id: string,
@@ -12,7 +13,8 @@ export class CartItemDto {
         rentalDailyPrice: number,
         imageUrl: string,
         quantity: number,
-        canBeDelivered: boolean
+        canBeDelivered: boolean,
+        deposit: number
     ) {
         this.quantity = quantity;
         this.id = id;
@@ -20,6 +22,7 @@ export class CartItemDto {
         this.rentalDailyPrice = rentalDailyPrice;
         this.imageUrl = imageUrl;
         this.canBeDelivered = canBeDelivered
+        this.deposit = deposit;
     }
 }
 

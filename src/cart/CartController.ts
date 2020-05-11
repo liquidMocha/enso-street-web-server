@@ -10,6 +10,8 @@ import {requireAuthentication} from "../user/AuthenticationCheck";
 const router = express.Router();
 
 router.get('/', requireAuthentication, getCart);
+router.put('/', requireAuthentication, addItemToCart);
+router.delete('/', requireAuthentication, deleteItemFromCart);
 
 async function getCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
@@ -23,8 +25,6 @@ async function getCart(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-router.put('/', requireAuthentication, addItemToCart);
-
 async function addItemToCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const itemId = req.body.itemId;
@@ -37,8 +37,6 @@ async function addItemToCart(req: Request, res: Response, next: NextFunction) {
         res.status(500).send();
     }
 }
-
-router.delete('/', requireAuthentication, deleteItemFromCart);
 
 async function deleteItemFromCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;

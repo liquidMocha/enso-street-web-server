@@ -77,7 +77,7 @@ describe('cart', () => {
                     id: itemId1,
                     title: itemTitle1,
                     ownerEmail: ownerEmail1,
-                    deposit: 123,
+                    deposit: 100,
                     rentalDailyPrice: rentalDailyPrice1,
                     deliveryAdditional: 2,
                     deliveryStarting: 10,
@@ -91,7 +91,7 @@ describe('cart', () => {
                     id: itemId2,
                     title: itemTitle2,
                     ownerEmail: ownerEmail2,
-                    deposit: 123,
+                    deposit: 200,
                     rentalDailyPrice: rentalDailyPrice2,
                     deliveryAdditional: 2,
                     deliveryStarting: 10,
@@ -107,7 +107,8 @@ describe('cart', () => {
                     id: itemId1,
                     rentalDailyPrice: rentalDailyPrice1,
                     imageUrl: imageUrl1,
-                    quantity: 1
+                    quantity: 1,
+                    deposit: 100
                 }
             ];
 
@@ -117,7 +118,8 @@ describe('cart', () => {
                     id: itemId2,
                     rentalDailyPrice: rentalDailyPrice2,
                     imageUrl: imageUrl2,
-                    quantity: 2
+                    quantity: 2,
+                    deposit: 200
                 }
             ];
 
