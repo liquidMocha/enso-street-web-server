@@ -15,9 +15,11 @@ import {UserProfileDto} from "../userprofile/UserProfileDto";
 
 export class OrderRepository {
     private userAdaptor: UserAdaptor;
+    private readonly NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED: number;
 
-    constructor(userAdaptor: UserAdaptor) {
+    constructor(userAdaptor: UserAdaptor, NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED: number) {
         this.userAdaptor = userAdaptor;
+        this.NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED = NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED;
     }
 
     async save(order: Order): Promise<any> {
@@ -142,7 +144,7 @@ export class OrderRepository {
     }
 
     async reconstitueRenter(userProfileDto: UserProfileDto): Promise<Renter> {
-        const isTrustedRenter = (await this.orderCountForRenter(userProfileDto.user.id)) >= 3;
+        const isTrustedRenter = (await this.orderCountForRenter(userProfileDto.user.id)) >= this.NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED;
         return new Renter(
             userProfileDto.user.id,
             `${userProfileDto.firstName} ${userProfileDto.lastName}`,

@@ -4,4 +4,4 @@ import {SameProcessUserProfilePorts} from "./userprofile/SameProcessUserProfileP
 
 export const sameProcessUserAdaptor = new SameProcessUserAdaptor(new SameProcessUserProfilePorts());
 
-export const sameProcessOrderRepository = new OrderRepository(sameProcessUserAdaptor);
+export const sameProcessOrderRepository = new OrderRepository(sameProcessUserAdaptor, Number(process.env.NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED!));
