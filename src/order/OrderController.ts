@@ -2,6 +2,8 @@ import express, {NextFunction, Request, Response} from "express";
 import {requireAuthentication} from "../user/AuthenticationCheck";
 import {cancelPaymentIntent, capturePaymentIntent, refundDeposit} from "../stripe/StripeClient";
 import {sameProcessOrderRepository} from "../ApplicationContext";
+import {Order} from "./Order";
+import {OrderDto} from "./OrderDto";
 
 const router = express.Router();
 const orderRepository = sameProcessOrderRepository;
@@ -11,12 +13,27 @@ router.post('/:orderId/cancel', requireAuthentication, cancelOrder);
 router.post('/:orderId/confirm', requireAuthentication, confirmOrder)
 router.post('/:orderId/complete', requireAuthentication, completeOrder)
 
+function orderToDto(order: Order): OrderDto {
+    return {
+        id: order.id,
+        orderLineItems: order.orderLineItems,
+        startTime: order.startTime,
+        returnTime: order.returnTime,
+        status: order.status,
+        deliveryAddress: order.deliveryAddress,
+        deliveryCoordinates: order.deliveryCoordinates,
+        deliveryFee: order.deliveryFee,
+        renter: order.renter,
+    }
+}
+
 async function getOrders(request: Request, response: Response, next: NextFunction) {
     const userId = request.session?.userId;
 
     try {
         const orders = await orderRepository.getReceivedOrders(userId);
-        response.json(orders);
+        const orderDtos = orders.map(order => orderToDto(order))
+        response.json(orderDtos);
     } catch (error) {
         next(error);
     }
