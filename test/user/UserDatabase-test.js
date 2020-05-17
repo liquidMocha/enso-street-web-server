@@ -189,7 +189,7 @@ describe('User data', () => {
 
             await UserRepository.saveEnsoUser(user, password);
 
-            const actualPassword = await UserRepository.getPasswordForUser(userId);
+            const actualPassword = await UserRepository.getPasswordHashForUser(userId);
 
             expect(actualPassword).not.to.be.equal(password);
             expect(actualPassword).not.to.be.null;

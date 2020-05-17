@@ -1,4 +1,4 @@
-import {createEnsoUser, ensoLogin, googleSignOn, userExists} from "./UserService";
+import {createEnsoUser, ensoLogin, googleSignOn, initiateForgetPassword, userExists} from "./UserService";
 import express, {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
@@ -114,4 +114,15 @@ router.get('/logout', (req, res) => {
     res.status(200).send();
 });
 
+router.post('/forget-password', async (req, res) => {
+    const userEmail = req.body.email;
+    try {
+        await initiateForgetPassword(userEmail);
+        res.status(200).send();
+    } catch (e) {
+        console.error(e);
+        res.status(500).send();
+    }
+
+})
 export default router;

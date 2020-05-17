@@ -5,7 +5,8 @@ import {OAuth2Client} from "google-auth-library";
 import {UserProfile} from "../userprofile/UserProfile";
 import bcrypt from "bcrypt";
 import GoogleSignOnResponse from "./GoogleSignOnResponse";
-import {sendWelcomeEmail} from "../email/SendGridClient";
+import {sendPasswordResetEmail, sendWelcomeEmail} from "../email/SendGridClient";
+import jose from "jose";
 
 export const createEnsoUser = async (name: string, password: string, email: string) => {
     const user = createNewEnsoUser(email);
@@ -25,7 +26,7 @@ const passwordMatch = async (incomingPassword: string, existingPassword: string)
 export const ensoLogin = async (email: string, password: string) => {
     const user = await UserRepository.findOneUser({email});
     if (user) {
-        const existingPassword = UserRepository.getPasswordForUser(user.id);
+        const existingPassword = UserRepository.getPasswordHashForUser(user.id);
         const loginSuccessful = await passwordMatch(password, await existingPassword);
         if (loginSuccessful) {
             user.loginSucceeded();
@@ -66,3 +67,17 @@ export const userExists = async (id: string): Promise<boolean> => {
 export const getUser = async (userId: string) => {
     return UserRepository.getUser(userId);
 };
+
+const passwordResetTokenExpiration = process.env.PASSWORD_RESET_TOKEN_EXPIRATION;
+const passwordResetLinkBaseUrl = process.env.PASSWORD_RESET_BASEURL;
+
+export const initiateForgetPassword = async (userEmail: string) => {
+    const user = await UserRepository.findOneUser({email: userEmail});
+    if (user) {
+        const passwordHash = await UserRepository.getPasswordHashForUser(user.id);
+        const resetToken = jose.JWT.sign({id: user.id}, passwordHash, {expiresIn: "1 hour"});
+        return sendPasswordResetEmail(user.email, `${passwordResetLinkBaseUrl}?token=${resetToken}`);
+    } else {
+        throw Error(`User ${userEmail} does not exist.`)
+    }
+}

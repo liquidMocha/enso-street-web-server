@@ -111,7 +111,7 @@ const createOAuthUser = async (user: User) => {
     );
 };
 
-const getPasswordForUser = async (userId: string): Promise<string> => {
+const getPasswordHashForUser = async (userId: string): Promise<string> => {
     return await database.one(`SELECT password
                                FROM public."user"
                                WHERE id = $1`, [userId],
@@ -134,6 +134,14 @@ const getUser = (userId: string) => {
         WHERE u.id = $1`, [userId])
 };
 
+const getPasswordHashFor = (userId: string): Promise<string> => {
+    return database.one(`
+        SELECT password
+        FROM "user"
+        WHERE id = $1
+    `, [userId], data => data.password);
+}
+
 export default {
     getEmailById,
     findOneUser,
@@ -141,7 +149,7 @@ export default {
     ensoUserExists,
     userExists,
     emailExists,
-    getPasswordForUser,
+    getPasswordHashForUser,
     saveEnsoUser,
     createOAuthUser,
     update,
