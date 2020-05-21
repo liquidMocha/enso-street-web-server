@@ -1,4 +1,11 @@
-import {createEnsoUser, ensoLogin, googleSignOn, initiateForgetPassword, userExists} from "./UserService";
+import {
+    createEnsoUser,
+    ensoLogin,
+    googleSignOn,
+    initiateForgetPassword,
+    updatePasswordFor,
+    userExists
+} from "./UserService";
 import express, {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
@@ -6,6 +13,7 @@ import UserRepository from "./UserRepository";
 import {UserProfile} from "../userprofile/UserProfile";
 import {save as saveUserProfile} from "../userprofile/UserProfileRepository";
 import {createNewEnsoUser} from "./UserFactory";
+import jose from "jose";
 
 const router = express.Router();
 
@@ -123,6 +131,23 @@ router.post('/forget-password', async (req, res) => {
         console.error(e);
         res.status(500).send();
     }
-
 })
+
+router.post('/reset-password', async (req, res, next) => {
+    const newPassword = req.body.password;
+    const token = req.body.token;
+    try {
+        const decodedToken = jose.JWT.decode(token);
+        // @ts-ignore
+        const userId = decodedToken.id;
+
+        const userPasswordHash = UserRepository.getPasswordHashForUser(userId);
+        const tokenVerifyResult = jose.JWT.verify(token, await userPasswordHash);
+        await updatePasswordFor(userId, newPassword);
+        res.status(200).send();
+    } catch (e) {
+        console.error(`password reset token rejected: ${e}`)
+    }
+})
+
 export default router;

@@ -126,6 +126,17 @@ const update = (user: User) => {
     `, [user.failedAttempts, user.email])
 };
 
+const updatePasswordFor = async (userId: string, password: string) => {
+    const saltRounds = 14;
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
+
+    return database.none(`
+        UPDATE "user"
+        SET password = $1
+        WHERE id = $2
+    `, [hashedPassword, userId]);
+}
+
 const getUser = (userId: string) => {
     return database.one(`
         SELECT up.name, u.email
@@ -133,14 +144,6 @@ const getUser = (userId: string) => {
                  JOIN user_profile up on u.id = up.user_id
         WHERE u.id = $1`, [userId])
 };
-
-const getPasswordHashFor = (userId: string): Promise<string> => {
-    return database.one(`
-        SELECT password
-        FROM "user"
-        WHERE id = $1
-    `, [userId], data => data.password);
-}
 
 export default {
     getEmailById,
@@ -154,5 +157,6 @@ export default {
     createOAuthUser,
     update,
     getUserById,
-    getUser
+    getUser,
+    updatePasswordFor
 }

@@ -25,7 +25,7 @@ describe('users', () => {
         userUpdateStub = sinon.stub(UserRepository, 'update');
         saveUserProfileStub = sinon.stub(UserProfileRepository, 'save');
         emailExistsStub = sinon.stub(UserRepository, 'emailExists');
-        getPasswordForUserStub = sinon.stub(UserRepository, 'getPasswordForUser');
+        getPasswordForUserStub = sinon.stub(UserRepository, 'getPasswordHashForUser');
         userExistsStub = sinon.stub(UserRepository, 'userExists');
         bcryptStub = sinon.stub(bcrypt);
     });

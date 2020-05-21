@@ -19,6 +19,10 @@ export const createEnsoUser = async (name: string, password: string, email: stri
     sendWelcomeEmail(email);
 };
 
+export const updatePasswordFor = async (userId: string, password: string) => {
+    return UserRepository.updatePasswordFor(userId, password);
+}
+
 const passwordMatch = async (incomingPassword: string, existingPassword: string) => {
     return await bcrypt.compare(incomingPassword, existingPassword);
 }
