@@ -15,7 +15,7 @@ const sessionOptions = {
         secure: true,
         httpOnly: true,
         maxAge: THIRTY_DAYS,
-        sameSite: 'lax'
+        sameSite: 'strict'
     },
     secret: process.env.sessionSecret!!,
     store: new redisStore({host: redisHost, password: redisPassword, port: redisPort, client: redisClient, ttl: 260}),
