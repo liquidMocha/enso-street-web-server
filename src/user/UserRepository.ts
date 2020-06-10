@@ -121,9 +121,10 @@ const getPasswordHashForUser = async (userId: string): Promise<string> => {
 const update = (user: User) => {
     return database.none(`
         UPDATE public.user
-        SET failed_login_attempts = $1
-        WHERE email = $2;
-    `, [user.failedAttempts, user.email])
+        SET failed_login_attempts     = $1,
+            stripe_connect_account_id = $2
+        WHERE email = $3;
+    `, [user.failedAttempts, user.stripeUserId, user.email])
 };
 
 const updatePasswordFor = async (userId: string, password: string) => {

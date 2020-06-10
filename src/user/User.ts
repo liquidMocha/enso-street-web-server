@@ -3,6 +3,7 @@ export class User {
     readonly email: string;
     private _failedAttempts: number;
     readonly createdOn: Date;
+    private _stripeUserId: string;
 
     constructor({id, email, createdOn, failedAttempts}: {
         id: string,
@@ -35,4 +36,11 @@ export class User {
         return this._failedAttempts;
     }
 
+    get stripeUserId(): string {
+        return this._stripeUserId;
+    }
+
+    set stripeUserId(value: string) {
+        this._stripeUserId = value;
+    }
 }

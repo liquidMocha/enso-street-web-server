@@ -42,3 +42,17 @@ export async function refundDeposit(order: Order): Promise<void> {
         console.error(`Failed to refund order: ${order.id}`);
     }
 }
+
+export async function getStripeConnectAccount(authorizationCode: string): Promise<string> {
+    const response = await stripe.oauth.token({
+        grant_type: 'authorization_code',
+        code: authorizationCode,
+    });
+
+    const stripeUserId = response.stripe_user_id;
+    if (stripeUserId) {
+        return stripeUserId;
+    } else {
+        return Promise.reject("Error when getting Stripe user ID.");
+    }
+}

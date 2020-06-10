@@ -14,10 +14,30 @@ import {UserProfile} from "../userprofile/UserProfile";
 import {save as saveUserProfile} from "../userprofile/UserProfileRepository";
 import {createNewEnsoUser} from "./UserFactory";
 import jose from "jose";
+import {requireAuthentication} from "./AuthenticationCheck";
+import {getStripeConnectAccount} from "../stripe/StripeClient";
 
 const router = express.Router();
 
 router.post('/createUser', registerEnsoUser);
+router.post('/connect-stripe', requireAuthentication, connectStripe)
+
+async function connectStripe(req: Request, res: Response, next: NextFunction) {
+    try {
+        const stripeAuthorizationCode = req.body.stripeAuthorizationCode;
+
+        const stripeConnectAccountId = getStripeConnectAccount(stripeAuthorizationCode);
+        const userId = req.session?.userId;
+
+        const user = await UserRepository.getUserById(userId);
+        user.stripeUserId = await stripeConnectAccountId;
+        await UserRepository.update(user);
+        res.status(200).send();
+    } catch (e) {
+        console.trace(e);
+        res.status(500).send();
+    }
+}
 
 async function registerEnsoUser(req: Request, res: Response, next: NextFunction) {
     const schema = Joi.object({
