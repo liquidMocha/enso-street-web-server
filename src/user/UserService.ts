@@ -23,7 +23,7 @@ export const updatePasswordFor = async (userId: string, password: string) => {
     return UserRepository.updatePasswordFor(userId, password);
 }
 
-const passwordMatch = async (incomingPassword: string, existingPassword: string) => {
+export const passwordMatch = async (incomingPassword: string, existingPassword: string) => {
     return await bcrypt.compare(incomingPassword, existingPassword);
 }
 

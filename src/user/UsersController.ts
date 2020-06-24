@@ -3,6 +3,7 @@ import {
     ensoLogin,
     googleSignOn,
     initiateForgetPassword,
+    passwordMatch,
     updatePasswordFor,
     userExists
 } from "./UserService";
@@ -20,7 +21,23 @@ import {getStripeConnectAccount} from "../stripe/StripeClient";
 const router = express.Router();
 
 router.post('/createUser', registerEnsoUser);
-router.post('/connect-stripe', requireAuthentication, connectStripe)
+router.post('/connect-stripe', requireAuthentication, connectStripe);
+router.post('/update-password', requireAuthentication, updatePassword);
+
+async function updatePassword(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session?.userId;
+    const currentPassword = req.body.currentPassword;
+    const newPassword = req.body.newPassword;
+
+    const existingPassword = UserRepository.getPasswordHashForUser(userId);
+    const existingPasswordMatch = await passwordMatch(currentPassword, await existingPassword);
+    if (existingPasswordMatch) {
+        await updatePasswordFor(userId, newPassword);
+        res.status(200).send();
+    } else {
+        res.status(401).send();
+    }
+}
 
 async function connectStripe(req: Request, res: Response, next: NextFunction) {
     try {
