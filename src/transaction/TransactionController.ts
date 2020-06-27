@@ -20,17 +20,21 @@ async function getDeliveryQuote(req: Request, res: Response, next: NextFunction)
     const itemIds: string[] = req.body.itemIds;
     const deliveryAddressJson = req.body.deliveryAddress;
 
-    const deliveryAddress = new Address({
-        street: deliveryAddressJson.street,
-        city: deliveryAddressJson.city,
-        state: deliveryAddressJson.state,
-        zipCode: deliveryAddressJson.zipCode
-    });
+    if (deliveryAddressJson) {
+        const deliveryAddress = new Address({
+            street: deliveryAddressJson.street,
+            city: deliveryAddressJson.city,
+            state: deliveryAddressJson.state,
+            zipCode: deliveryAddressJson.zipCode
+        });
 
-    const orderItems = snapshotItems(itemIds);
-    const deliveryFee = await getDeliveryFee(await orderItems, await deliveryAddress);
+        const orderItems = snapshotItems(itemIds);
+        const deliveryFee = await getDeliveryFee(await orderItems, await deliveryAddress);
 
-    res.status(200).json(deliveryFee);
+        res.status(200).json(deliveryFee);
+    } else {
+        res.status(400).send();
+    }
 }
 
 async function startTransaction(req: Request, res: Response, next: NextFunction) {
