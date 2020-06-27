@@ -77,13 +77,15 @@ async function handleCustomerPaymentAuthorized(request: Request, response: Respo
     event = request.body;
 
     if (event.type !== StripeEvent.PAYMENT_AUTHORIZED) {
-        response.status(400).send(`Webhook Error: not able to handle event type: ${event.type}`);
+        console.error(`Webhook Error: not able to handle event type: ${event.type}`)
+        response.status(200).send();
         return;
     } else {
         console.log('event data object: ', event.data.object);
         const order = await getOrderByPaymentIntent(event.data.object.id);
         order.authorizePayment();
         await orderRepository.update(order);
+        response.status(200).send();
     }
 
     response.json({received: true});
