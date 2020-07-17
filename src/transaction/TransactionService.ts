@@ -10,7 +10,7 @@ import {sameProcessOrderRepository} from "../ApplicationContext";
 const orderRepository = sameProcessOrderRepository;
 
 export async function createPaymentIntentFor(order: Order): Promise<Stripe.PaymentIntent> {
-    const paymentIntent = await createPaymentIntentOf(order.charge);
+    const paymentIntent = await createPaymentIntentOf(order);
     order.paymentIntentId = paymentIntent.id;
     await orderRepository.update(order);
 

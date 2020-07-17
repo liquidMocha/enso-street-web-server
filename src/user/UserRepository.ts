@@ -3,6 +3,7 @@ import * as bcrypt from "bcrypt";
 import {reconstitueEnsoUser} from "./UserFactory";
 import {User} from "./User";
 import UserDAO from "./UserDAO";
+import {Owner} from "../item/Owner";
 
 const getEmailById = (userId: string): Promise<string> => {
     return database.one(
@@ -146,6 +147,18 @@ const getUser = (userId: string) => {
         WHERE u.id = $1`, [userId])
 };
 
+
+const getOwner = (userId: string): Promise<Owner> => {
+    return database.one(
+            `SELECT email, id, stripe_connect_account_id
+             FROM public."user"
+             WHERE id = $1`, [userId],
+        result => {
+            return new Owner(result.id, result.email, result.stripe_connect_account_id);
+        }
+    )
+}
+
 export default {
     getEmailById,
     findOneUser,
@@ -159,5 +172,6 @@ export default {
     update,
     getUserById,
     getUser,
-    updatePasswordFor
+    updatePasswordFor,
+    getOwner
 }

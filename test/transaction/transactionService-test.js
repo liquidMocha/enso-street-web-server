@@ -34,6 +34,6 @@ describe('TransactionService', () => {
         );
         createPaymentIntentFor(order);
 
-        sinon.assert.calledWith(createPaymentIntentForStub, 120);
+        sinon.assert.calledWith(createPaymentIntentForStub, order);
     })
 })

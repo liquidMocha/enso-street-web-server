@@ -1,6 +1,6 @@
 import express, {NextFunction, Request, Response} from "express";
 import {requireAuthentication} from "../user/AuthenticationCheck";
-import {cancelPaymentIntent, capturePaymentIntent, refundDeposit} from "../stripe/StripeClient";
+import {cancelPaymentIntent, capturePaymentIntent, payout, refundDeposit} from "../stripe/StripeClient";
 import {sameProcessOrderRepository} from "../ApplicationContext";
 import {Order} from "./Order";
 import {OrderDto} from "./OrderDto";
@@ -86,6 +86,7 @@ async function completeOrder(request: Request, response: Response, next: NextFun
         order.complete();
         await orderRepository.update(order);
         await refundDeposit(order);
+        await payout(order);
         response.status(200).send();
     } catch (e) {
         response.status(400).send();

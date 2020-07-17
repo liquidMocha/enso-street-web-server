@@ -4,7 +4,6 @@ import {OrderItem} from "../transaction/OrderItem";
 import {getGeographicLocationFrom} from "../GeographicUtil";
 import {OrderLineItem} from "../transaction/OrderLineItem";
 import UserRepository from "../user/UserRepository";
-import {Owner} from "../item/Owner";
 import ItemLocation from "../item/ItemLocation";
 import Address from "../location/Address";
 import {Coordinates} from "../location/Coordinates";
@@ -155,6 +154,7 @@ export class OrderRepository {
     async reconstituteOrder(orderDao: any, userEmail: string, lineItems: OrderLineItem[]) {
         const renterId = orderDao.renter;
         const userProfileDto = await this.userAdaptor.getRenterById(renterId);
+        const owner = await this.userAdaptor.getOwnerById(orderDao.executor);
 
         return new Order(
             {
@@ -162,7 +162,7 @@ export class OrderRepository {
                 orderItems: lineItems,
                 startTime: new Date(orderDao.start_time),
                 returnTime: new Date(orderDao.return_time),
-                executor: new Owner(orderDao.executor, userEmail),
+                executor: owner,
                 status: orderDao.status,
                 deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
                 deliveryAddress: new Address({
