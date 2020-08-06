@@ -129,7 +129,7 @@ export class OrderRepository {
     async getReceivedOrders(userId: string): Promise<Order[]> {
         const orderDAOs = await database.manyOrNone(`
         ${this.selectOrder()}
-        WHERE executor = $1
+        WHERE executor = $1 AND status != 'FUND_NOT_AUTHORIZED'
     `, [userId]);
 
         const userEmail = await UserRepository.getEmailById(userId);
