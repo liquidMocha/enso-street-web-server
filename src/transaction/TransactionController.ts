@@ -12,9 +12,9 @@ const orderRepository = sameProcessOrderRepository;
 const userAdaptor = sameProcessUserAdaptor;
 const router = express.Router();
 
-router.post('/delivery-quote', getDeliveryQuote)
-router.post('/pay', requireAuthentication, startTransaction)
-router.post('/payment-authorized', handleCustomerPaymentAuthorized)
+router.post('/delivery-quote', getDeliveryQuote);
+router.post('/pay', requireAuthentication, startTransaction);
+router.post('/payment-authorized', handleCustomerPaymentAuthorized);
 
 async function getDeliveryQuote(req: Request, res: Response, next: NextFunction) {
     const itemIds: string[] = req.body.itemIds;
@@ -77,19 +77,23 @@ async function startTransaction(req: Request, res: Response, next: NextFunction)
 }
 
 async function handleCustomerPaymentAuthorized(request: Request, response: Response, next: NextFunction) {
-    let event;
-    event = request.body;
+    let event = request.body;
 
-    console.log("Handling Stripe event: ", event);
-    if (event.type !== StripeEvent.PAYMENT_AUTHORIZED.toString()) {
-        console.error(`Webhook Error: not able to handle event type: ${event.type}`)
-        response.status(200).send();
-        return;
-    } else {
-        console.log('event data object: ', event.data.object);
-        const order = await getOrderByPaymentIntent(event.data.object.id);
-        order.authorizePayment();
-        await orderRepository.update(order);
+    try {
+        console.log("Handling Stripe event: ", event);
+        if (event.type !== StripeEvent.PAYMENT_AUTHORIZED.toString()) {
+            console.error(`Webhook Error: not able to handle event type: ${event.type}`)
+            response.status(200).send();
+            return;
+        } else {
+            console.log('event data object: ', event.data.object);
+            const order = await getOrderByPaymentIntent(event.data.object.id);
+            order.authorizePayment();
+            await orderRepository.update(order);
+            response.status(200).send();
+        }
+    } catch (exception) {
+        console.error('Exception when handling Stripe webhook: ', exception);
         response.status(200).send();
     }
 
