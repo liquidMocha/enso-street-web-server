@@ -31,10 +31,7 @@ describe("order domain object", () => {
         const orderItem2 = new OrderItem({rentalDailyPrice: 5});
         const lineItem1 = new OrderLineItem(orderItem1, 5);
         const lineItem2 = new OrderLineItem(orderItem2, 3);
-        const lineItems = [
-            lineItem1,
-            lineItem2
-        ]
+        const lineItems = [lineItem1, lineItem2]
         const startTime = new Date('May 9, 1975 16:00:00 GMT-3:00');
         const returnTime = new Date('May 11, 1975 16:00:00 GMT-3:00');
 
@@ -45,6 +42,25 @@ describe("order domain object", () => {
                 lineItem1.orderItem.rentalDailyPrice * lineItem1.quantity
                 + lineItem2.orderItem.rentalDailyPrice * lineItem2.quantity
             )
+        )
+    });
+
+    it('should apply discounts for order with more days', () => {
+        const orderItem1 = new OrderItem({rentalDailyPrice: 5});
+        const orderItem2 = new OrderItem({rentalDailyPrice: 5});
+        const lineItem1 = new OrderLineItem(orderItem1, 5);
+        const lineItem2 = new OrderLineItem(orderItem2, 3);
+        const lineItems = [lineItem1, lineItem2]
+        const startTime = new Date('May 9, 1975 16:00:00 GMT-3:00');
+        const returnTime = new Date('May 12, 1975 16:00:00 GMT-3:00');
+
+        const subject = new Order({orderItems: lineItems, startTime: startTime, returnTime: returnTime});
+
+        expect(subject.itemSubtotal).to.equal(
+            4 * (
+                lineItem1.orderItem.rentalDailyPrice * lineItem1.quantity
+                + lineItem2.orderItem.rentalDailyPrice * lineItem2.quantity
+            ) * 0.85
         )
     });
 

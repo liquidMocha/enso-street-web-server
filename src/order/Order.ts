@@ -115,11 +115,22 @@ export class Order {
     }
 
     get itemSubtotal(): number {
+        const rentalDuration = this.rentalDays;
+
+        let discount = 1;
+        if (rentalDuration >= 4 && rentalDuration <= 9) {
+            discount = 0.85;
+        } else if (rentalDuration >= 10 && rentalDuration <= 20) {
+            discount = 0.75;
+        } else if (rentalDuration > 20) {
+            discount = 0.65;
+        }
+
         return this.orderLineItems
             .map(orderItem => orderItem.getRentalFee(this.rentalDays, orderItem.quantity))
             .reduce((aggregate, itemRental) => {
                 return aggregate + itemRental;
-            }, 0);
+            }, 0) * discount;
     }
 
     get rentalDays(): number {
@@ -139,7 +150,7 @@ export class Order {
     get charge(): number {
         let charge = this.itemSubtotal + this.deliveryFee;
 
-        if (charge >= this.totalDeposits() || this.hasTrustedRenter()) {
+        if (this.itemSubtotal >= this.totalDeposits() || this.hasTrustedRenter()) {
             return charge;
         } else {
             return charge + this.totalDeposits();
