@@ -14,6 +14,7 @@ import {getUser} from "../user/UserService";
 import {requireAuthentication} from "../user/AuthenticationCheck";
 import UserRepository from "../user/UserRepository";
 import {Owner} from "./Owner";
+import {getUserProfileByUserId} from "../userprofile/UserProfileRepository";
 
 const router = express.Router();
 
@@ -59,6 +60,8 @@ const mapToItem = async (itemDTO: ItemDTO): Promise<Item> => {
         throw new Error(`User not found for item ${itemDTO}`);
     }
 
+    const userProfile = await getUserProfileByUserId(user.id);
+
     return new Item(
         {
             id: itemDTO.id,
@@ -78,7 +81,7 @@ const mapToItem = async (itemDTO: ItemDTO): Promise<Item> => {
                 itemDTO.location.address,
                 itemDTO.location.coordinates
             ),
-            owner: new Owner(user.id, user.email),
+            owner: new Owner(user.id, user.email, userProfile.name),
             searchable: itemDTO.searchable,
             archived: itemDTO.archived,
             createdOn: itemDTO.createdOn
@@ -163,6 +166,7 @@ async function getById(req: Request, res: Response, next: NextFunction) {
                 title: item.title,
                 description: item.description,
                 ownerEmail: item.owner.email,
+                ownerAlias: item.owner.name,
                 deposit: item.deposit,
                 rentalDailyPrice: item.rentalDailyPrice,
                 deliveryAdditional: item.deliveryAdditional,

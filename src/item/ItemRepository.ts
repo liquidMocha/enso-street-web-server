@@ -92,11 +92,13 @@ export const getItemById = async (itemId: string): Promise<Item> => {
                                    public.user.email,
                                    public.user.id                          as ownerId,
                                    public."user".stripe_connect_account_id as stripeAccountId,
+                                   up.name,
                                    ST_X(item.geo_location::geometry)       AS longitude,
                                    ST_Y(item.geo_location::geometry)       AS latitude
                             FROM item
                                      JOIN condition ON item.condition = condition.id
                                      JOIN public.user ON item.owner = "user".id
+                                     JOIN public.user_profile up ON "user".id = up.user_id
                             WHERE item.id = $1`,
             [itemId],
             item => {
@@ -134,7 +136,7 @@ export const getItemById = async (itemId: string): Promise<Item> => {
                     ),
                     new Coordinates(itemEntity.latitude, itemEntity.longitude)
                 ),
-                owner: new Owner(itemEntity.ownerid, itemEntity.email, itemEntity.stripeaccountid),
+                owner: new Owner(itemEntity.ownerid, itemEntity.email, itemEntity.name, itemEntity.stripeaccountid),
                 searchable: itemEntity.searchable,
                 archived: itemEntity.archived,
                 createdOn: itemEntity.created_on
