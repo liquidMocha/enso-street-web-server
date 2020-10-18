@@ -54,8 +54,9 @@ export async function setupUser(
     );
 
     await database.none(`
-                insert into public.user_profile(id, name, user_id)
-                values ($1, $2, $3)`,
+                INSERT INTO public.user_profile(id, name, user_id)
+                VALUES ($1, $2, $3)
+                ON CONFLICT DO NOTHING `,
         [uuid(), name, createdUser.id]
     );
 

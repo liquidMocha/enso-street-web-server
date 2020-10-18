@@ -13,6 +13,9 @@ import ItemLocation from "../../src/item/ItemLocation";
 import UserRepository from "../../src/user/UserRepository";
 import {User} from "../../src/user/User";
 import {Owner} from "../../src/item/Owner";
+import * as UserProfileRepository from "../../src/userprofile/UserProfileRepository";
+import {getUserProfileByUserId} from "../../src/userprofile/UserProfileRepository";
+import {UserProfile} from "../../src/userprofile/UserProfile";
 
 describe('item API', () => {
     describe('create new item', () => {
@@ -22,7 +25,8 @@ describe('item API', () => {
             getItemByIdStub,
             updateItemStub,
             getUserStub,
-            findOneUserStub;
+            findOneUserStub,
+            getUserProfileByUserIdStub;
         const loggedInUser = 'j1i4o13-n314in-234nkjn';
 
         const authenticatedApp = getAuthenticatedApp(loggedInUser);
@@ -38,6 +42,7 @@ describe('item API', () => {
             updateItemStub = sinon.stub(ItemRepository, 'update');
             getUserStub = sinon.stub(UserRepository, 'getUser');
             findOneUserStub = sinon.stub(UserRepository, 'findOneUser');
+            getUserProfileByUserIdStub = sinon.stub(UserProfileRepository, 'getUserProfileByUserId');
         });
 
         beforeEach(() => {
@@ -86,7 +91,11 @@ describe('item API', () => {
                 const userId = "123-abc";
                 const userEmail = "user@ensost.com";
                 const owner = new User({id: userId, email: userEmail});
-                findOneUserStub.resolves(owner)
+                findOneUserStub.resolves(owner);
+
+                const userAlias = "user alias";
+                const userProfile = new UserProfile({name: userAlias});
+                getUserProfileByUserIdStub.resolves(userProfile);
 
                 request(authenticatedApp)
                     .post('/api/items')
@@ -96,7 +105,7 @@ describe('item API', () => {
                             street, city, state, zipCode
                         }));
                         sinon.assert.calledWithMatch(saveItemStub, sinon.match({
-                            ...item, owner: new Owner(owner.id, owner.email)
+                            ...item, owner: new Owner(owner.id, owner.email, userAlias)
                         }));
                         done(error);
                     });
@@ -144,6 +153,7 @@ describe('item API', () => {
                 const description = "not favourite cat";
                 const ownerId = uuid();
                 const ownerEmail = "abc@phalange";
+                const ownerAlias = "some body"
                 const deposit = 2.1;
                 const rentalDailyPrice = 5.2;
                 const deliveryAdditional = 1.2;
@@ -158,7 +168,7 @@ describe('item API', () => {
                     id: itemId,
                     title: title,
                     description: description,
-                    owner: new Owner(ownerId, ownerEmail),
+                    owner: new Owner(ownerId, ownerEmail, ownerAlias),
                     deposit: deposit,
                     rentalDailyPrice: rentalDailyPrice,
                     deliveryAdditional: deliveryAdditional,
@@ -175,6 +185,7 @@ describe('item API', () => {
                     title: title,
                     description: description,
                     ownerEmail: ownerEmail,
+                    ownerAlias: ownerAlias,
                     deposit: deposit,
                     rentalDailyPrice: rentalDailyPrice,
                     deliveryAdditional: deliveryAdditional,
