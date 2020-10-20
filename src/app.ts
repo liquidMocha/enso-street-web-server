@@ -9,6 +9,7 @@ import cartRouter from "./cart/CartController";
 import userProfileRouter from "./userprofile/UserProfileController";
 import transactionRouter from "./transaction/TransactionController";
 import orderRouter from "./order/OrderController";
+import reservationRouter from "./reservation/ReservationController";
 import logger from "morgan";
 import path from "path";
 import bodyParser from "body-parser";
@@ -72,5 +73,6 @@ app.use('/api/cart', cartRouter);
 app.use('/api/userProfile', userProfileRouter);
 app.use('/api/transaction', transactionRouter);
 app.use('/api/order', orderRouter);
+app.use('/api/reservation', reservationRouter)
 
 export default app;

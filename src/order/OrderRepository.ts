@@ -142,6 +142,27 @@ export class OrderRepository {
         return await Promise.all(orders);
     }
 
+    async getReservationsFor(userId: string): Promise<Order[]> {
+        try {
+            const orderDAOs = await database.manyOrNone(`
+        ${this.selectOrder()}
+        WHERE renter = $1 AND status != 'FUND_NOT_AUTHORIZED'
+    `, [userId]);
+
+            const userEmail = await UserRepository.getEmailById(userId);
+            const orders = orderDAOs.map(async orderDao => {
+                const orderItems = this.getLineItemsForOrder(orderDao.id);
+
+                return this.reconstituteOrder(orderDao, userEmail, await orderItems);
+            });
+
+            return await Promise.all(orders);
+        } catch (e) {
+            console.error(`Error getting reservations for user ${userId}`);
+            throw Error(e);
+        }
+    }
+
     async reconstitueRenter(userProfileDto: UserProfileDto): Promise<Renter> {
         const isTrustedRenter = (await this.orderCountForRenter(userProfileDto.user.id)) >= this.NUMBER_OF_ORDERS_REQUIRED_TO_BE_TRUSTED;
         return new Renter(
@@ -149,53 +170,6 @@ export class OrderRepository {
             `${userProfileDto.firstName} ${userProfileDto.lastName}`,
             isTrustedRenter
         )
-    }
-
-    async reconstituteOrder(orderDao: any, userEmail: string, lineItems: OrderLineItem[]) {
-        const renterId = orderDao.renter;
-        const userProfileDto = await this.userAdaptor.getRenterById(renterId);
-        const owner = await this.userAdaptor.getOwnerById(orderDao.executor);
-
-        return new Order(
-            {
-                id: orderDao.id,
-                orderItems: lineItems,
-                startTime: new Date(orderDao.start_time),
-                returnTime: new Date(orderDao.return_time),
-                executor: owner,
-                status: orderDao.status,
-                deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
-                deliveryAddress: new Address({
-                    street: orderDao.street,
-                    city: orderDao.city,
-                    state: orderDao.city,
-                    zipCode: orderDao.zip_code
-                }),
-                deliveryFee: Number(orderDao.delivery_fee),
-                paymentIntentId: orderDao.payment_intent_id,
-                renter: await this.reconstitueRenter(userProfileDto),
-                createdOn: orderDao.created_on
-            }
-        )
-    }
-
-    selectOrder(): string {
-        return `SELECT id,
-                       payment_intent_id,
-                       start_time,
-                       return_time,
-                       status,
-                       executor,
-                       delivery_fee,
-                       street,
-                       city,
-                       state,
-                       zip_code,
-                       ST_X(delivery_coordinates::geometry) AS longitude,
-                       ST_Y(delivery_coordinates::geometry) AS latitude,
-                       renter,
-                       created_on
-                FROM "order" `
     }
 
     async getOrderById(orderId: string): Promise<Order> {
@@ -231,7 +205,54 @@ export class OrderRepository {
         }
     }
 
-    getConditionId = (condition: Condition): Promise<number> => {
+    private async reconstituteOrder(orderDao: any, userEmail: string, lineItems: OrderLineItem[]) {
+        const renterId = orderDao.renter;
+        const userProfileDto = await this.userAdaptor.getRenterById(renterId);
+        const owner = await this.userAdaptor.getOwnerById(orderDao.executor);
+
+        return new Order(
+            {
+                id: orderDao.id,
+                orderItems: lineItems,
+                startTime: new Date(orderDao.start_time),
+                returnTime: new Date(orderDao.return_time),
+                executor: owner,
+                status: orderDao.status,
+                deliveryCoordinates: new Coordinates(orderDao.latitude, orderDao.longitude),
+                deliveryAddress: new Address({
+                    street: orderDao.street,
+                    city: orderDao.city,
+                    state: orderDao.city,
+                    zipCode: orderDao.zip_code
+                }),
+                deliveryFee: Number(orderDao.delivery_fee),
+                paymentIntentId: orderDao.payment_intent_id,
+                renter: await this.reconstitueRenter(userProfileDto),
+                createdOn: orderDao.created_on
+            }
+        )
+    }
+
+    private selectOrder(): string {
+        return `SELECT id,
+                       payment_intent_id,
+                       start_time,
+                       return_time,
+                       status,
+                       executor,
+                       delivery_fee,
+                       street,
+                       city,
+                       state,
+                       zip_code,
+                       ST_X(delivery_coordinates::geometry) AS longitude,
+                       ST_Y(delivery_coordinates::geometry) AS latitude,
+                       renter,
+                       created_on
+                FROM "order" `
+    }
+
+    private getConditionId = (condition: Condition): Promise<number> => {
         return database.one(`SELECT id
                              FROM public.condition
                              WHERE condition = $1`,
@@ -240,7 +261,7 @@ export class OrderRepository {
         );
     };
 
-    async getLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
+    private async getLineItemsForOrder(orderId: string): Promise<OrderLineItem[]> {
         return database.map(`
             SELECT item_id,
                    quantity,
@@ -290,7 +311,7 @@ export class OrderRepository {
         });
     }
 
-    orderCountForRenter(renterId: string) {
+    private orderCountForRenter(renterId: string) {
         return database.one(`
                     SELECT count("order".id)
                     FROM "order"
