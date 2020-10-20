@@ -150,11 +150,12 @@ const getUser = (userId: string) => {
 
 const getOwner = (userId: string): Promise<Owner> => {
     return database.one(
-            `SELECT email, id, stripe_connect_account_id
+            `SELECT "user".email, "user".id, stripe_connect_account_id, up.name
              FROM public."user"
-             WHERE id = $1`, [userId],
+                      JOIN user_profile up on "user".id = up.user_id
+             WHERE "user".id = $1`, [userId],
         result => {
-            return new Owner(result.id, result.email, result.stripe_connect_account_id);
+            return new Owner(result.id, result.email, result.name, result.stripe_connect_account_id);
         }
     )
 }
