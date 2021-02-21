@@ -7,6 +7,7 @@ import {StripeEvent} from "../stripe/StripeEvent";
 import {getOrderByPaymentIntent, initiateOrder} from "../order/OrderService";
 import {OrderLineItem} from "./OrderLineItem";
 import {sameProcessOrderRepository, sameProcessUserAdaptor} from "../ApplicationContext";
+import {notifyOwnerAboutOrder} from "../email/SendGridClient";
 
 const orderRepository = sameProcessOrderRepository;
 const userAdaptor = sameProcessUserAdaptor;
@@ -90,6 +91,7 @@ async function handleCustomerPaymentAuthorized(request: Request, response: Respo
             const order = await getOrderByPaymentIntent(event.data.object.id);
             order.authorizePayment();
             await orderRepository.update(order);
+            notifyOwnerAboutOrder(order);
             response.status(200).send();
         }
     } catch (exception) {

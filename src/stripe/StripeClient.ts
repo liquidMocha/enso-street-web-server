@@ -1,8 +1,10 @@
 import Stripe from 'stripe';
 import {Order} from "../order/Order";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY!,
-    {apiVersion: '2020-03-02'});
+const stripe = new Stripe(
+    process.env.STRIPE_API_KEY!,
+    {apiVersion: '2020-08-27'}
+);
 
 export async function createPaymentIntentOf(order: Order): Promise<Stripe.PaymentIntent> {
     return stripe.paymentIntents.create({
