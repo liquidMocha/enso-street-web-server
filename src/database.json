@@ -9,9 +9,11 @@
     "database": "enso-street"
   },
   "test": {
-    "ENV": "DATABASE_URL"
+    "ENV": "DATABASE_URL",
+    "ssl": true
   },
   "dev": {
-    "ENV": "DATABASE_URL"
+    "ENV": "DATABASE_URL",
+    "ssl": true
   }
 }
