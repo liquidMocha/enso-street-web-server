@@ -4,7 +4,11 @@ const dbConnectionString: string = process.env.DATABASE_URL!;
 const initOptions = {};
 
 const pgp = pgPromise(initOptions);
-pgp.pg.defaults.ssl = process.env.sslOn !== undefined;
+if (process.env.sslOn !== undefined) {
+    pgp.pg.defaults.ssl = {
+        rejectUnauthorized: false
+    }
+}
 
 const db = pgp(dbConnectionString);
 
