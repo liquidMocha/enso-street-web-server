@@ -4,7 +4,7 @@ const dbConnectionString: string = process.env.DATABASE_URL!;
 const initOptions = {};
 
 const pgp = pgPromise(initOptions);
-pgp.pg.defaults.ssl = true;
+pgp.pg.defaults.ssl = process.env.sslOn !== undefined;
 
 const db = pgp(dbConnectionString);
 
