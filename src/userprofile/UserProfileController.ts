@@ -1,4 +1,4 @@
-import express, {NextFunction, Request, Response} from "express";
+import express, {Request, Response} from "express";
 import {getUserProfileByUserId, update} from "./UserProfileRepository";
 import Contact from "./Contact";
 import {uuid} from "uuidv4";
@@ -9,8 +9,10 @@ import {getUserProfile} from "./UserProfileService";
 const router = express.Router();
 
 router.get('/', requireAuthentication, fetchUserProfile);
+router.put('/', requireAuthentication, updateProfile);
+router.put('/contact', requireAuthentication, addContact);
 
-async function fetchUserProfile(req: Request, res: Response, next: NextFunction) {
+async function fetchUserProfile(req: Request, res: Response) {
     const userId = req.session?.userId;
 
     const userProfileDto = await getUserProfile(userId);
@@ -18,9 +20,7 @@ async function fetchUserProfile(req: Request, res: Response, next: NextFunction)
     res.status(200).json(userProfileDto);
 }
 
-router.put('/', requireAuthentication, updateProfile);
-
-async function updateProfile(req: Request, res: Response, next: NextFunction) {
+async function updateProfile(req: Request, res: Response) {
     const userId = req.session?.userId;
     const updatedProfileDto: UpdateProfileDto = req.body.profile;
 
@@ -35,9 +35,7 @@ async function updateProfile(req: Request, res: Response, next: NextFunction) {
     res.status(200).send();
 }
 
-router.put('/contact', requireAuthentication, addContact);
-
-async function addContact(req: Request, res: Response, next: NextFunction) {
+async function addContact(req: Request, res: Response) {
     const userId = req.session?.userId;
     const contactDto = req.body.contact;
 

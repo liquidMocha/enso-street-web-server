@@ -1,4 +1,4 @@
-import express, {NextFunction, Request, Response} from "express";
+import express, {Request, Response} from "express";
 import Address from "../location/Address";
 import {requireAuthentication} from "../user/AuthenticationCheck";
 import {CheckoutItemDTO} from "./CheckoutItemDTO";
@@ -17,7 +17,7 @@ router.post('/delivery-quote', getDeliveryQuote);
 router.post('/pay', requireAuthentication, startTransaction);
 router.post('/payment-authorized', handleCustomerPaymentAuthorized);
 
-async function getDeliveryQuote(req: Request, res: Response, next: NextFunction) {
+async function getDeliveryQuote(req: Request, res: Response) {
     const itemIds: string[] = req.body.itemIds;
     const deliveryAddressJson = req.body.deliveryAddress;
 
@@ -38,7 +38,7 @@ async function getDeliveryQuote(req: Request, res: Response, next: NextFunction)
     }
 }
 
-async function startTransaction(req: Request, res: Response, next: NextFunction) {
+async function startTransaction(req: Request, res: Response) {
     const startTime: Date = new Date(req.body.rentDate);
     const returnTime: Date = new Date(req.body.returnDate);
     const renterUserId = req.session?.userId;
@@ -77,7 +77,7 @@ async function startTransaction(req: Request, res: Response, next: NextFunction)
     res.status(200).json({clientSecret: paymentIntent.client_secret});
 }
 
-async function handleCustomerPaymentAuthorized(request: Request, response: Response, next: NextFunction) {
+async function handleCustomerPaymentAuthorized(request: Request, response: Response) {
     let event = request.body;
 
     try {

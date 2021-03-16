@@ -18,6 +18,110 @@ import {getUserProfileByUserId} from "../userprofile/UserProfileRepository";
 
 const router = express.Router();
 
+router.post('/', requireAuthentication, createItem);
+router.get('/', requireAuthentication, getAllActiveItemsForUser);
+router.get('/:itemId', getById);
+router.delete('/:itemId', requireAuthentication, archiveItem);
+router.put('/:itemId', requireAuthentication, updateItemEndpoint);
+
+async function createItem(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session?.userId;
+    const itemPayload = req.body;
+    const user = getUser(userId);
+    const itemDTO = mapToItemDTO(itemPayload, (await user).email);
+    const item = mapToItem(await itemDTO);
+
+    try {
+        await save(await item);
+
+        res.status(201).send();
+    } catch (e) {
+        res.status(500).send();
+        console.error(`Error when saving item for user ${userId}: ${e}`)
+    }
+}
+
+async function getAllActiveItemsForUser(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session?.userId;
+    try {
+        const unarchivedItems = (await getItemsForUser(userId)).filter(item => !item.archived)
+
+        res.status(200).json(unarchivedItems);
+    } catch (e) {
+        res.status(500).send();
+        console.error(`Error when retrieving item for user ${userId}: ${e}`)
+    }
+}
+
+async function getById(req: Request, res: Response, next: NextFunction) {
+    try {
+        const item = await getItemById(req.params.itemId);
+        const borrowerItem = new BorrowerItem(
+            {
+                itemId: item.id,
+                title: item.title,
+                description: item.description,
+                ownerEmail: item.owner.email,
+                ownerAlias: item.owner.name,
+                deposit: item.deposit,
+                rentalDailyPrice: item.rentalDailyPrice,
+                deliveryAdditional: item.deliveryAdditional,
+                deliveryStarting: item.deliveryStarting,
+                condition: item.condition,
+                imageUrl: item.imageUrl,
+                canBeDelivered: item.canBeDelivered,
+                coordinates: item.location.coordinates,
+                createdOn: item.createdOn
+            }
+        )
+
+        res.status(200).json(borrowerItem);
+    } catch (e) {
+        res.status(500).send();
+        console.error(e);
+    }
+}
+
+async function archiveItem(req: Request, res: Response) {
+    const params = req.params;
+    const userId = req.session?.userId;
+
+    const items = await getItemsForUser(userId);
+    const itemToBeDeleted = items.find(item => item.id === params.itemId)
+
+    if (itemToBeDeleted) {
+        itemToBeDeleted.archive();
+        await update(itemToBeDeleted);
+
+        res.status(200).send();
+    } else {
+        res.status(204).send();
+    }
+}
+
+async function updateItemEndpoint(req: Request, res: Response) {
+    const itemId = req.params.itemId;
+    const userId = req.session?.userId;
+
+    try {
+        const items = await getItemsForUser(userId);
+        const itemToBeEdited = items.find(item => item.id === itemId);
+        const updatedItem = mapToUpdateItem(req.body);
+
+        if (itemToBeEdited) {
+            itemToBeEdited.update(await updatedItem);
+            await update(itemToBeEdited);
+
+            res.status(200).send();
+        } else {
+            res.status(404).send();
+        }
+    } catch (error) {
+        console.error(`Error when updating item ${itemId}: ${error}`);
+        res.status(500).send();
+    }
+}
+
 const mapToItemDTO = async (itemPayload: any, userEmail: string): Promise<ItemDTO> => {
     return new ItemDTO(
         itemPayload.id,
@@ -121,109 +225,5 @@ const mapToUpdateItem = async (updateItemPayload: any): Promise<UpdateItem> => {
         updateItemPayload.archived
     )
 }
-
-router.post('/', requireAuthentication, createItem);
-
-async function createItem(req: Request, res: Response, next: NextFunction) {
-    const userId = req.session?.userId;
-    const itemPayload = req.body;
-    const user = getUser(userId);
-    const itemDTO = mapToItemDTO(itemPayload, (await user).email);
-    const item = mapToItem(await itemDTO);
-
-    try {
-        await save(await item);
-
-        res.status(201).send();
-    } catch (e) {
-        res.status(500).send();
-        console.error(`Error when saving item for user ${userId}: ${e}`)
-    }
-}
-
-router.get('/', requireAuthentication, getAllActiveItemsForUser);
-
-async function getAllActiveItemsForUser(req: Request, res: Response, next: NextFunction) {
-    const userId = req.session?.userId;
-    try {
-        const unarchivedItems = (await getItemsForUser(userId)).filter(item => !item.archived)
-
-        res.status(200).json(unarchivedItems);
-    } catch (e) {
-        res.status(500).send();
-        console.error(`Error when retrieving item for user ${userId}: ${e}`)
-    }
-}
-
-router.get('/:itemId', getById);
-
-async function getById(req: Request, res: Response, next: NextFunction) {
-    try {
-        const item = await getItemById(req.params.itemId);
-        const borrowerItem = new BorrowerItem(
-            {
-                itemId: item.id,
-                title: item.title,
-                description: item.description,
-                ownerEmail: item.owner.email,
-                ownerAlias: item.owner.name,
-                deposit: item.deposit,
-                rentalDailyPrice: item.rentalDailyPrice,
-                deliveryAdditional: item.deliveryAdditional,
-                deliveryStarting: item.deliveryStarting,
-                condition: item.condition,
-                imageUrl: item.imageUrl,
-                canBeDelivered: item.canBeDelivered,
-                coordinates: item.location.coordinates,
-                createdOn: item.createdOn
-            }
-        )
-
-        res.status(200).json(borrowerItem);
-    } catch (e) {
-        res.status(500).send();
-        console.error(e);
-    }
-}
-
-router.delete('/:itemId', requireAuthentication, async (req, res, next) => {
-    const params = req.params;
-    const userId = req.session?.userId;
-
-    const items = await getItemsForUser(userId);
-    const itemToBeDeleted = items.find(item => item.id === params.itemId)
-
-    if (itemToBeDeleted) {
-        itemToBeDeleted.archive();
-        await update(itemToBeDeleted);
-
-        res.status(200).send();
-    } else {
-        res.status(204).send();
-    }
-});
-
-router.put('/:itemId', requireAuthentication, async (req, res, next) => {
-    const itemId = req.params.itemId;
-    const userId = req.session?.userId;
-
-    try {
-        const items = await getItemsForUser(userId);
-        const itemToBeEdited = items.find(item => item.id === itemId);
-        const updatedItem = mapToUpdateItem(req.body);
-
-        if (itemToBeEdited) {
-            itemToBeEdited.update(await updatedItem);
-            await update(itemToBeEdited);
-
-            res.status(200).send();
-        } else {
-            res.status(404).send();
-        }
-    } catch (error) {
-        console.error(`Error when updating item ${itemId}: ${error}`);
-        res.status(500).send();
-    }
-});
 
 export default router;

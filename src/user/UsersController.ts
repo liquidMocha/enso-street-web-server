@@ -7,7 +7,7 @@ import {
     updatePasswordFor,
     userExists
 } from "./UserService";
-import express, {NextFunction, Request, Response} from "express";
+import express, {Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import Joi from "@hapi/joi";
 import UserRepository from "./UserRepository";
@@ -18,13 +18,22 @@ import jose from "jose";
 import {requireAuthentication} from "./AuthenticationCheck";
 import {getStripeConnectAccount} from "../stripe/StripeClient";
 
+const CLIENT_ID = process.env.googleClientId;
+const googleOAuthClient = new OAuth2Client(CLIENT_ID);
+
 const router = express.Router();
 
-router.post('/createUser', registerEnsoUser);
 router.post('/connect-stripe', requireAuthentication, connectStripe);
 router.post('/update-password', requireAuthentication, updatePassword);
+router.get('/logout', requireAuthentication, logout);
+router.post('/createUser', registerEnsoUser);
+router.post('/login', login);
+router.post('/forget-password', forgetPassword);
+router.post('/reset-password', resetPassword);
+router.post('/googleSignOn', googleSignOnEndpoint);
+router.post('/isLoggedIn', isUserLoggedIn);
 
-async function updatePassword(req: Request, res: Response, next: NextFunction) {
+async function updatePassword(req: Request, res: Response) {
     const userId = req.session?.userId;
     const currentPassword = req.body.currentPassword;
     const newPassword = req.body.newPassword;
@@ -39,7 +48,7 @@ async function updatePassword(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function connectStripe(req: Request, res: Response, next: NextFunction) {
+async function connectStripe(req: Request, res: Response) {
     try {
         const stripeAuthorizationCode = req.body.stripeAuthorizationCode;
 
@@ -56,7 +65,7 @@ async function connectStripe(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function registerEnsoUser(req: Request, res: Response, next: NextFunction) {
+async function registerEnsoUser(req: Request, res: Response) {
     const schema = Joi.object({
         email: Joi.any(),
         name: Joi.any(),
@@ -83,7 +92,7 @@ async function registerEnsoUser(req: Request, res: Response, next: NextFunction)
     }
 }
 
-router.post('/login', async (req, res) => {
+async function login(req: Request, res: Response) {
     const email = req.body.email;
     const password = req.body.password;
 
@@ -105,12 +114,9 @@ router.post('/login', async (req, res) => {
         console.error(`Error when try to log in ${email}: ${e}`);
         res.status(500);
     }
-});
+}
 
-const CLIENT_ID = process.env.googleClientId;
-const googleOAuthClient = new OAuth2Client(CLIENT_ID);
-
-router.post('/googleSignOn', async (req, res) => {
+async function googleSignOnEndpoint(req: Request, res: Response) {
     try {
         const response = await googleSignOn(req.body.idToken);
         const user = createNewEnsoUser(response.email);
@@ -134,9 +140,9 @@ router.post('/googleSignOn', async (req, res) => {
         console.error(`Error when Google sign on: ${e}`);
         res.status(500).send();
     }
-});
+}
 
-router.post('/isLoggedIn', async (req, res) => {
+async function isUserLoggedIn(req: Request, res: Response) {
     res.setHeader('Last-Modified', (new Date()).toUTCString());
     const userId = req.session?.userId;
 
@@ -146,9 +152,9 @@ router.post('/isLoggedIn', async (req, res) => {
     } else {
         res.status(200).json({loggedIn: false});
     }
-});
+}
 
-router.get('/logout', (req, res) => {
+async function logout(req: Request, res: Response) {
     console.log(`User ${req.session?.userId} logging out.`);
 
     req.session?.destroy(error => {
@@ -157,9 +163,9 @@ router.get('/logout', (req, res) => {
         }
     });
     res.status(200).send();
-});
+}
 
-router.post('/forget-password', async (req, res) => {
+async function forgetPassword(req: Request, res: Response) {
     const userEmail = req.body.email;
     try {
         await initiateForgetPassword(userEmail);
@@ -168,9 +174,9 @@ router.post('/forget-password', async (req, res) => {
         console.error(e);
         res.status(500).send();
     }
-})
+}
 
-router.post('/reset-password', async (req, res, next) => {
+async function resetPassword(req: Request, res: Response) {
     const newPassword = req.body.password;
     const token = req.body.token;
     try {
@@ -185,6 +191,6 @@ router.post('/reset-password', async (req, res, next) => {
     } catch (e) {
         console.error(`password reset token rejected: ${e}`)
     }
-})
+}
 
 export default router;

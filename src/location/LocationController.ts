@@ -9,14 +9,16 @@ import {requireAuthentication} from "../user/AuthenticationCheck";
 const router = express.Router();
 
 router.get('/', requireAuthentication, getAddressBook);
+router.put('/', requireAuthentication, addLocation);
+router.put('/:locationId', requireAuthentication, updateLocationById);
+router.get('/autosuggest/:searchTerm', locationAutoSuggest);
+router.get('/distance', calculateDistance);
 
 async function getAddressBook(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
     const locations = await getLocationsForUser(userId);
     res.status(200).json(locations);
 }
-
-router.put('/', requireAuthentication, addLocation);
 
 async function addLocation(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
@@ -34,8 +36,6 @@ async function addLocation(req: Request, res: Response, next: NextFunction) {
 
     res.status(201).json(location.id);
 }
-
-router.put('/:locationId', requireAuthentication, updateLocationById);
 
 async function updateLocationById(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
@@ -61,8 +61,7 @@ async function updateLocationById(req: Request, res: Response, next: NextFunctio
     res.status(200).json(await updatedLocation);
 }
 
-router.get('/autosuggest/:searchTerm', async (req, res, next) => {
-    const userEmail = req.session?.userId;
+async function locationAutoSuggest(req: Request, res: Response, next: NextFunction) {
     const latitude = Number(req.query.latitude);
     const longitude = Number(req.query.longitude);
 
@@ -72,9 +71,9 @@ router.get('/autosuggest/:searchTerm', async (req, res, next) => {
     )
 
     res.status(200).json(hereAutoSuggestions);
-});
+}
 
-router.get('/distance', async (req, res, next) => {
+async function calculateDistance(req: Request, res: Response, next: NextFunction) {
     const startLatitude = Number(req.query.startLatitude);
     const startLongitude = Number(req.query.startLongitude);
     const endLatitude = Number(req.query.endLatitude);
@@ -85,6 +84,6 @@ router.get('/distance', async (req, res, next) => {
 
     const distance = (await routeDistanceInMiles(startCoordinates, endCoordinates));
     res.status(200).json({distance})
-});
+}
 
 export default router;
