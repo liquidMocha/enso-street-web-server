@@ -9,6 +9,10 @@
   },
   "dev": {
     "url": "DATABASE_URL",
-    "ssl": true
+    "overwrite": {
+      "ssl": {
+        "rejectUnauthorized": false
+      }
+    }
   }
 }
