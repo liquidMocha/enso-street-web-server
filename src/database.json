@@ -1,19 +1,14 @@
 {
   "defaultEnv": "local",
   "local": {
-    "driver": "postgres",
-    "host": "localhost",
-    "port": "5432",
-    "user": "enso-street",
-    "password": "password",
-    "database": "enso-street"
+    "url": "postgres://enso-street:password@localhost:5432/enso-street"
   },
   "test": {
-    "ENV": "DATABASE_URL",
+    "url": "DATABASE_URL",
     "ssl": true
   },
   "dev": {
-    "ENV": "DATABASE_URL",
+    "url": "DATABASE_URL",
     "ssl": true
   }
 }
