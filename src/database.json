@@ -4,17 +4,11 @@
     "url": "postgres://enso-street:password@localhost:5432/enso-street"
   },
   "test": {
-    "url": "DATABASE_URL",
-    "ssl": true
+    "url": "DATABASE_URL"
   },
   "dev": {
     "url": "DATABASE_URL",
-    "addIfNotExists": {
-      "sslmode": "require"
-    },
     "overwrite": {
-      "native": true,
-      "driver": "pg",
       "ssl": {
         "rejectUnauthorized": false
       }
