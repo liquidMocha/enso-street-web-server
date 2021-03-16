@@ -9,7 +9,11 @@
   },
   "dev": {
     "url": "DATABASE_URL",
+    "addIfNotExists": {
+      "sslmode": "require"
+    },
     "overwrite": {
+      "native": true,
       "driver": "pg",
       "ssl": {
         "rejectUnauthorized": false
