@@ -4,10 +4,14 @@
     "url": "postgres://enso-street:password@localhost:5432/enso-street"
   },
   "test": {
-    "url": "DATABASE_URL"
+    "url": {
+      "ENV": "DATABASE_URL"
+    }
   },
   "dev": {
-    "url": "DATABASE_URL",
+    "url": {
+      "ENV": "DATABASE_URL"
+    },
     "overwrite": {
       "ssl": {
         "rejectUnauthorized": false
