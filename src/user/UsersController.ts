@@ -97,16 +97,11 @@ async function login(req: Request, res: Response) {
     const password = req.body.password;
 
     try {
-        const loginSuccessful = await ensoLogin(email, password);
+        const loginUserId = await ensoLogin(email, password);
 
-        if (loginSuccessful) {
-            const loggedInUser = await UserRepository.findOneUser({email: email});
-            if (loggedInUser) {
-                req!.session!.userId = loggedInUser?.id;
-                res.status(200).send('authentication successful');
-            } else {
-                res.status(500).send('authentication failed');
-            }
+        if (loginUserId) {
+            req!.session!.userId = loginUserId;
+            res.status(200).send('authentication successful');
         } else {
             res.status(401).send('authentication failed');
         }

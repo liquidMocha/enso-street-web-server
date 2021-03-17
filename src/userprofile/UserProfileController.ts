@@ -1,5 +1,5 @@
 import express, {Request, Response} from "express";
-import {getUserProfileByUserId, update} from "./UserProfileRepository";
+import {getUserAliasById, getUserProfileByUserId, update} from "./UserProfileRepository";
 import Contact from "./Contact";
 import {uuid} from "uuidv4";
 import Location from "../location/Location";
@@ -11,6 +11,14 @@ const router = express.Router();
 router.get('/', requireAuthentication, fetchUserProfile);
 router.put('/', requireAuthentication, updateProfile);
 router.put('/contact', requireAuthentication, addContact);
+router.get('/:userId/alias', getUserAlias);
+
+async function getUserAlias(req: Request, res: Response) {
+    const userId = req.params.userId;
+    const alias = await getUserAliasById(userId);
+
+    res.status(200).json(alias);
+}
 
 async function fetchUserProfile(req: Request, res: Response) {
     const userId = req.session?.userId;

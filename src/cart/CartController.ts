@@ -2,20 +2,41 @@ import express, {NextFunction, Request, Response} from "express";
 import {
     addItemToCartForUser,
     getCartForUser,
+    getCartItemCountFor,
     removeAllInstanceOfItemFromCart,
     removeSingleItemFromCart
 } from "./CartService";
 import {requireAuthentication} from "../user/AuthenticationCheck";
+import {getItemsOfOwnerInCartFor} from "./CartRepository";
 
 const router = express.Router();
 
+router.get('/count', requireAuthentication, getCartItemCount);
 router.get('/', requireAuthentication, getCart);
 router.put('/', requireAuthentication, addItemToCart);
 router.delete('/', requireAuthentication, deleteItemFromCart);
+router.get('/:ownerId/items', requireAuthentication, getOwnerItems);
+
+async function getOwnerItems(req: Request, res: Response) {
+    const renterId = req.session?.userId;
+    const ownerId = req.params.ownerId;
+
+    res.status(200).json(await getItemsOfOwnerInCartFor(renterId, ownerId));
+}
+
+async function getCartItemCount(req: Request, res: Response) {
+    const userId = req.session?.userId;
+
+    try {
+        res.status(200).json(await getCartItemCountFor(userId));
+    } catch (e) {
+        console.error(`Error when retrieving cart for user ${userId}: ${e}`);
+        res.status(500).send();
+    }
+}
 
 async function getCart(req: Request, res: Response, next: NextFunction) {
     const userId = req.session?.userId;
-
     try {
         const cartDTO = await getCartForUser(userId);
         res.status(200).json(cartDTO);

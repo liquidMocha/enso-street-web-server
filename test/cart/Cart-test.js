@@ -23,7 +23,7 @@ describe('cart', () => {
             const ownerId = "owner-id";
 
             const cart = new Cart([
-                new CartOwnerBatch(ownerId, new CartItem(itemId, 1))
+                new CartOwnerBatch(ownerId, [new CartItem(itemId, 1)])
             ]);
 
             cart.addItem(itemId, ownerId);
@@ -71,7 +71,7 @@ describe('cart', () => {
         it('should set quantity of the item to 0', () => {
             const itemId = "abc-123";
             const ownerId = "owner-id";
-            const cart = new Cart([new CartOwnerBatch(ownerId, new CartItem(itemId, 4))]);
+            const cart = new Cart([new CartOwnerBatch(ownerId, [new CartItem(itemId, 4)])]);
 
             cart.removeAllInstanceOfItem(itemId, ownerId);
 

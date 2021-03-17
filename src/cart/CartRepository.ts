@@ -1,6 +1,24 @@
 import database from "../database";
-import {reconstitueFromDao} from "./CartFactory";
+import {reconstituteFromDao} from "./CartFactory";
 import {CartItemDao} from "./CartItemDao";
+import {prop} from "ramda";
+
+export const getItemsOfOwnerInCartFor = async (ownerId: string, renterId: string) => {
+    return (await database.manyOrNone(`
+                SELECT item
+                FROM cart
+                         JOIN item i on cart.item = i.id
+                WHERE renter = $1
+                  AND owner = $2`,
+        [renterId, ownerId])).map(prop('item'));
+}
+
+export const getCartItemsQuantitiesFor = async (renterId: string): Promise<number[]> => {
+    return (await database.manyOrNone(`
+        SELECT quantity
+        FROM cart
+        WHERE renter = $1`, [renterId])).map<number>(prop('quantity'));
+}
 
 export const getCartItemsFor = async (renterId: string) => {
     const cartDao = (await database.manyOrNone(`
@@ -11,7 +29,8 @@ export const getCartItemsFor = async (renterId: string) => {
         return new CartItemDao(data.item, data.quantity, data.owner)
     });
 
-    return reconstitueFromDao(cartDao);
+    // @ts-ignore
+    return reconstituteFromDao(cartDao);
 };
 
 export const update = async (renterId: string, cart: CartItemDao[]) => {

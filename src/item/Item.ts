@@ -25,7 +25,41 @@ export class Item {
     private _archived: boolean;
 
     constructor(
-        {id, title, description, categories, imageUrl, rentalDailyPrice, deposit, condition, canBeDelivered, deliveryStarting, deliveryAdditional, location, owner, searchable, archived, createdOn}: { id: string | undefined, title: string, description: string, categories: Category[], imageUrl: string, rentalDailyPrice: number, deposit: number, condition: Condition, canBeDelivered: boolean, deliveryStarting: number, deliveryAdditional: number, location: ItemLocation, owner: Owner, searchable: boolean, archived: boolean, createdOn: Date }
+        {
+            id,
+            title,
+            description,
+            categories,
+            imageUrl,
+            rentalDailyPrice,
+            deposit,
+            condition,
+            canBeDelivered,
+            deliveryStarting,
+            deliveryAdditional,
+            location,
+            owner,
+            searchable,
+            archived,
+            createdOn
+        }: {
+            id: string | undefined,
+            title: string,
+            description: string,
+            categories: Category[],
+            imageUrl: string,
+            rentalDailyPrice: number,
+            deposit: number,
+            condition: Condition,
+            canBeDelivered: boolean,
+            deliveryStarting: number,
+            deliveryAdditional: number,
+            location: ItemLocation,
+            owner: Owner,
+            searchable: boolean,
+            archived: boolean,
+            createdOn: Date
+        }
     ) {
         this.id = id || uuid();
         this.title = title;
@@ -62,10 +96,10 @@ export class Item {
         this.canBeDelivered = updateItem.canBeDelivered;
         this.deliveryStarting = updateItem.deliveryStarting;
         this.deliveryAdditional = updateItem.deliveryAdditional;
-        if (updateItem.location.address.street !== this.location.address.street ||
-            updateItem.location.address.city !== this.location.address.city ||
-            updateItem.location.address.state !== this.location.address.state ||
-            updateItem.location.address.zipCode !== this.location.address.zipCode) {
+        if (updateItem.location?.address.street !== this.location?.address.street ||
+            updateItem.location?.address.city !== this.location?.address.city ||
+            updateItem.location?.address.state !== this.location?.address.state ||
+            updateItem.location?.address.zipCode !== this.location?.address.zipCode) {
             this.location = updateItem.location
         }
         this.searchable = updateItem.searchable;

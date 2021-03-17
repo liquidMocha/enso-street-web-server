@@ -5,6 +5,7 @@ import UserRepository from "../user/UserRepository";
 import Contact from "./Contact";
 import {getLocationById} from "../location/LocationRepository";
 import Location from "../location/Location";
+import {prop} from "ramda";
 
 export const save = async (userProfile: UserProfile, user: User) => {
     return database.none(`
@@ -62,6 +63,16 @@ async function getDefaultLocation(userId: string): Promise<Location | undefined>
         location = getLocationById(await defaultLocationId)
     }
     return location;
+}
+
+export const getUserAliasById = async (userId: string): Promise<string> => {
+    return prop('name', (await database.oneOrNone(`
+                SELECT up.name
+                FROM public."user" u
+                         JOIN user_profile up on u.id = up.user_id
+                WHERE u.id = $1
+        `, [userId])
+    ));
 }
 
 export const getUserProfileByUserId = async (userId: string): Promise<UserProfile> => {

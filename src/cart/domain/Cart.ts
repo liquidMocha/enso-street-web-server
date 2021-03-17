@@ -15,7 +15,7 @@ export class Cart {
             ownerBatch.addItem(itemId);
         } else {
             this.ownerBatches.push(
-                new CartOwnerBatch(ownerId, new CartItem(itemId, 1))
+                new CartOwnerBatch(ownerId, [new CartItem(itemId, 1)])
             )
         }
     };

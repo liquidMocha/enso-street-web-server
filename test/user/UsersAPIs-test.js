@@ -127,7 +127,7 @@ describe('users', () => {
         it('should reset failed sign in attempts when login successful', (done) => {
             const expectedEmail = "some@email.org";
             userUpdateStub.resolves();
-            findUserStub.resolves(new User({email: expectedEmail}));
+            findUserStub.resolves(new User({email: expectedEmail, id: 1}));
             getPasswordForUserStub.resolves('abc')
             bcryptStub.compare.resolves(true);
 

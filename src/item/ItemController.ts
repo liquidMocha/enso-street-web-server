@@ -204,25 +204,27 @@ const mapToUpdateItem = async (updateItemPayload: any): Promise<UpdateItem> => {
     ));
 
     return new UpdateItem(
-        updateItemPayload.title,
-        updateItemPayload.description,
-        updateItemPayload.categories,
-        updateItemPayload.imageUrl,
-        updateItemPayload.rentalDailyPrice,
-        updateItemPayload.deposit,
-        updateItemPayload.condition,
-        updateItemPayload.canBeDelivered,
-        updateItemPayload.deliveryStarting,
-        updateItemPayload.deliveryAdditional,
-        new ItemLocationDTO(
-            updateItemPayload.location.address.street,
-            updateItemPayload.location.address.city,
-            updateItemPayload.location.address.state,
-            updateItemPayload.location.address.zipCode,
-            await coordinates
-        ),
-        updateItemPayload.searchable,
-        updateItemPayload.archived
+        {
+            title: updateItemPayload.title,
+            description: updateItemPayload.description,
+            categories: updateItemPayload.categories,
+            imageUrl: updateItemPayload.imageUrl,
+            rentalDailyPrice: updateItemPayload.rentalDailyPrice,
+            deposit: updateItemPayload.deposit,
+            condition: updateItemPayload.condition,
+            canBeDelivered: updateItemPayload.canBeDelivered,
+            deliveryStarting: updateItemPayload.deliveryStarting,
+            deliveryAdditional: updateItemPayload.deliveryAdditional,
+            location: new ItemLocationDTO(
+                updateItemPayload.location.address.street,
+                updateItemPayload.location.address.city,
+                updateItemPayload.location.address.state,
+                updateItemPayload.location.address.zipCode,
+                await coordinates
+            ),
+            searchable: updateItemPayload.searchable,
+            archived: updateItemPayload.archived
+        }
     )
 }
 

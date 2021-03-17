@@ -62,9 +62,11 @@ describe('cart', () => {
             const ownerName2 = "Chidi Anagonye";
             const ownerId2 = "owner-id2";
 
+            const owner1Items = [new CartItem(itemId1, 1)];
+            const owner2Items = [new CartItem(itemId2, 2)];
             const fakeCart = new Cart([
-                new CartOwnerBatch(ownerId1, new CartItem(itemId1, 1)),
-                new CartOwnerBatch(ownerId2, new CartItem(itemId2, 2)),
+                new CartOwnerBatch(ownerId1, owner1Items),
+                new CartOwnerBatch(ownerId2, owner2Items),
             ]);
 
             getCartStub.resolves(fakeCart);
@@ -86,8 +88,7 @@ describe('cart', () => {
                     imageUrl: imageUrl1
                 }
             ));
-            getItemByIdStub.onCall(1).resolves(new Item(
-                {
+            getItemByIdStub.onCall(1).resolves(new Item({
                     id: itemId2,
                     title: itemTitle2,
                     ownerEmail: ownerEmail2,
@@ -111,7 +112,6 @@ describe('cart', () => {
                     deposit: 100
                 }
             ];
-
             const expectedOwnerBatch2 = [
                 {
                     title: itemTitle2,
@@ -145,7 +145,7 @@ describe('cart', () => {
                     });
                     done(error);
                 })
-        })
+        });
     });
 
     describe('add item to cart', () => {
@@ -164,7 +164,7 @@ describe('cart', () => {
             const ownerId = "owner-id";
 
             const existingCart = new Cart([
-                new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
+                new CartOwnerBatch("owner-id", [new CartItem(itemId, 2)])
             ]);
             getCartStub.resolves(existingCart);
             findOwnerForItemStub.resolves(ownerId);
@@ -188,7 +188,7 @@ describe('cart', () => {
         });
     });
 
-    describe('remove one for an item', () => {
+    describe('remove items', () => {
         it('should respond 401 when user is not authenticated', (done) => {
             const itemId = "abc-123";
             request(app)
@@ -202,7 +202,7 @@ describe('cart', () => {
             const itemId = "abc-123";
             const ownerId = "owner-id";
             const existingCart = new Cart([
-                new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
+                new CartOwnerBatch("owner-id", [new CartItem(itemId, 2)])
             ]);
             getCartStub.resolves(existingCart);
             findOwnerForItemStub.resolves(ownerId);
@@ -227,7 +227,7 @@ describe('cart', () => {
             const ownerId = "owner-id";
 
             const existingCart = new Cart([
-                new CartOwnerBatch("owner-id", new CartItem(itemId, 2))
+                new CartOwnerBatch("owner-id", [new CartItem(itemId, 2)])
             ]);
             getCartStub.resolves(existingCart);
             findOwnerForItemStub.resolves(ownerId);

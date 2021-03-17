@@ -19,7 +19,7 @@ export const createEnsoUser = async (name: string, password: string, email: stri
     sendWelcomeEmail(email);
 };
 
-export const updatePasswordFor = async (userId: string, password: string) => {
+export const updatePasswordFor = (userId: string, password: string) => {
     return UserRepository.updatePasswordFor(userId, password);
 }
 
@@ -34,13 +34,15 @@ export const ensoLogin = async (email: string, password: string) => {
         const loginSuccessful = await passwordMatch(password, await existingPassword);
         if (loginSuccessful) {
             user.loginSucceeded();
+            await UserRepository.update(user);
+            return user.id;
         } else {
             user.loginFailed();
+            await UserRepository.update(user);
+            return undefined;
         }
-        await UserRepository.update(user);
-        return loginSuccessful;
     } else {
-        return false;
+        return undefined;
     }
 };
 
@@ -64,11 +66,11 @@ export const googleSignOn = async (idToken: string): Promise<GoogleSignOnRespons
     }
 };
 
-export const userExists = async (id: string): Promise<boolean> => {
-    return await UserRepository.userExists(id);
+export const userExists = (id: string): Promise<boolean> => {
+    return UserRepository.userExists(id);
 };
 
-export const getUser = async (userId: string) => {
+export const getUser = (userId: string) => {
     return UserRepository.getUser(userId);
 };
 

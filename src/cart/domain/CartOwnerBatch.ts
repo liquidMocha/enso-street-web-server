@@ -6,11 +6,11 @@ export class CartOwnerBatch {
 
     constructor(
         ownerId: string,
-        cartItems: CartItem
+        cartItems: CartItem[]
     ) {
         this.ownerId = ownerId;
         this.cartItems = [];
-        this.cartItems.push(cartItems);
+        this.cartItems = cartItems;
     }
 
     removeOneItem(itemId: string) {

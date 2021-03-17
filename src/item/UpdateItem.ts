@@ -18,19 +18,35 @@ export default class UpdateItem {
     readonly archived: boolean;
 
     constructor(
-        title: string,
-        description: string,
-        categories: Category[],
-        imageUrl: string,
-        rentalDailyPrice: number,
-        deposit: number,
-        condition: Condition,
-        canBeDelivered: boolean,
-        deliveryStarting: number,
-        deliveryAdditional: number,
-        location: ItemLocationDTO,
-        searchable: boolean,
-        archived: boolean
+        {
+            title,
+            description,
+            categories,
+            imageUrl,
+            rentalDailyPrice,
+            deposit,
+            condition,
+            canBeDelivered,
+            deliveryStarting,
+            deliveryAdditional,
+            location,
+            searchable,
+            archived,
+        }: {
+            title: string,
+            description: string,
+            categories: Category[],
+            imageUrl: string,
+            rentalDailyPrice: number,
+            deposit: number,
+            condition: Condition,
+            canBeDelivered: boolean,
+            deliveryStarting: number,
+            deliveryAdditional: number,
+            location: ItemLocationDTO,
+            searchable: boolean,
+            archived: boolean
+        }
     ) {
         this.title = title;
         this.description = description;
