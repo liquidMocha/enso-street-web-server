@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
-    "@sendgrid/mail": "^7.1.0",
+    "@sendgrid/mail": "^8.0.0",
     "@types/algoliasearch": "^3.34.10",
     "@types/bcrypt": "^3.0.0",
     "@types/hapi__joi": "^16.0.12",
@@ -52,7 +52,7 @@
     "pg-promise": "^10.9.4",
     "ramda": "^0.27.1",
     "redis": "^2.8.0",
-    "snyk": "^1.425.4",
+    "snyk": "^1.1297.3",
     "stripe": "^8.137.0",
     "uuidv4": "^6.0.7"
   },
